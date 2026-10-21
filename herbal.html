@@ -6,7 +6,7 @@
 <title>My Herbal | میری حکمت — قانون مفرد اعضاء</title>
 <meta name="description" content="قانونِ مفرد اعضاء کے مطابق مزاج کی تشخیص، نسخہ سازی، غذائی چارٹ اور وٹامنز/معدنیات کی کمی کی تشخیص — حکیم صابر رحمۃ اللہ علیہ کے نظام پر مبنی اردو ویب ایپ۔">
 <link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#0a1128">
+<meta name="theme-color" content="#0a2e18">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -17,29 +17,29 @@
 <link href="https://fonts.googleapis.com/css2?family=Noto+Nastaliq+Urdu:wght@400;700&family=Amiri:wght@400;700&family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
 :root{
-  --navy:#0a1128; --navy2:#0f1a3c; --gold:#d4af37; --gold-soft:#e8cf7a;
-  --text:#f1ead9; --muted:#a9b0c9; --card:#111c40; --border:#26305c;
+  --navy:#0a2e18; --navy2:#0f3d22; --gold:#e6b93c; --gold-soft:#f2d77e; --leaf:#7cc95a;
+  --text:#f3f0de; --muted:#b2c7a8; --card:#11402a; --border:#2d6a3e;
 }
 *{box-sizing:border-box;}
 body{margin:0; position:relative; color:var(--text);
   font-family:'Noto Nastaliq Urdu','Amiri',serif; line-height:2;
   background:
-    radial-gradient(900px 500px at 15% 0%, rgba(212,175,55,0.07), transparent 60%),
-    radial-gradient(700px 600px at 100% 15%, rgba(212,175,55,0.05), transparent 55%),
-    radial-gradient(1000px 700px at 50% 100%, rgba(20,32,72,0.9), transparent 60%),
+    radial-gradient(900px 500px at 15% 0%, rgba(124,201,90,0.16), transparent 60%),
+    radial-gradient(700px 600px at 100% 15%, rgba(230,185,60,0.08), transparent 55%),
+    radial-gradient(1000px 700px at 50% 100%, rgba(6,36,18,0.95), transparent 60%),
     linear-gradient(180deg,var(--navy),var(--navy2) 40%,var(--navy));
   background-attachment: fixed, fixed, fixed, scroll;
 }
 body::before{
   content:"";
   position:fixed; inset:0; z-index:0; pointer-events:none;
-  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180' viewBox='0 0 180 180'%3E%3Cg fill='none' stroke='%23d4af37' stroke-width='1'%3E%3Cpath d='M30 160 Q42 120 30 80 Q18 50 30 15' /%3E%3Cpath d='M30 100 Q48 92 60 105' /%3E%3Cpath d='M30 100 Q12 92 0 105' /%3E%3Cpath d='M30 130 Q48 122 60 135' /%3E%3Cpath d='M30 130 Q12 122 0 135' /%3E%3Cpath d='M30 70 Q45 64 55 75' /%3E%3Cpath d='M30 70 Q15 64 5 75' /%3E%3Ccircle cx='30' cy='18' r='4'/%3E%3C/g%3E%3Cg fill='none' stroke='%23d4af37' stroke-width='.6' opacity='.7'%3E%3Ccircle cx='140' cy='60' r='22'/%3E%3Ccircle cx='140' cy='60' r='14'/%3E%3C/g%3E%3C/svg%3E");
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180' viewBox='0 0 180 180'%3E%3Cg fill='none' stroke='%237cc95a' stroke-width='1.2'%3E%3Cpath d='M30 160 Q42 120 30 80 Q18 50 30 15' /%3E%3Cpath d='M30 100 Q48 92 60 105' /%3E%3Cpath d='M30 100 Q12 92 0 105' /%3E%3Cpath d='M30 130 Q48 122 60 135' /%3E%3Cpath d='M30 130 Q12 122 0 135' /%3E%3Cpath d='M30 70 Q45 64 55 75' /%3E%3Cpath d='M30 70 Q15 64 5 75' /%3E%3Ccircle cx='30' cy='18' r='4'/%3E%3C/g%3E%3Cg fill='none' stroke='%23e6b93c' stroke-width='.6' opacity='.7'%3E%3Ccircle cx='140' cy='60' r='22'/%3E%3Ccircle cx='140' cy='60' r='14'/%3E%3C/g%3E%3C/svg%3E");
   background-repeat:repeat;
   background-size:180px 180px;
-  opacity:0.05;
+  opacity:0.09;
 }
 body > *{position:relative; z-index:1;}
-header{position:sticky; top:0; z-index:50; background:rgba(10,17,40,0.95); border-bottom:1px solid var(--border);
+header{position:sticky; top:0; z-index:50; background:rgba(8,40,20,0.96); border-bottom:2px solid var(--leaf);
   backdrop-filter:blur(6px); padding:14px 20px; display:flex; align-items:center; justify-content:center; flex-wrap:wrap; gap:10px;}
 .brand{font-size:1.6rem; color:var(--gold); font-weight:700; text-decoration:none; font-family:'Poppins',sans-serif; letter-spacing:1px;}
 .brand span{font-family:'Poppins',sans-serif; font-size:.85rem; color:var(--muted); display:block; letter-spacing:1px;}
@@ -61,7 +61,7 @@ main{max-width:1000px; margin:0 auto; padding:30px 18px 130px;}
 h2.section-title{color:var(--gold); font-size:1.8rem; border-bottom:2px solid var(--border); padding-bottom:10px; margin-top:10px;}
 .rule-box{background:var(--card); border:1px solid var(--border); border-right:4px solid var(--gold); border-radius:10px; padding:18px 22px; margin-bottom:18px; font-size:1.1rem;}
 .rule-box b{color:var(--gold-soft);}
-.note{background:rgba(212,175,55,0.08); border:1px dashed var(--gold); border-radius:8px; padding:14px 18px; color:var(--gold-soft); font-size:.98rem; margin-bottom:18px;}
+.note{background:rgba(124,201,90,0.08); border:1px dashed var(--gold); border-radius:8px; padding:14px 18px; color:var(--gold-soft); font-size:.98rem; margin-bottom:18px;}
 .mizaj-tabs{display:flex; gap:10px; flex-wrap:wrap; margin:20px 0 30px;}
 .mizaj-tab{background:var(--card); border:1px solid var(--border); color:var(--text); padding:10px 20px; border-radius:30px; cursor:pointer; font-size:1.05rem;}
 .mizaj-tab.active{background:var(--gold); color:var(--navy); border-color:var(--gold); font-weight:700;}
@@ -81,7 +81,7 @@ h2.section-title{color:var(--gold); font-size:1.8rem; border-bottom:2px solid va
 .symptom{background:var(--card); border:1px solid var(--border); border-radius:8px; padding:8px 10px; cursor:pointer; display:flex; align-items:center; gap:8px; font-size:.92rem;}
 .symptom:hover{border-color:var(--gold-soft);}
 .symptom input{width:18px; height:18px;}
-.symptom.checked{border-color:var(--gold); background:rgba(212,175,55,0.08);}
+.symptom.checked{border-color:var(--gold); background:rgba(124,201,90,0.08);}
 .btn{background:var(--gold); color:var(--navy); border:none; padding:12px 30px; border-radius:8px; font-size:1.05rem; font-weight:700; cursor:pointer; font-family:'Noto Nastaliq Urdu',serif;}
 .btn:hover{background:var(--gold-soft);}
 .btn.secondary{background:transparent; color:var(--gold-soft); border:1px solid var(--border);}
@@ -89,14 +89,14 @@ h2.section-title{color:var(--gold); font-size:1.8rem; border-bottom:2px solid va
 .result-card h3{color:var(--gold); margin:0 0 10px;}
 .score-bar{height:10px; background:var(--navy); border-radius:5px; overflow:hidden; margin:6px 0 14px;}
 .score-fill{height:100%; background:var(--gold);}
-.placeholder-tag{display:inline-block; background:rgba(212,175,55,0.15); color:var(--gold-soft); font-size:.8rem; padding:3px 10px; border-radius:12px; font-family:'Poppins',sans-serif; margin-right:8px;}
+.placeholder-tag{display:inline-block; background:rgba(124,201,90,0.15); color:var(--gold-soft); font-size:.8rem; padding:3px 10px; border-radius:12px; font-family:'Poppins',sans-serif; margin-right:8px;}
 .diag-question{background:var(--card); border:1px solid var(--border); border-radius:10px; padding:20px 22px; margin-bottom:20px;}
 .diag-question .q-title{color:var(--gold); font-size:1.2rem; font-weight:700;}
 .diag-question .q-source{color:var(--muted); font-size:.85rem; font-family:'Poppins',sans-serif; margin-right:8px;}
 .diag-boxes{display:grid; grid-template-columns:1fr 1fr 1fr; gap:6px; margin-top:12px;}
 .diag-box{background:var(--navy); border:2px solid var(--border); border-radius:10px; padding:10px 8px; text-align:center; cursor:pointer; transition:.15s; min-height:50px; display:flex; align-items:center; justify-content:center; font-size:.9rem;}
 .diag-box:hover{border-color:var(--gold-soft);}
-.diag-box.selected{border-color:var(--gold); background:rgba(212,175,55,0.12); box-shadow:0 0 0 1px var(--gold) inset;}
+.diag-box.selected{border-color:var(--gold); background:rgba(124,201,90,0.12); box-shadow:0 0 0 1px var(--gold) inset;}
 .diag-box .mizaj-name{display:block; color:var(--gold-soft); font-size:.8rem; font-family:'Poppins',sans-serif; margin-bottom:6px;}
 .diag-box .opt-text{font-size:1rem; line-height:1.6;}
 .mizaj-columns{display:grid; grid-template-columns:1fr 1fr 1fr; gap:16px; margin:20px 0 10px;}
@@ -110,7 +110,7 @@ input.search, select.search{width:100%; padding:12px 16px; border-radius:8px; bo
   background:var(--navy); border:1px solid var(--gold); border-radius:8px; box-shadow:0 8px 20px rgba(0,0,0,0.4);}
 .suggest-item{padding:10px 16px; cursor:pointer; font-size:.95rem; border-bottom:1px solid var(--border);}
 .suggest-item:last-child{border-bottom:none;}
-.suggest-item:hover, .suggest-item.active{background:rgba(212,175,55,0.15); color:var(--gold-soft);}
+.suggest-item:hover, .suggest-item.active{background:rgba(124,201,90,0.15); color:var(--gold-soft);}
 table{width:100%; border-collapse:collapse; font-family:'Poppins',sans-serif; font-size:.95rem; margin-bottom:20px;}
 .lecture-text{white-space:pre-wrap; line-height:2.1; font-size:1.05rem; background:var(--card); border:1px solid var(--border); border-radius:10px; padding:24px; max-height:none;}
 .toc-item{background:var(--card); border:1px solid var(--border); border-radius:8px; padding:12px 16px; margin-bottom:8px; cursor:pointer; display:flex; justify-content:space-between;}
@@ -122,7 +122,7 @@ table{width:100%; border-collapse:collapse; font-family:'Poppins',sans-serif; fo
 .book-page-wrap .pg-label{color:var(--gold-soft); font-family:'Poppins',sans-serif; font-size:.85rem; margin-top:6px;}
 .nuskha-card{background:var(--card); border:1px solid var(--border); border-radius:10px; padding:16px 20px; margin-bottom:14px;}
 .nuskha-card h4{color:var(--gold); margin:0 0 8px; font-size:1.15rem;}
-.nuskha-card .tag{display:inline-block; background:rgba(212,175,55,0.15); color:var(--gold-soft); font-size:.8rem; padding:2px 10px; border-radius:10px; font-family:'Poppins',sans-serif; margin-left:6px;}
+.nuskha-card .tag{display:inline-block; background:rgba(124,201,90,0.15); color:var(--gold-soft); font-size:.8rem; padding:2px 10px; border-radius:10px; font-family:'Poppins',sans-serif; margin-left:6px;}
 .mujarrab-card{background:var(--card); border:1px solid var(--border); border-radius:10px; padding:16px 20px; margin-bottom:12px;}
 .mujarrab-card h4{color:var(--gold-soft); margin:0 0 6px; font-size:1.1rem;}
 th,td{border:1px solid var(--border); padding:10px 12px; text-align:center;}
@@ -163,7 +163,7 @@ footer{position:fixed; left:0; right:0; bottom:0; z-index:55; text-align:center;
 <section class="page-section active" id="page-home">
   <div class="hero">
     <h1>My Herbal</h1>
-    <p style="color:var(--gold); font-size:1.6rem; margin:0 0 4px;">میری حکمت</p>
+    <p style="color:var(--leaf); font-size:1.6rem; margin:0 0 4px;">میری حکمت</p>
     <p style="color:var(--gold-soft); font-size:1.3rem; margin-bottom:14px;">قانون مفرد اعضاء</p>
     <p>حکیم صابر رحمۃ اللہ علیہ کے قانون کے مطابق مزاج، غذا اور علاج کا مکمل نظام</p>
   </div>
@@ -570,9 +570,9 @@ footer{position:fixed; left:0; right:0; bottom:0; z-index:55; text-align:center;
       b = document.createElement('div');
       b.id = 'herbalBusyBar';
       b.setAttribute('role', 'status');
-      b.style.cssText = 'display:none; position:fixed; left:50%; bottom:64px; transform:translateX(-50%); z-index:100000; width:min(94vw,520px); background:rgba(11,20,38,.97); border:2px solid var(--gold,#d4af37); border-radius:14px; padding:10px 14px; box-shadow:0 6px 24px rgba(0,0,0,.55); text-align:center; direction:rtl;';
+      b.style.cssText = 'display:none; position:fixed; left:50%; bottom:64px; transform:translateX(-50%); z-index:100000; width:min(94vw,520px); background:rgba(8,40,20,.97); border:2px solid var(--gold,#d4af37); border-radius:14px; padding:10px 14px; box-shadow:0 6px 24px rgba(0,0,0,.55); text-align:center; direction:rtl;';
       b.innerHTML = '<style>@keyframes hbspin{to{transform:rotate(360deg)}}</style>' +
-        '<div style="display:flex; align-items:center; gap:10px; justify-content:center;"><span style="width:18px; height:18px; border:3px solid rgba(212,175,55,.3); border-top-color:var(--gold,#d4af37); border-radius:50%; display:inline-block; animation:hbspin .9s linear infinite; flex-shrink:0;"></span>' +
+        '<div style="display:flex; align-items:center; gap:10px; justify-content:center;"><span style="width:18px; height:18px; border:3px solid rgba(124,201,90,.3); border-top-color:var(--gold,#d4af37); border-radius:50%; display:inline-block; animation:hbspin .9s linear infinite; flex-shrink:0;"></span>' +
         '<b style="color:var(--gold,#d4af37); font-size:.95rem;">⏳ براہ کرم انتظار کریں — کام ہو رہا ہے</b></div>' +
         '<div id="herbalBusyText" style="color:#fff; font-size:.85rem; margin-top:4px;"></div>' +
         '<div style="color:var(--gold-soft,#e8d48b); font-size:.75rem; margin-top:2px;">ابھی انتظار کریں — صفحہ بند نہ کریں اور واپس نہ جائیں، جواب خود یہیں آ جائے گا۔</div>';
@@ -818,7 +818,7 @@ function qmDeficiencyDiagnose(){
       <p style="font-size:.85rem; color:var(--muted); margin-bottom:8px;">ملنے والی علامات: ${hit.map(s=> escapeHtmlSearch(s.t)).join('، ')}</p>
       <p style="font-size:.9rem; margin-bottom:4px;"><b style="color:var(--gold-soft);">یہ کمی پوری کرنے کے لیے غذائیں:</b></p>
       <ul style="margin:0 18px 0 0; padding:0; font-size:.87rem;">${d.foods.map(f=> `<li><b>${escapeHtmlSearch(f)}</b>${QM_FOOD_USAGE[f] ? ' — ' + escapeHtmlSearch(QM_FOOD_USAGE[f]) : ''}</li>`).join('')}</ul>
-      ${d.note ? `<p style="font-size:.84rem; color:var(--gold-soft); background:rgba(212,175,55,0.08); border:1px solid var(--border); border-radius:8px; padding:8px 10px; margin-top:8px;">⚠ ${escapeHtmlSearch(d.note)}</p>` : ''}
+      ${d.note ? `<p style="font-size:.84rem; color:var(--gold-soft); background:rgba(124,201,90,0.08); border:1px solid var(--border); border-radius:8px; padding:8px 10px; margin-top:8px;">⚠ ${escapeHtmlSearch(d.note)}</p>` : ''}
     </div>`).join('') +
     '<p style="color:var(--muted); font-size:.78rem; text-align:center; margin-top:4px;">یہ صرف علامات کی بنیاد پر امکان ہے، پکی تشخیص نہیں — یقین کے لیے بلڈ ٹیسٹ کروائیں۔</p>';
 }
@@ -2197,7 +2197,7 @@ function answerDiseaseFollowup(diseaseName, did, isYes, btnEl){
   const wrap = document.getElementById(`followup-${did}`);
   if(wrap) wrap.querySelectorAll('button').forEach(b=>{ b.style.borderColor=''; b.style.background=''; });
   btnEl.style.borderColor = 'var(--gold)';
-  btnEl.style.background = 'rgba(212,175,55,0.15)';
+  btnEl.style.background = 'rgba(124,201,90,0.15)';
 }
 
 const diseaseGrid = document.getElementById('diseaseGrid');
@@ -2272,7 +2272,7 @@ organOrderList.forEach((organKey, gi)=>{
     if(followup){
       const fu = document.createElement('div');
       fu.id = `followup-${item.did}`;
-      fu.style.cssText = 'display:none; grid-column:1/-1; background:rgba(212,175,55,0.08); border:1px dashed var(--gold); border-radius:8px; padding:10px 14px; margin:-2px 0 4px;';
+      fu.style.cssText = 'display:none; grid-column:1/-1; background:rgba(124,201,90,0.08); border:1px dashed var(--gold); border-radius:8px; padding:10px 14px; margin:-2px 0 4px;';
       fu.innerHTML = `<p style="margin-bottom:8px; color:var(--gold-soft); font-size:.9rem;">${followup.question}</p>
         <button type="button" class="btn secondary" style="padding:6px 16px; font-size:.85rem;" onclick="answerDiseaseFollowup('${item.name}', '${item.did}', true, this)">جی ہاں</button>
         <button type="button" class="btn secondary" style="padding:6px 16px; font-size:.85rem; margin-right:8px;" onclick="answerDiseaseFollowup('${item.name}', '${item.did}', false, this)">نہیں</button>`;
@@ -2353,7 +2353,7 @@ async function searchDiseaseViaAPI(){
       body: JSON.stringify({ diseaseName: q })
     }).catch(()=>{});
   }catch(e){}
-  resultBox.innerHTML = `<div style="border:1px solid var(--gold); border-radius:10px; padding:10px 14px; display:flex; justify-content:space-between; align-items:center; background:rgba(212,175,55,0.06);">
+  resultBox.innerHTML = `<div style="border:1px solid var(--gold); border-radius:10px; padding:10px 14px; display:flex; justify-content:space-between; align-items:center; background:rgba(124,201,90,0.06);">
     <span style="color:var(--text); font-size:.9rem;">📝 نوٹ کر لیا گیا: <b style="color:var(--gold-soft);">${q}</b> — آپ کی بتائی گئی دیگر علامات کے مطابق علاج تجویز کیا جائے گا۔</span>
     <button onclick="removeUnmatchedDisease('${q}', this)" style="background:none; border:none; color:#e07a5f; font-size:1.1rem; cursor:pointer;">✕</button>
   </div>`;
@@ -4513,7 +4513,7 @@ function herbalCauseBoxHtml(ctx){
   let ask = '';
   if(choice === undefined){
     const cur = c.causes[Math.min(ui.q, Math.max(0, c.causes.length - 2))];
-    ask = `<div style="border:1px solid var(--gold); border-radius:10px; padding:10px; margin-top:8px; text-align:center; background:rgba(212,175,55,0.08);">
+    ask = `<div style="border:1px solid var(--gold); border-radius:10px; padding:10px; margin-top:8px; text-align:center; background:rgba(124,201,90,0.08);">
       <div style="color:var(--gold); font-weight:700; margin-bottom:8px;">❓ ${escapeHtmlSearch(cur.question || ('کیا مریض کو ' + cur.cause + ' ہے؟'))}</div>
       <button class="btn" onclick="herbalAnswerCause('${ctx}', true)" style="border-radius:16px; padding:6px 22px; margin:0 4px;">ہاں</button>
       <button class="btn secondary" onclick="herbalAnswerCause('${ctx}', false)" style="border-radius:16px; padding:6px 22px; margin:0 4px;">نہیں</button>
@@ -4527,7 +4527,7 @@ function herbalCauseBoxHtml(ctx){
       : `✅ تصدیق شدہ وجہ: <b>${nm}</b> — علاج اسی کے مطابق`;
     ask = `<div style="margin-top:8px; color:var(--gold); font-size:.88rem;">${msg} <span onclick="herbalResetCause('${ctx}')" ${ui.auto === 'single' ? 'hidden' : ''} style="cursor:pointer; color:var(--gold-soft); font-size:.75rem; border:1px solid var(--gold-soft); border-radius:12px; padding:1px 8px; margin-right:6px; white-space:nowrap;">🔄 جواب بدلیں</span></div>`;
   }
-  return `<div id="hcBox-${ctx}" style="border:1px solid var(--gold-soft); border-radius:10px; padding:8px 12px; margin:0 0 12px; background:rgba(212,175,55,0.05);">
+  return `<div id="hcBox-${ctx}" style="border:1px solid var(--gold-soft); border-radius:10px; padding:8px 12px; margin:0 0 12px; background:rgba(124,201,90,0.05);">
     <div style="color:var(--gold); font-weight:700; font-size:.92rem;">📘 ${escapeHtmlSearch(ui.title || 'کتابوں کے مطابق اس مرض کی وجوہات')}${c.organ ? ' <span style="color:var(--gold-soft); font-weight:400; font-size:.8rem;">(عضو/تحریک: ' + escapeHtmlSearch(c.organ) + ')</span>' : ''}</div>
     ${list}${ask}
     <p style="color:var(--muted); font-size:.72rem; margin:6px 0 0;">وجوہات صرف سائٹ کی کتابوں سے لی گئی ہیں — حوالے پر ٹیپ کریں تو وہی صفحہ کھلے گا۔</p>
@@ -4941,7 +4941,7 @@ function herbalCausesCardHtml(c, title){
     return `<div style="border:1px dashed var(--border); border-radius:10px; padding:8px 12px; margin:0 0 12px; color:var(--muted); font-size:.82rem;">📘 سائٹ کی کتابوں میں اس مرض کی وجوہات واضح طور پر نہیں ملیں — انتخاب مرض کے نام کے مطابق کیا گیا ہے۔</div>`;
   }
   const srcLink = x=> x && x.src ? ` <span onclick="pmOpenPdfAtPage('${escapeJsAttr(x.src.fileName)}', ${x.src.pageNum}, '')" style="cursor:pointer; color:var(--gold-soft); font-size:.75rem; border-bottom:1px dotted var(--gold-soft); white-space:nowrap;">📘 ${escapeHtmlSearch(x.src.book)} — صفحہ ${escapeHtmlSearch(String(x.src.display))}</span>` : '';
-  return `<details open style="border:1px solid var(--gold-soft); border-radius:10px; padding:8px 12px; margin:0 0 12px; background:rgba(212,175,55,0.05);">
+  return `<details open style="border:1px solid var(--gold-soft); border-radius:10px; padding:8px 12px; margin:0 0 12px; background:rgba(124,201,90,0.05);">
     <summary style="cursor:pointer; color:var(--gold); font-weight:700; font-size:.92rem;">📘 ${escapeHtmlSearch(title || 'کتابوں کے مطابق اس مرض کی وجوہات')}${c.organ ? ' <span style="color:var(--gold-soft); font-weight:400; font-size:.8rem;">(عضو/تحریک: ' + escapeHtmlSearch(c.organ) + ')</span>' : ''}</summary>
     <ul style="margin:6px 18px 2px 0; padding:0; color:var(--text); font-size:.86rem; line-height:1.8;">
       ${c.causes.map(x=> `<li><b>${escapeHtmlSearch(x.cause)}</b>${x.detail ? ' — <span style="color:var(--muted);">' + escapeHtmlSearch(x.detail) + '</span>' : ''}${srcLink(x)}</li>`).join('')}
@@ -5928,7 +5928,7 @@ async function fetchAINuskha(btn){
         box.innerHTML = '<p style="color:#e07a5f;">کوئی مناسب دوا تجویز نہیں ہو سکی — اوپر دی گئی فہرست سے انتخاب کریں۔</p>';
       } else {
         if(info && info.isChild) data.selections = data.selections.filter(sel=> !/مسہل/.test(sel.name)); // بچے کو مسہل کبھی نہیں
-        let outHtml = `<div style="border:1px solid var(--gold); border-radius:10px; padding:14px; background:rgba(212,175,55,0.06);">`;
+        let outHtml = `<div style="border:1px solid var(--gold); border-radius:10px; padding:14px; background:rgba(124,201,90,0.06);">`;
         outHtml += `<h4 style="color:var(--gold); margin-bottom:8px;">تجویز کردہ دوا</h4>`;
         outHtml += homeAdviceHtml(window.homeRisk && window.homeRisk.advice);
         if(info && info.isChild) outHtml += `<p style="color:#e0a050; font-size:.85rem; margin:0 0 8px;">⚠ مریض بچہ ہے (${escapeHtmlSearch(info.age || '')}) — مسہل نہیں دی گئی۔ نیچے لکھی خوراک بڑوں کی ہے؛ بچے کی خوراک بہت کم ہوتی ہے، مقدار حکیم سے طے کرائیں۔</p>`;
@@ -5964,7 +5964,7 @@ async function fetchAINuskha(btn){
 
     if(deficiencyBox){
       if(data && Array.isArray(data.deficiencyQuestions) && data.deficiencyQuestions.length){
-        let qHtml = `<div style="border:1px solid var(--gold); border-radius:10px; padding:14px; background:rgba(212,175,55,0.06);">`;
+        let qHtml = `<div style="border:1px solid var(--gold); border-radius:10px; padding:14px; background:rgba(124,201,90,0.06);">`;
         qHtml += `<p style="color:var(--text); font-size:.9rem; margin-bottom:10px;">صحیح نشاندہی کے لیے چند مزید سوالات:</p>`;
         data.deficiencyQuestions.forEach((q, i)=>{
           qHtml += `<div style="margin-top:8px;">
@@ -5978,7 +5978,7 @@ async function fetchAINuskha(btn){
       } else if(!data || !data.deficiencies || !data.deficiencies.length){
         deficiencyBox.innerHTML = '<p style="color:var(--muted); font-size:.9rem;">بتائی گئی علامات سے کسی خاص چیز کی کمی کا واضح اشارہ نہیں ملا۔</p>';
       } else {
-        let defHtml = `<div style="border:1px solid var(--gold); border-radius:10px; padding:14px; background:rgba(212,175,55,0.06);">`;
+        let defHtml = `<div style="border:1px solid var(--gold); border-radius:10px; padding:14px; background:rgba(124,201,90,0.06);">`;
         data.deficiencies.forEach(d=>{
           defHtml += `<div style="margin-top:8px;">
             <b style="color:var(--gold-soft);">${d.category}</b>
@@ -5994,7 +5994,7 @@ async function fetchAINuskha(btn){
       if(!data || !data.deficiencyFoodSelections || !data.deficiencyFoodSelections.length){
         deficiencyFoodBox.innerHTML = '';
       } else {
-        let dfHtml = `<div style="border:1px solid var(--gold); border-radius:10px; padding:14px; background:rgba(212,175,55,0.06); margin-bottom:10px;">`;
+        let dfHtml = `<div style="border:1px solid var(--gold); border-radius:10px; padding:14px; background:rgba(124,201,90,0.06); margin-bottom:10px;">`;
         dfHtml += `<h4 style="color:var(--gold); margin-bottom:8px;">کمی دور کرنے کے لیے تجویز کردہ غذائیں (مزاج کے مطابق)</h4>`;
         data.deficiencyFoodSelections.forEach(sel=>{
           dfHtml += `<div style="margin-top:8px;">
@@ -6082,7 +6082,7 @@ async function submitDeficiencyAnswers(btn, count){
       if(!data || !data.deficiencies || !data.deficiencies.length){
         deficiencyBox.innerHTML = '<p style="color:var(--muted); font-size:.9rem;">جوابات سے بھی کسی خاص چیز کی کمی کا واضح اشارہ نہیں ملا۔</p>';
       } else {
-        let defHtml = `<div style="border:1px solid var(--gold); border-radius:10px; padding:14px; background:rgba(212,175,55,0.06);">`;
+        let defHtml = `<div style="border:1px solid var(--gold); border-radius:10px; padding:14px; background:rgba(124,201,90,0.06);">`;
         data.deficiencies.forEach(d=>{
           defHtml += `<div style="margin-top:8px;">
             <b style="color:var(--gold-soft);">${d.category}</b>
@@ -6098,7 +6098,7 @@ async function submitDeficiencyAnswers(btn, count){
       if(!data || !data.deficiencyFoodSelections || !data.deficiencyFoodSelections.length){
         deficiencyFoodBox.innerHTML = '';
       } else {
-        let dfHtml = `<div style="border:1px solid var(--gold); border-radius:10px; padding:14px; background:rgba(212,175,55,0.06); margin-bottom:10px;">`;
+        let dfHtml = `<div style="border:1px solid var(--gold); border-radius:10px; padding:14px; background:rgba(124,201,90,0.06); margin-bottom:10px;">`;
         dfHtml += `<h4 style="color:var(--gold); margin-bottom:8px;">کمی دور کرنے کے لیے تجویز کردہ غذائیں (مزاج کے مطابق)</h4>`;
         data.deficiencyFoodSelections.forEach(sel=>{
           dfHtml += `<div style="margin-top:8px;">
@@ -7861,7 +7861,7 @@ function pmAiSetMarkStatus(text){
   if(!el){
     el = document.createElement('div');
     el.id = 'pmAiMarkStatus';
-    el.style.cssText = 'position:absolute; top:58px; left:50%; transform:translateX(-50%); z-index:4; background:rgba(11,20,38,.92); color:var(--gold); border:1px solid var(--gold); border-radius:14px; padding:4px 12px; font-size:.8rem; max-width:92vw; text-align:center; pointer-events:none;';
+    el.style.cssText = 'position:absolute; top:58px; left:50%; transform:translateX(-50%); z-index:4; background:rgba(8,40,20,.92); color:var(--gold); border:1px solid var(--gold); border-radius:14px; padding:4px 12px; font-size:.8rem; max-width:92vw; text-align:center; pointer-events:none;';
     modal.appendChild(el);
   }
   el.textContent = text;
@@ -7946,7 +7946,7 @@ async function pmAiMarkPage(canvas, st, v){
   const lx = Math.min(canvas.width - tw - 12, x + w - tw - 12), ly = Math.max(fs + 6, y - pad - 10);
   ctx.fillStyle = 'rgba(230,160,0,0.95)';
   ctx.fillRect(lx - 8, ly - fs, tw + 16, fs + 12);
-  ctx.fillStyle = '#0b1426';
+  ctx.fillStyle = '#082814';
   ctx.fillText(label, lx, ly);
   ctx.restore();
   const block = document.getElementById('herbalFullPdfBlock');
@@ -8475,7 +8475,7 @@ function pmOpenTextViewer(fileName, pageNum, queryText){
   if(modal) modal.remove();
   modal = document.createElement('div');
   modal.id = 'pmTextViewer';
-  modal.style.cssText = 'position:fixed; inset:0; background:rgba(0,0,0,.92); z-index:1000; display:flex; flex-direction:column; background:#0b1426;';
+  modal.style.cssText = 'position:fixed; inset:0; background:rgba(0,0,0,.92); z-index:1000; display:flex; flex-direction:column; background:#082814;';
   const isRtl = t=> /[؀-ۿ]/.test(t);
   const esc = t=> String(t).replace(/[&<>"]/g, c=> ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
   function hl(text){
