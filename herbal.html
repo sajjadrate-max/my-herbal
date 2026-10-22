@@ -139,6 +139,22 @@ tr:nth-child(even){background:rgba(31,122,77,0.04);}
 #installBar .ib-text b{color:var(--gold);}
 #installBar .btn{padding:6px 16px; font-size:.95rem;}
 #installBar .ib-close{background:none; border:none; color:var(--muted); font-size:1.3rem; cursor:pointer; padding:0 4px;}
+/* "بیماری کے مزاج": ہر عضو الگ خانے میں، کھلی فہرست واضح طور پر الگ نظر آئے */
+#pmMizajOptionsList{border:none !important; background:transparent !important;}
+.pm-organ-group{scroll-margin-top:150px; margin:0 0 8px; border:1px solid var(--border); border-radius:10px; overflow:hidden; background:var(--card);}
+.pm-organ-group > summary{list-style:none; display:flex; align-items:center; justify-content:space-between; gap:8px;
+  padding:10px 14px; cursor:pointer; font-weight:700; color:var(--gold); background:var(--navy2);}
+.pm-organ-group > summary::-webkit-details-marker{display:none;}
+.pm-organ-group > summary::before{content:"◀"; font-size:.7rem; margin-left:8px; transition:transform .2s;}
+.pm-organ-group > summary > span:first-child{flex:1;}
+.pm-organ-count{font-size:.75rem; min-width:26px; text-align:center; padding:0 8px; border-radius:12px; background:var(--card); border:1px solid var(--border); color:var(--muted);}
+.pm-organ-group[open]{border:2px solid var(--gold); box-shadow:0 3px 12px rgba(31,122,77,.18);}
+.pm-organ-group[open] > summary{background:var(--gold); color:#fff;}
+.pm-organ-group[open] > summary::before{transform:rotate(-90deg);}
+.pm-organ-group[open] .pm-organ-count{background:rgba(255,255,255,.2); border-color:transparent; color:#fff;}
+.pm-organ-items{padding:4px 10px 10px;}
+.pm-organ-items .pm-mizaj-option{padding:8px 12px; margin-top:6px; border:1px solid var(--border); border-radius:8px; cursor:pointer; color:var(--text); background:var(--navy);}
+.pm-organ-items .pm-mizaj-option::before{content:"• "; color:var(--leaf);}
 footer{position:fixed; left:0; right:0; bottom:0; z-index:55; text-align:center; padding:10px; background:var(--gold); color:#eef7ea; border-top:1px solid var(--border); font-size:.85rem;}
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
@@ -7114,13 +7130,20 @@ function pmRenderMizajOptionsList(options){
   }
   html += orderedOrgans.map(organ=>{
     const safe = escapeHtmlSearch(organ);
-    const items = byOrgan[organ].map(n=> `<div class="pm-mizaj-option" data-val="${escapeHtmlSearch(n)}" style="padding:9px 14px; border-bottom:1px solid var(--border); cursor:pointer; color:var(--text);">${escapeHtmlSearch(n)}</div>`).join('');
-    return `<details style="border-bottom:1px solid var(--border);">
-      <summary style="padding:10px 14px; cursor:pointer; color:var(--gold); font-weight:700;">${safe}</summary>
-      <div>${items}</div>
+    const items = byOrgan[organ].map(n=> `<div class="pm-mizaj-option" data-val="${escapeHtmlSearch(n)}">${escapeHtmlSearch(n)}</div>`).join('');
+    return `<details class="pm-organ-group">
+      <summary><span>${safe}</span><span class="pm-organ-count">${byOrgan[organ].length}</span></summary>
+      <div class="pm-organ-items">${items}</div>
     </details>`;
   }).join('');
   listEl.innerHTML = html;
+  listEl.querySelectorAll('details.pm-organ-group').forEach(d=> d.addEventListener('toggle', ()=>{
+    if(!d.open) return;
+    listEl.querySelectorAll('details.pm-organ-group[open]').forEach(o=>{ if(o !== d) o.open = false; });
+    const hdr = document.querySelector('header');
+    const top = d.getBoundingClientRect().top + window.scrollY - (hdr ? hdr.offsetHeight : 0) - 8;
+    window.scrollTo({top, behavior:'smooth'});
+  }));
 }
 pmPopulateMizajSelect();
 // ایک نام منتخب ہونے کے بعد پوری فہرست چھپا کر صرف منتخب شدہ نام دکھائیں — "تبدیل کریں" دبانے پر دوبارہ فہرست کھلے
