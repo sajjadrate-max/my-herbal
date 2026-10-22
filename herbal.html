@@ -103,6 +103,14 @@ h2.section-title{color:var(--gold); font-size:1.8rem; border-bottom:2px solid va
 @media(max-width:800px){.mizaj-columns{grid-template-columns:1fr;}}
 .disease-grid{display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; margin:20px 0 10px;}
 @media(max-width:650px){.disease-grid{grid-template-columns:1fr 1fr;}}
+:root{--hdr-h:140px;}
+.big-search-wrap{position:sticky; top:calc(var(--hdr-h) + 4px); z-index:20; background:var(--navy); padding:8px 0 6px; margin-bottom:8px;}
+input.search.big-search{width:100%; margin:0; padding:13px 44px 13px 14px; font-size:1.05rem; border:2px solid var(--gold); border-radius:12px;
+  background:#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='22' height='22' viewBox='0 0 24 24' fill='none' stroke='%231f7a4d' stroke-width='2.5' stroke-linecap='round'%3E%3Ccircle cx='11' cy='11' r='7'/%3E%3Cpath d='M20 20l-4-4'/%3E%3C/svg%3E") no-repeat right 12px center;
+  box-shadow:0 3px 12px rgba(31,122,77,.15); color:var(--text); font-family:inherit;}
+input.search.big-search:focus{outline:none; box-shadow:0 0 0 4px rgba(31,122,77,.2);}
+.big-search-count{font-size:.82rem; color:var(--gold); text-align:center; margin-top:4px; min-height:1.2em; font-weight:700;}
+.pm-hit{background:#fff6c7 !important; border-color:#e0b100 !important;}
 input.search, select.search{width:100%; padding:12px 16px; border-radius:8px; border:1px solid var(--border);
   background:var(--card); color:var(--text); font-family:inherit; font-size:1rem; margin-bottom:16px;}
 .suggest-box{position:relative;}
@@ -240,7 +248,7 @@ footer{position:fixed; left:0; right:0; bottom:0; z-index:55; text-align:center;
     <div id="diseaseSectionWrap">
     <h3 style="color:var(--gold); margin-top:24px; padding-top:16px; border-top:1px solid var(--border); text-align:center;">تمام بیماریاں</h3>
     <div class="rule-box">نیچے اعضاء کے مطابق بیماریوں کے بٹن ہیں۔ جو عضو متاثر ہو اس کا بٹن دبا کر فہرست میں سے مریض کی بیماری/علامت منتخب کریں۔ جو بیماری یقینی طور پر موجود ہو صرف اسی کو منتخب کریں — جو معلوم نہ ہو یا یقین نہ ہو، اسے چھوڑ دیں، کوئی مسئلہ نہیں ہوگا۔</div>
-    <input class="search" id="diseaseSearch" placeholder="بیماری تلاش کریں..." onkeyup="filterDiseases()">
+    <div class="big-search-wrap"><input class="search big-search" id="diseaseSearch" type="search" placeholder="بیماری یا علامت تلاش کریں..." oninput="filterDiseases()"><div class="big-search-count" id="diseaseSearchCount"></div></div>
     <div id="diseaseApiSearchBox" style="display:none; margin:10px 0; text-align:center;">
       <p style="color:var(--muted); font-size:.85rem; margin-bottom:8px;">یہ بیماری فہرست میں نہیں ملی۔ اسے نوٹ کر کے جائزے کے لیے بھیج دیا جائے گا — علاج آپ کی بتائی گئی دیگر علامات کے مطابق تجویز ہوگا۔</p>
       <button class="btn" onclick="searchDiseaseViaAPI()" style="border-radius:20px; padding:8px 20px; font-size:.9rem;">نوٹ کر لیں</button>
@@ -332,6 +340,7 @@ footer{position:fixed; left:0; right:0; bottom:0; z-index:55; text-align:center;
   <h2 class="section-title">🩺 علامات سے وٹامنز/معدنیات کی کمی کا اندازہ</h2>
   <div class="result-card" id="deficiencyBox">
     <div class="note">نیچے جو علامات آپ کو ہوں وہ منتخب کریں — جتنی زیادہ علامات منتخب ہوں گی اندازہ اتنا ہی بہتر ہوگا۔ <b>یہ صرف ایک امکان بتاتا ہے، پکی تشخیص نہیں</b> — یقینی طور پر جاننے کے لیے بلڈ ٹیسٹ کروائیں۔</div>
+    <div class="big-search-wrap"><input class="search big-search" id="kamiListFilter" type="search" placeholder="علامت یا بیماری تلاش کریں..." oninput="kamiFilterList()"><div class="big-search-count" id="kamiListFilterCount"></div></div>
     <div id="deficiencySymptomList" style="display:flex; flex-direction:column; gap:8px; margin:12px 0;"></div>
     <div style="text-align:center; margin-top:10px;">
       <button class="btn" onclick="qmDeficiencyDiagnose()" style="border-radius:20px;">تشخیص کریں</button>
@@ -495,7 +504,7 @@ footer{position:fixed; left:0; right:0; bottom:0; z-index:55; text-align:center;
       <button class="btn secondary" type="button" style="padding:5px 14px; font-size:.8rem;" onclick="pmMizajShowList()">تبدیل کریں</button>
     </div>
     <div id="pmMizajListWrap">
-      <input class="search" id="pmMizajFilter" placeholder="فہرست میں سے تلاش کے لیے (اختیاری) لکھیں..." style="margin-bottom:8px;">
+      <div class="big-search-wrap"><input class="search big-search" id="pmMizajFilter" type="search" placeholder="بیماری یا علامت تلاش کریں..."><div class="big-search-count" id="pmMizajFilterCount"></div></div>
       <div id="pmMizajOptionsList" style="border:1px solid var(--border); border-radius:8px; background:var(--card); overflow:hidden;"></div>
     </div>
     <div id="pmMizajResults" style="margin-top:12px;"></div>
@@ -670,6 +679,10 @@ footer{position:fixed; left:0; right:0; bottom:0; z-index:55; text-align:center;
 
 // ---------- PAGE NAVIGATION ----------
 function showPage(id){
+  // بھاری فہرستیں صرف اپنا صفحہ کھلنے پر بنائیں
+  if(id === 'kami'){ const el = document.getElementById('deficiencySymptomList'); if(el && el.dataset.pending){ delete el.dataset.pending; herbalBuildKamiCatalog(el); } }
+  if(id === 'pdfmulti'){ const el = document.getElementById('pmMizajOptionsList'); if(el && el.dataset.pending){ delete el.dataset.pending; pmRenderMizajOptionsList(pmMizajOptions); } }
+  if(typeof herbalEnsureBooks === 'function' && id !== 'home') herbalEnsureBooks();
   document.querySelectorAll('.page-section').forEach(p=>p.classList.remove('active'));
   document.getElementById('page-'+id).classList.add('active');
   document.querySelectorAll('header nav a').forEach(a=>a.classList.remove('active'));
@@ -802,7 +815,7 @@ function qmDeficiencyInit(){
   const el = document.getElementById('deficiencySymptomList');
   if(!el || el.dataset.ready) return;
   el.dataset.ready = '1';
-  if(typeof herbalBuildKamiCatalog === 'function'){ herbalBuildKamiCatalog(el); return; }
+  if(typeof herbalBuildKamiCatalog === 'function'){ el.dataset.pending = '1'; return; } // صفحہ کھلنے پر بنے گی
   const shortDefName = n => n.replace(/^وٹامن\s*/, '').replace(/\s*\([^)]*\)$/, '').trim();
   const seen = new Set();
   const byOrgan = {};
@@ -2350,7 +2363,7 @@ function filterDiseases(){
   const q = document.getElementById('diseaseSearch').value.trim();
   const cat = document.getElementById('homeCatalog');
   if(cat){
-    const any = pmCatalogFilter(cat, q);
+    const any = pmCatalogFilter(cat, q, document.getElementById('diseaseSearchCount'));
     const apiBox = document.getElementById('diseaseApiSearchBox');
     if(apiBox) apiBox.style.display = (q && !any) ? 'block' : 'none';
     if(q && !any) document.getElementById('diseaseApiResultBox').innerHTML = '';
@@ -4429,6 +4442,7 @@ function herbalCausesForAi(c){ return (c && c.causes) ? c.causes.map(x=> x.cause
 // ---- وجوہات صرف کتابوں (PDF) سے: پہلے متعلقہ صفحات ڈھونڈیں، پھر ان کی اصل تصویر AI کو دیں ----
 async function herbalWaitLibrary(ms){
   const t0 = Date.now();
+  if(typeof herbalEnsureBooks === 'function') herbalEnsureBooks();
   while(!(typeof pmLibrary !== 'undefined' && pmLibrary.length) && Date.now() - t0 < ms) await new Promise(r=> setTimeout(r, 300));
 }
 async function herbalGetDocForCauses(fe){
@@ -6689,7 +6703,8 @@ function herbalCanLoadSiteFiles(){
     return true;
   }catch(e){ return false; }
 }
-(async function pmLoadBuiltinData(){
+// کتابوں کا ڈیٹا (~2.5 MB) صفحہ کھلتے ہی نہیں بلکہ صفحہ تیار ہونے کے بعد، یا جیسے ہی کسی کو ضرورت ہو، لوڈ ہوتا ہے
+async function pmLoadBuiltinData(){
   if(!herbalCanLoadSiteFiles()){ try{ pmRenderBookList(); }catch(e){} return; }
   // ریپو میں موجود ہر pm-data-*.json خود بخود (مستقل فہرست کے ساتھ ملا کر) — کوئی کتاب خود سے نہیں ہٹتی
   const fileList = await pmDiscoverBuiltinDataFiles();
@@ -6722,7 +6737,7 @@ function herbalCanLoadSiteFiles(){
   });
   pmSearchBtnEl.disabled = pmLibrary.length === 0;
   pmRenderBookList();
-})();
+}
 
 function pmNormalizeChar(ch){
   const code = ch.codePointAt(0);
@@ -8377,7 +8392,9 @@ function pmPopulateMizajSelect(){
   }));
   options.sort((a,b)=> a.localeCompare(b, 'ur'));
   pmMizajOptions = options;
-  pmRenderMizajOptionsList(options);
+  // فہرست کا HTML صفحہ کھلنے پر بنتا ہے (showPage) تاکہ Home جلدی کھلے
+  const listEl0 = document.getElementById('pmMizajOptionsList');
+  if(listEl0) listEl0.dataset.pending = '1';
 }
 // فہرست کو عضو کے مطابق accordion کی صورت میں دکھاتے ہیں (اسی طرح جیسے "میڈیکل کے مطابق" صفحے پر) —
 // ہر آپشن اب بھی class="pm-mizaj-option" data-val="..." ہی رکھتا ہے، اس لیے نیچے کا کلک لِسنر اور پوری تلاش کی منطق بغیر کسی تبدیلی کے کام کرتی رہتی ہے۔
@@ -8401,9 +8418,20 @@ function pmMizajGroups(options){
   return orderedOrgans.map(organ=> ({organ, dis:byOrgan[organ].dis, sym:byOrgan[organ].sym}));
 }
 // فہرست کے نام کے پیچھے diseaseList کی اصل اندراجات (ایک کیے گئے ڈبل نام سمیت)
+const PM_MEMBER_CACHE = {};
 function pmMizajMembers(n){
+  if(PM_MEMBER_CACHE[n]) return PM_MEMBER_CACHE[n];
   const names = new Set([n].concat(PM_MIZAJ_ALIASES[n] || []));
-  return diseaseList.filter(d=> names.has(d.name)).map(d=> d.name);
+  return (PM_MEMBER_CACHE[n] = diseaseList.filter(d=> names.has(d.name)).map(d=> d.name));
+}
+// Home: فہرست کے نام ← چھپے ہوئے چیک باکس کی ids (ایک بار بنائیں)
+let HOME_IDS_BY_NAME = null;
+function homeIdsFor(n){
+  if(!HOME_IDS_BY_NAME){
+    HOME_IDS_BY_NAME = {};
+    diseaseIds.forEach(d=> (HOME_IDS_BY_NAME[d.name] = HOME_IDS_BY_NAME[d.name] || []).push(d.id));
+  }
+  return [].concat(...pmMizajMembers(n).map(m=> HOME_IDS_BY_NAME[m] || []));
 }
 // پوری فہرست کا HTML — opts.check(n) دیا ہو تو ہر نام کے ساتھ چیک باکس (Home، کمی کی تشخیص)
 function pmCatalogHtml(options, opts){
@@ -8450,21 +8478,28 @@ function pmCatalogUpdatePicked(listEl){
   });
 }
 // فلٹر: نام یا دوسرے نام میں لفظ ہو تو دکھائیں؛ کچھ نہ ملے تو false
-function pmCatalogFilter(listEl, query){
+function pmCatalogFilter(listEl, query, countEl){
   const q = pmNormalizeWord(query || '');
-  let any = false;
+  let any = false, hits = 0;
   listEl.querySelectorAll('details.pm-organ-group').forEach(d=>{
     let groupAny = false;
     d.querySelectorAll('.pm-mizaj-option').forEach(r=>{
       const n = r.dataset.val;
       const ok = !q || [n].concat(pmMizajOtherNames(n)).some(x=> pmNormalizeWord(x).indexOf(q) !== -1);
       r.style.display = ok ? '' : 'none';
-      if(ok) groupAny = true;
+      r.classList.toggle('pm-hit', !!q && ok);
+      if(ok){ groupAny = true; if(q) hits++; }
     });
     d.style.display = groupAny ? '' : 'none';
-    if(q && groupAny) d.open = true;
+    d.querySelectorAll('.pm-sub-head').forEach(h=>{
+      let el = h.nextElementSibling, vis = false;
+      while(el && !el.classList.contains('pm-sub-head')){ if(el.classList.contains('pm-mizaj-option') && el.style.display !== 'none') vis = true; el = el.nextElementSibling; }
+      h.style.display = vis ? '' : 'none';
+    });
+    d.open = !!(q && groupAny);
     if(groupAny) any = true;
   });
+  if(countEl) countEl.textContent = q ? (hits ? `«${query.trim()}» — ${hits} نتائج ملے (پیلے رنگ میں)` : `«${query.trim()}» — کچھ نہیں ملا`) : '';
   return any;
 }
 function pmRenderMizajOptionsList(options){
@@ -8487,7 +8522,7 @@ function homeCatalogSync(){
   if(!el) return;
   el.querySelectorAll('.pm-check-row').forEach(r=>{
     const n = r.dataset.val, cb = r.querySelector('input');
-    const ids = diseaseIds.filter(d=> pmMizajMembers(n).includes(d.name)).map(d=> d.id);
+    const ids = homeIdsFor(n);
     cb.checked = ids.length ? ids.some(id=> document.getElementById(id) && document.getElementById(id).checked) : window.homeExtraSymptoms.has(n);
     r.classList.toggle('checked', cb.checked);
   });
@@ -8495,7 +8530,7 @@ function homeCatalogSync(){
 }
 function homeCatalogToggle(cb){
   const row = cb.closest('.pm-check-row'), n = row.dataset.val;
-  const ids = diseaseIds.filter(d=> pmMizajMembers(n).includes(d.name)).map(d=> d.id);
+  const ids = homeIdsFor(n);
   if(ids.length){
     ids.forEach(id=>{
       const h = document.getElementById(id);
@@ -8518,8 +8553,8 @@ function homeCatalogToggle(cb){
   grid.style.display = 'none';
   // اضافی سوال (مثلاً لیکوریا کے ساتھ جلن) نئے ڈبے میں اسی نام کے نیچے
   el.querySelectorAll('.pm-check-row').forEach(r=>{
-    diseaseIds.filter(d=> pmMizajMembers(r.dataset.val).includes(d.name)).forEach(d=>{
-      const fu = document.getElementById('followup-' + d.id);
+    homeIdsFor(r.dataset.val).forEach(id=>{
+      const fu = document.getElementById('followup-' + id);
       if(fu) r.after(fu);
     });
   });
@@ -8527,6 +8562,18 @@ function homeCatalogToggle(cb){
   homeCatalogSync();
 })();
 // ---------- کمی کی تشخیص: یہی مکمل فہرست ----------
+function kamiFilterList(){
+  const el = document.getElementById('deficiencySymptomList'), f = document.getElementById('kamiListFilter');
+  if(el && f) pmCatalogFilter(el, f.value, document.getElementById('kamiListFilterCount'));
+}
+// چپکی سرچ پٹی ہیڈر کے بالکل نیچے رہے
+function herbalSetHeaderHeight(){
+  const h = document.querySelector('header');
+  if(h) document.documentElement.style.setProperty('--hdr-h', h.offsetHeight + 'px');
+}
+herbalSetHeaderHeight();
+window.addEventListener('resize', herbalSetHeaderHeight);
+window.addEventListener('load', herbalSetHeaderHeight);
 function herbalBuildKamiCatalog(el){
   el.style.display = 'block';
   const short = n=> n.replace(/^وٹامن\s*/, '').replace(/\s*\([^)]*\)$/, '').trim();
@@ -8609,10 +8656,7 @@ function pmMizajShowList(){
   });
   if(filterEl){
     filterEl.addEventListener('input', ()=>{
-      const q = pmNormalizeWord(filterEl.value);
-      if(!q){ pmRenderMizajOptionsList(pmMizajOptions); return; }
-      const filtered = pmMizajOptions.filter(o=> [o].concat(pmMizajOtherNames(o)).some(n=> pmNormalizeWord(n).indexOf(q) !== -1));
-      pmRenderMizajOptionsList(filtered);
+      pmCatalogFilter(listEl, filterEl.value, document.getElementById('pmMizajFilterCount'));
     });
   }
 })();
@@ -10303,7 +10347,7 @@ const HZ_BUILTIN_DATA_FILES = [
   'hz-data-khawas-ul-mufradat-asabi.json',
   'hz-data-kushta-jaat.json'
 ];
-(async function hzLoadBuiltinData(){
+async function hzLoadBuiltinData(){
   if(!herbalCanLoadSiteFiles()){ try{ hzRenderBookList(); }catch(e){} return; }
   for(const url of HZ_BUILTIN_DATA_FILES){
     try{
@@ -10318,7 +10362,16 @@ const HZ_BUILTIN_DATA_FILES = [
   }
   hzSearchBtnEl.disabled = hzLibrary.length === 0;
   hzRenderBookList();
-})();
+}
+let herbalBooksPromise = null;
+function herbalEnsureBooks(){
+  if(!herbalBooksPromise) herbalBooksPromise = Promise.all([pmLoadBuiltinData(), hzLoadBuiltinData()]).catch(()=>{});
+  return herbalBooksPromise;
+}
+window.addEventListener('load', ()=>{
+  const go = ()=> herbalEnsureBooks();
+  if('requestIdleCallback' in window) requestIdleCallback(go, {timeout:4000}); else setTimeout(go, 2500);
+});
 function hzRenderBookList(){
   const el = document.getElementById('hzBookListEl');
   if(!el) return;
