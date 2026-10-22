@@ -496,8 +496,8 @@ function setupPicker(){
     const opt=(arr,def,lab)=>arr.map(v=>`<option value="${v}" ${v===def?'selected':''}>${lab(v)}</option>`).join('');
     const sched=it.tablet?`<div class="pk-sched">
         <label>ایک وقت میں<select class="pk-per">${opt([0.5,1,2,3,4],1,v=>v===0.5?'آدھی گولی':v+' گولی')}</select></label>
-        <label>دن میں<select class="pk-times">${opt([1,2,3,4],2,v=>v+' بار')}</select></label>
-        <label>کتنے دن<select class="pk-days">${opt([1,2,3,5,7,10,14,15,20,21,30,45,60,90],7,v=>v+' دن')}</select></label>
+        <label>دن میں<select class="pk-times">${opt([1,2,3,4],3,v=>v+' بار')}</select></label>
+        <label>کتنے دن<select class="pk-days">${opt([1,2,3,5,7,10,14,15,20,21,30,45,60,90],3,v=>v+' دن')}</select></label>
       </div><div class="pk-sum"></div>`:'';
     r.innerHTML=`<div class="pk-name"><b>${esc(it.name)}</b><button type="button" class="x" aria-label="ہٹائیں">×</button></div>${sched}
       <div class="pk-calc"><label>${it.tablet?'کل گولیاں':'تعداد'}<input class="pk-qty" type="number" min="0" step="any" inputmode="decimal" value="1"></label><span>×</span><label>${it.tablet?'فی گولی':'ریٹ'}<input class="pk-price" type="number" min="0" step="any" inputmode="decimal" value="${esc(it.price)}" placeholder="0"></label><span>=</span><b class="pk-line"></b></div>`;
