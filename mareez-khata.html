@@ -95,6 +95,11 @@ label{display:flex;flex-direction:column;gap:2px;font-weight:600;font-size:.92re
 .pk-calc label{font-size:.8rem}
 .pk-calc span{padding-bottom:8px;color:var(--muted)}
 .pk-calc .pk-line{padding-bottom:8px;white-space:nowrap}
+.pk-sched{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin:6px 0 2px}
+.pk-sched label{font-size:.78rem}
+.pk-sched select{width:100%;padding:6px 4px}
+.pk-sum{font-size:.85rem;color:var(--accent);text-align:center;margin:2px 0 4px}
+.pk-qty[readonly]{background:var(--accent-soft);font-weight:700}
 .pk-total{font-size:1rem;text-align:center;padding-top:4px}
 .pk-list{background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:8px;max-height:60vh;overflow:auto}
 .pk-list input{margin-bottom:6px}
@@ -435,15 +440,15 @@ function patientForm(p){
     if(p){Object.assign(p,fd);delete p.sample}
     else{t={id:uid(),created:today(),given:[],followups:[],...fd};db.patients.push(t);state.patientId=t.id}
     t.given=t.given||[];
-    picked.forEach(r=>t.given.push({id:uid(),date:today(),medId:r.id,medName:r.name,qty:r.qty+(r.formula?' گولی':''),dose:r.dose,days:'',cost:r.cost,price:r.price,note:''}));
+    picked.forEach(r=>t.given.push({id:uid(),date:today(),medId:r.id,medName:r.name,qty:r.qty+(r.tablet?' گولی':''),dose:r.dose,days:r.days||'',cost:r.cost,price:r.price,note:''}));
     save();toast(picked.length?`محفوظ ہو گیا · ${picked.length} دوائیں درج`:'محفوظ ہو گیا');
   });
   setupPicker();
 }
 /* ---------- ادویات چننے کا ڈبہ: دوا/نسخہ چنیں، تعداد لکھیں، قیمت خود بنے ---------- */
 function findItem(id){
-  const m=db.meds.find(x=>x.id===id);if(m)return {id:m.id,name:m.name,cost:m.cost||'',price:m.price||'',dose:m.dose||'',formula:false};
-  const f=(db.formulas||[]).find(x=>x.id===id);if(f)return {id:f.id,name:f.name,cost:f.cost||'',price:f.price||'',dose:'',formula:true};
+  const m=db.meds.find(x=>x.id===id);if(m)return {id:m.id,name:m.name,cost:m.cost||'',price:m.price||'',dose:m.dose||'',formula:false,tablet:/گولی|کیپسول|ٹیبلٹ/.test(m.type||'')};
+  const f=(db.formulas||[]).find(x=>x.id===id);if(f)return {id:f.id,name:f.name,cost:f.cost||'',price:f.price||'',dose:'',formula:true,tablet:true};
   return null;
 }
 // ترتیب: 1 نمبر سے 6 نمبر تک کے نسخے، آخر میں باقی دوائیں
@@ -460,7 +465,16 @@ function itemOptions(sel){
 function pickerRows(){
   return [...document.querySelectorAll('#pk-rows .pk-row')].map(r=>{const it=findItem(r.dataset.id);if(!it)return null;
     const q=num(r.querySelector('.pk-qty').value)||0,u=num(r.querySelector('.pk-price').value);
+    const sc=pkSchedule(r);
+    if(sc){it.dose=sc.dose;it.days=sc.days}
     return {...it,qty:String(q),price:String(Math.round(q*u*100)/100),cost:it.cost!==''?String(Math.round(q*num(it.cost)*100)/100):''}}).filter(r=>r&&num(r.qty)>0);
+}
+// گولیوں کا حساب: ایک وقت میں کتنی × دن میں کتنی بار × کتنے دن = کل گولیاں (خود نہ لکھنا پڑے)
+function pkSchedule(r){
+  const s=r.querySelector('.pk-sched');if(!s)return null;
+  const per=num(s.querySelector('.pk-per').value),times=num(s.querySelector('.pk-times').value),days=num(s.querySelector('.pk-days').value);
+  const perTxt=per===0.5?'آدھی':String(per);
+  return {per,times,days,total:Math.round(per*times*days*100)/100,dose:`${perTxt} گولی، دن میں ${times} بار (${['','صبح','صبح، شام','صبح، دوپہر، شام','ہر 6 گھنٹے بعد'][times]||''})`,days:String(days)};
 }
 function setupPicker(){
   const openB=document.getElementById('pk-open'),list=document.getElementById('pk-list'),qi=document.getElementById('pk-q'),box=document.getElementById('pk-items'),rows=document.getElementById('pk-rows'),tot=document.getElementById('pk-total');
@@ -471,17 +485,26 @@ function setupPicker(){
   openB.onclick=()=>{list.hidden=false;openB.hidden=true;draw();qi.focus()};
   qi.oninput=draw;
   const update=()=>{let sale=0,cost=0,hasCost=false;
-    rows.querySelectorAll('.pk-row').forEach(r=>{const it=findItem(r.dataset.id);const q=num(r.querySelector('.pk-qty').value),u=num(r.querySelector('.pk-price').value);r.querySelector('.pk-line').textContent=rs(Math.round(q*u*100)/100);sale+=q*u;if(it&&it.cost!==''){cost+=q*num(it.cost);hasCost=true}});
+    rows.querySelectorAll('.pk-row').forEach(r=>{const sc=pkSchedule(r);if(sc){r.querySelector('.pk-qty').value=sc.total;r.querySelector('.pk-sum').innerHTML=`کل <b>${sc.total}</b> گولیاں = ${sc.per===0.5?'آدھی':sc.per} × ${sc.times} بار × ${sc.days} دن`}
+      const it=findItem(r.dataset.id);const q=num(r.querySelector('.pk-qty').value),u=num(r.querySelector('.pk-price').value);r.querySelector('.pk-line').textContent=rs(Math.round(q*u*100)/100);sale+=q*u;if(it&&it.cost!==''){cost+=q*num(it.cost);hasCost=true}});
     sale=Math.round(sale*100)/100;cost=Math.round(cost*100)/100;
     tot.hidden=!rows.children.length;
     tot.innerHTML=`کل رقم: <b>${rs(sale)}</b>${hasCost?` · خرید ${rs(cost)} · <span class="profit">منافع ${rs(Math.round((sale-cost)*100)/100)}</span>`:''}`};
   const add=id=>{const it=findItem(id);if(!it)return;
-    const ex=rows.querySelector(`[data-id="${it.id}"]`);if(ex){const q=ex.querySelector('.pk-qty');q.value=num(q.value)+1;update();return}
+    const ex=rows.querySelector(`[data-id="${it.id}"]`);if(ex){if(!ex.querySelector('.pk-sched')){const q=ex.querySelector('.pk-qty');q.value=num(q.value)+1}update();ex.scrollIntoView({block:'center'});return}
     const r=document.createElement('div');r.className='pk-row';r.dataset.id=it.id;
-    r.innerHTML=`<div class="pk-name"><b>${esc(it.name)}</b><button type="button" class="x" aria-label="ہٹائیں">×</button></div>
-      <div class="pk-calc"><label>${it.formula?'گولیاں':'تعداد'}<input class="pk-qty" type="number" min="0" step="any" inputmode="decimal" value="1"></label><span>×</span><label>${it.formula?'فی گولی':'ریٹ'}<input class="pk-price" type="number" min="0" step="any" inputmode="decimal" value="${esc(it.price)}" placeholder="0"></label><span>=</span><b class="pk-line"></b></div>`;
+    const opt=(arr,def,lab)=>arr.map(v=>`<option value="${v}" ${v===def?'selected':''}>${lab(v)}</option>`).join('');
+    const sched=it.tablet?`<div class="pk-sched">
+        <label>ایک وقت میں<select class="pk-per">${opt([0.5,1,2,3,4],1,v=>v===0.5?'آدھی گولی':v+' گولی')}</select></label>
+        <label>دن میں<select class="pk-times">${opt([1,2,3,4],2,v=>v+' بار')}</select></label>
+        <label>کتنے دن<select class="pk-days">${opt([1,2,3,5,7,10,14,15,20,21,30,45,60,90],7,v=>v+' دن')}</select></label>
+      </div><div class="pk-sum"></div>`:'';
+    r.innerHTML=`<div class="pk-name"><b>${esc(it.name)}</b><button type="button" class="x" aria-label="ہٹائیں">×</button></div>${sched}
+      <div class="pk-calc"><label>${it.tablet?'کل گولیاں':'تعداد'}<input class="pk-qty" type="number" min="0" step="any" inputmode="decimal" value="1"></label><span>×</span><label>${it.tablet?'فی گولی':'ریٹ'}<input class="pk-price" type="number" min="0" step="any" inputmode="decimal" value="${esc(it.price)}" placeholder="0"></label><span>=</span><b class="pk-line"></b></div>`;
     r.querySelector('.x').onclick=()=>{r.remove();update()};
     r.querySelectorAll('input').forEach(i=>i.oninput=update);
+    r.querySelectorAll('select').forEach(i=>i.onchange=update);
+    if(it.tablet){const q=r.querySelector('.pk-qty');q.readOnly=true;q.title='اوپر سے خود حساب ہوتا ہے'}
     rows.appendChild(r);update()};
 }
 function medOptions(sel){
