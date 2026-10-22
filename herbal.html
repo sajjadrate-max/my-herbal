@@ -155,6 +155,8 @@ tr:nth-child(even){background:rgba(31,122,77,0.04);}
 .pm-organ-items{padding:4px 10px 10px;}
 .pm-organ-items .pm-mizaj-option{padding:8px 12px; margin-top:6px; border:1px solid var(--border); border-radius:8px; cursor:pointer; color:var(--text); background:var(--navy);}
 .pm-organ-items .pm-mizaj-option::before{content:"• "; color:var(--leaf);}
+.pm-organ-items .pm-symptom{background:var(--card); border-style:dashed;}
+.pm-sym-tag{font-size:.65rem; margin-right:8px; padding:0 6px; border-radius:8px; background:var(--navy2); color:var(--muted); border:1px solid var(--border);}
 footer{position:fixed; left:0; right:0; bottom:0; z-index:55; text-align:center; padding:10px; background:var(--gold); color:#eef7ea; border-top:1px solid var(--border); font-size:.85rem;}
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
@@ -7078,6 +7080,198 @@ const PM_MIZAJ_ORGAN_FIX = {
   'مسلسل لڑکیاں ہونا': 'رحم و حیض (خواتین)', 'حملِ ضائع ہونا': 'رحم و حیض (خواتین)',
   'کثرتِ حیض': 'رحم و حیض (خواتین)'
 };
+// بیماریوں کے علاوہ ہر عضو کی عام علامات — ان کا مزاج نیچے کتابوں کی تلاش سے دکھایا جاتا ہے
+const PM_MIZAJ_EXTRA_SYMPTOMS = {
+ "سر": [
+  "چکر آنا",
+  "سر بھاری رہنا",
+  "سر میں جلن",
+  "سر کے پچھلے حصے میں درد",
+  "کنپٹیوں میں درد",
+  "نیند زیادہ آنا",
+  "گھبراہٹ اور بے چینی",
+  "وہم اور وسوسے",
+  "غصہ زیادہ آنا",
+  "ذہنی دباؤ"
+ ],
+ "آنکھ": [
+  "آنکھوں میں درد",
+  "آنکھوں کی سرخی",
+  "دھندلا نظر آنا",
+  "آنکھوں کی سوجن",
+  "پپوٹوں کا بھاری ہونا",
+  "روشنی سے آنکھیں چندھیانا",
+  "آنکھوں کا پیلا ہونا",
+  "آنکھ پھڑکنا",
+  "کالا موتیا",
+  "بھینگا پن"
+ ],
+ "کان": [
+  "کان میں میل جمنا",
+  "کان میں خارش",
+  "کان بند ہونا"
+ ],
+ "ناک": [
+  "ناک بند ہونا",
+  "ناک بہنا",
+  "ناک کی ہڈی بڑھنا",
+  "ناک کے پردوں کی سوزش (سائنس)",
+  "ناک میں خارش",
+  "بار بار زکام ہونا",
+  "الرجی سے چھینکیں"
+ ],
+ "ہونٹ": [
+  "ہونٹوں کا کالا ہونا",
+  "ہونٹوں کا نیلا ہونا"
+ ],
+ "منہ و زبان": [
+  "منہ کا خشک رہنا",
+  "منہ کا کڑوا ذائقہ",
+  "منہ کا کھٹا ذائقہ",
+  "منہ کا پورا نہ کھلنا",
+  "زبان پر سفید تہہ",
+  "زبان پر پیلی تہہ"
+ ],
+ "دانت و مسوڑھے": [
+  "دانتوں میں ٹھنڈا گرم لگنا",
+  "دانتوں میں کیڑا لگنا",
+  "دانتوں کا پیلا ہونا",
+  "مسوڑھوں میں پیپ (پائیوریا)"
+ ],
+ "گلا": [
+  "گلا خراب ہونا",
+  "گلے میں خراش",
+  "نگلنے میں دشواری",
+  "گلے کے غدود کا بڑھنا (ٹانسلز)",
+  "گلے میں بلغم اٹکنا",
+  "گلے کی خشکی",
+  "گلہڑ (تھائیرائیڈ)"
+ ],
+ "پھیپھڑے و دمہ": [
+  "سانس لینے میں دقت",
+  "سینے میں بلغم جمنا",
+  "بلغمی کھانسی",
+  "سانس میں سیٹی کی آواز",
+  "کالی کھانسی",
+  "پسلیوں میں درد"
+ ],
+ "دل": [
+  "سینے پر بوجھ",
+  "بائیں بازو میں درد",
+  "تھوڑی محنت سے دل کا دھڑکنا"
+ ],
+ "پستان": [
+  "پستان میں گلٹی",
+  "پستان سے پانی آنا",
+  "پستان میں درد"
+ ],
+ "معدہ": [
+  "تیزابیت",
+  "جی متلانا",
+  "پیٹ پھولنا (اپھارہ)",
+  "ڈکار زیادہ آنا",
+  "پیٹ میں درد",
+  "معدے میں بھاری پن"
+ ],
+ "آنتیں و مقعد": [
+  "قبض",
+  "پرانی قبض",
+  "پیٹ میں گیس",
+  "پیٹ میں گڑگڑاہٹ",
+  "مقعد میں خارش",
+  "مقعد میں جلن",
+  "پاخانے کا رنگ کالا ہونا",
+  "آنتوں کی حساسیت (آئی بی ایس)",
+  "اپینڈکس"
+ ],
+ "جگر و تلی": [
+  "دائیں پسلی کے نیچے درد",
+  "پتے کی سوزش",
+  "پیٹ میں پانی بھرنا (جلندر)"
+ ],
+ "گردہ و مثانہ": [
+  "پیشاب کم آنا",
+  "پیشاب رک رک کر آنا",
+  "پیشاب میں جھاگ",
+  "پیشاب کا رنگ گہرا پیلا",
+  "کمر کے نچلے حصے میں گردوں کا درد",
+  "پیشاب میں پیپ",
+  "رات کو بار بار پیشاب آنا",
+  "پیشاب پر قابو نہ رہنا"
+ ],
+ "خصیہ و عضوِ تناسل": [
+  "مردانہ بانجھ پن",
+  "شہوت کی کمی"
+ ],
+ "رحم و حیض (خواتین)": [
+  "ماہواری میں درد",
+  "ماہواری کا بے قاعدہ آنا",
+  "ماہواری کا دیر سے آنا",
+  "ماہواری کا جلدی آنا",
+  "زنانہ بانجھ پن",
+  "حمل نہ ٹھہرنا",
+  "رحم کی رسولی (فائبرائیڈ)",
+  "بیضہ دانی کی رسولیاں (پی سی او ایس)",
+  "ماہواری بند ہونے کی عمر کی تکالیف"
+ ],
+ "جوڑ، ہڈیاں و پٹھے": [
+  "گردن میں درد",
+  "کندھے کا درد",
+  "ایڑی میں درد",
+  "ہاتھ پاؤں میں اینٹھن",
+  "پٹھوں میں درد",
+  "جوڑوں کا اکڑنا",
+  "ہڈیوں کا بھربھرا پن",
+  "گنٹھیا"
+ ],
+ "جلد، بال و ناخن": [
+  "کیل مہاسے",
+  "چھائیاں",
+  "ایگزیما",
+  "جلد پر سرخ دھبے",
+  "پسینے کی بدبو",
+  "ایڑیاں پھٹنا",
+  "بالوں کا سفید ہونا",
+  "سر میں جوئیں",
+  "جلد کا کالا پڑنا",
+  "مسے"
+ ],
+ "عمومی/پورے جسم کی بیماریاں": [
+  "وزن کم ہونا",
+  "پسینہ زیادہ آنا",
+  "سردی زیادہ لگنا",
+  "گرمی زیادہ لگنا",
+  "ہاتھ پاؤں ٹھنڈے رہنا",
+  "پورے جسم میں درد",
+  "بار بار بخار ہونا",
+  "پرانا بخار",
+  "سستی اور کاہلی",
+  "الرجی"
+ ]
+};
+// علامت جو پہلے سے موجود کسی بیماری/علامت جیسی ہے — الگ نہ دکھائیں، اسی میں شامل سمجھیں
+const PM_SYMPTOM_SAME = {
+  'چکر آنا': 'چکر آنا یا سر گھومنا', 'نیند میں خلل یا بے خوابی': 'بےخوابی', 'یادداشت کا کمزور ہونا': 'بھول جانا', 'ذہنی دباؤ': 'ڈپریشن',
+  'آنکھوں کی سرخی': 'آنکھوں میں جلن یا لالی',
+  'ذائقہ یا سونگھنے کی حس کم ہونا': 'سونگھنے کی قوت کم ہونا', 'الرجی سے چھینکیں': 'چھینکیں آنا',
+  'زبان کی سوزش یا جلن': 'زبان کی جلن',
+  'مسوڑھوں یا ناک سے بلاوجہ خون آنا': 'مسوڑھوں سے خون آنا',
+  'تھوڑی محنت سے دل کا دھڑکنا': 'دل کی دھڑکن تیز ہونا یا سانس پھولنا',
+  'بھوک میں کمی': 'بھوک نہ لگنا', 'ہاضمہ خراب رہنا': 'بدہضمی', 'بار بار دست (اسہال) آنا': 'دست', 'پیٹ میں گیس': 'ریاح گیس معدہ',
+  'پٹھوں کا کمزور ہونا': 'پٹھوں کی کمزوری', 'جوڑوں میں درد یا سوجن': 'جوڑوں کا درد و سوزش', 'ہڈیوں اور جوڑوں کا درد': 'جوڑوں کا درد',
+  'ہاتھ پاؤں کا کپکپانا (رعشہ)': 'رعشہ', 'پٹھوں میں کھنچاؤ': 'پٹھوں کا کھچاؤ', 'گنٹھیا': 'جوڑوں کا درد',
+  'بالوں کا بہت زیادہ گرنا': 'بالوں کا جھڑنا و ٹوٹنا', 'جلد پر خارش یا دانے': 'خارش', 'جلد کا خشک و کھردرا ہونا': 'جلدی خشکی',
+  'بالوں اور ناخنوں کا کمزور ہونا': 'ناخنوں کا کمزور ہو کر ٹوٹنا',
+  'ہاتھ پاؤں میں جھنجھناہٹ یا سن ہونا': 'ہاتھ پاؤں کا سن ہونا', 'ہاتھ پاؤں پر سوجن': 'ہاتھ پاؤں میں سوجن',
+  'مٹی، برف یا غیر غذائی چیزیں کھانے کو دل چاہنا': 'مٹی کھانے کی خواہش'
+};
+const PM_SYMPTOM_ORGAN = {};   // علامت ← عضو
+const PM_SYMPTOM_DEFICIENCY = {}; // علامت ← کن وٹامن/معدنیات کی کمی میں
+// ملتے جلتے نام پہچاننے کے لیے: اسپیس، ے/ی، ہ کی شکلیں اور الفاظ کی ترتیب نظر انداز
+function pmMizajNameKey(n){
+  return pmNormalizeWord(String(n).replace(/\([^)]*\)/g, ' ')).replace(/[ےۓ]/g, 'ی').replace(/[ہۃة]/g, 'ه')
+    .split(/\s+/).filter(w=> w && !['کی','کا','کے','میں','اور','و','سے','کو','یا','پر'].includes(w)).sort().join('');
+}
 function pmPopulateMizajSelect(){
   const listEl = document.getElementById('pmMizajOptionsList');
   if(!listEl) return;
@@ -7090,6 +7284,22 @@ function pmPopulateMizajSelect(){
     seen.add(name);
     options.push(name);
   });
+  // علامات: پہلے "کمی کی تشخیص" والی (عضو کے ساتھ)، پھر اوپر کی فہرست — جو پہلے سے موجود ہو وہ دوبارہ نہیں
+  const keys = new Map(); // نام کی کلید ← دکھایا جانے والا نام
+  diseaseList.forEach(d=> keys.set(pmMizajNameKey(d.name), PM_MIZAJ_ALIAS_OF[d.name] || d.name));
+  const addSymptom = (t, organ, vit)=>{
+    const k = pmMizajNameKey(t);
+    if(!k) return;
+    let target = PM_SYMPTOM_SAME[t] || keys.get(k) || t;
+    target = PM_MIZAJ_ALIAS_OF[target] || target;
+    // وٹامن/معدنیات کی کمی کی معلومات اسی نام کے ساتھ جوڑیں جو فہرست میں دکھایا جاتا ہے
+    if(vit){ const arr = (PM_SYMPTOM_DEFICIENCY[target] = PM_SYMPTOM_DEFICIENCY[target] || []); if(!arr.includes(vit)) arr.push(vit); }
+    if(target !== t || seen.has(t)) return;
+    keys.set(k, t); seen.add(t); options.push(t);
+    PM_SYMPTOM_ORGAN[t] = organ;
+  };
+  if(typeof QM_DEFICIENCY_DATA !== 'undefined') QM_DEFICIENCY_DATA.forEach(v=> (v.symptoms || []).forEach(sy=> addSymptom(sy.t, sy.o, v.name)));
+  Object.keys(PM_MIZAJ_EXTRA_SYMPTOMS).forEach(organ=> PM_MIZAJ_EXTRA_SYMPTOMS[organ].forEach(t=> addSymptom(t, organ)));
   options.sort((a,b)=> a.localeCompare(b, 'ur'));
   pmMizajOptions = options;
   pmRenderMizajOptionsList(options);
@@ -7110,7 +7320,9 @@ function pmRenderMizajOptionsList(options){
   const organPseudo = [];
   const byOrgan = {};
   options.forEach(o=>{
-    if(o in diseaseOrganMap){
+    if(!(o in diseaseOrganMap) && PM_SYMPTOM_ORGAN[o]){
+      (byOrgan[PM_SYMPTOM_ORGAN[o]] = byOrgan[PM_SYMPTOM_ORGAN[o]] || []).push(o);
+    } else if(o in diseaseOrganMap){
       const organ = diseaseOrganMap[o];
       (byOrgan[organ] = byOrgan[organ] || []).push(o);
     } else {
@@ -7130,7 +7342,9 @@ function pmRenderMizajOptionsList(options){
   }
   html += orderedOrgans.map(organ=>{
     const safe = escapeHtmlSearch(organ);
-    const items = byOrgan[organ].map(n=> `<div class="pm-mizaj-option" data-val="${escapeHtmlSearch(n)}">${escapeHtmlSearch(n)}</div>`).join('');
+    // پہلے بیماریاں، پھر علامات — علامت کے ساتھ چھوٹا سا نشان
+    const list = byOrgan[organ].filter(n=> !PM_SYMPTOM_ORGAN[n]).concat(byOrgan[organ].filter(n=> PM_SYMPTOM_ORGAN[n]));
+    const items = list.map(n=> `<div class="pm-mizaj-option${PM_SYMPTOM_ORGAN[n] ? ' pm-symptom' : ''}" data-val="${escapeHtmlSearch(n)}">${escapeHtmlSearch(n)}${PM_SYMPTOM_ORGAN[n] ? '<span class="pm-sym-tag">علامت</span>' : ''}</div>`).join('');
     return `<details class="pm-organ-group">
       <summary><span>${safe}</span><span class="pm-organ-count">${byOrgan[organ].length}</span></summary>
       <div class="pm-organ-items">${items}</div>
@@ -7178,11 +7392,19 @@ function pmMizajShowList(){
     if(!val) return;
     Array.from(listEl.querySelectorAll('.pm-mizaj-option')).forEach(el=> el.style.background = '');
     row.style.background = 'rgba(255,213,0,0.15)';
-    let matched = pmFindMatchingDiseases(val);
+    let matched = PM_SYMPTOM_ORGAN[val] ? [] : pmFindMatchingDiseases(val);
     (PM_MIZAJ_ALIASES[val] || []).forEach(a=>{
       pmFindMatchingDiseases(a).forEach(d=>{ if(!matched.includes(d)) matched.push(d); });
     });
-    pmRenderMatchingDiseases(matched, resultsEl);
+    if(PM_SYMPTOM_ORGAN[val]){
+      const vit = PM_SYMPTOM_DEFICIENCY[val] || [];
+      resultsEl.innerHTML = `<p style="color:var(--text); margin:4px 0;">🔸 <b>${escapeHtmlSearch(val)}</b> (${escapeHtmlSearch(PM_SYMPTOM_ORGAN[val])}) ایک علامت ہے — اس کا مزاج نیچے کتابوں کی تلاش کے نتائج میں دیکھیں۔</p>`
+        + (vit.length ? `<p style="color:var(--muted); margin:4px 0; font-size:.9rem;">یہ علامت ان کی کمی سے بھی ہو سکتی ہے: ${vit.map(escapeHtmlSearch).join('، ')}</p>` : '');
+    } else {
+      pmRenderMatchingDiseases(matched, resultsEl);
+      const vit = PM_SYMPTOM_DEFICIENCY[val] || [];
+      if(vit.length) resultsEl.insertAdjacentHTML('beforeend', `<p style="color:var(--muted); margin:4px 0; font-size:.9rem;">یہ ان کی کمی سے بھی ہو سکتی ہے: ${vit.map(escapeHtmlSearch).join('، ')}</p>`);
+    }
     // منتخب کرنے کے بعد پوری فہرست چھپا دیں — صرف منتخب کردہ نام نظر آئے، ساتھ باقی فہرست نہ آئے
     pmMizajHideList(val);
     // اسی منتخب کردہ بیماری کے diseaseList میں موجود تمام متبادل ناموں سے بھی PDF سرچ خودکار طور پر چلائیں
