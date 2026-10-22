@@ -156,6 +156,13 @@ tr:nth-child(even){background:rgba(31,122,77,0.04);}
 .pm-organ-items .pm-mizaj-option{padding:8px 12px; margin-top:6px; border:1px solid var(--border); border-radius:8px; cursor:pointer; color:var(--text); background:var(--navy);}
 .pm-num{display:inline-block; min-width:26px; margin-left:8px; padding:0 4px; text-align:center; border-radius:6px; font-size:.75rem; font-family:'Poppins',sans-serif; background:var(--gold); color:#fff;}
 .pm-symptom .pm-num{background:var(--leaf);}
+.pm-check-row{display:flex; align-items:flex-start; gap:8px;}
+.pm-check-row input{margin-top:9px; width:18px; height:18px; accent-color:var(--gold); flex:none;}
+.pm-check-row .pm-check-body{flex:1;}
+.pm-check-row.checked{border-color:var(--gold) !important; background:rgba(31,122,77,.10) !important;}
+.pm-picked{display:block; font-size:.75rem; font-weight:400; opacity:.9;}
+.pm-def-tag{margin:2px 34px 0 0; font-size:.72rem; color:var(--leaf);}
+#homeCatalog .pm-other-names, #deficiencySymptomList .pm-other-names{margin-right:34px;}
 .pm-other-names{margin:2px 34px 0 0; font-size:.75rem; line-height:1.8; color:var(--muted);}
 .pm-sub-head{margin:10px 2px 0; font-size:.8rem; font-weight:700; color:var(--muted);}
 .pm-total{text-align:center; font-size:.85rem; color:var(--muted); margin:0 0 8px;}
@@ -792,6 +799,7 @@ function qmDeficiencyInit(){
   const el = document.getElementById('deficiencySymptomList');
   if(!el || el.dataset.ready) return;
   el.dataset.ready = '1';
+  if(typeof herbalBuildKamiCatalog === 'function'){ herbalBuildKamiCatalog(el); return; }
   const shortDefName = n => n.replace(/^وٹامن\s*/, '').replace(/\s*\([^)]*\)$/, '').trim();
   const seen = new Set();
   const byOrgan = {};
@@ -820,14 +828,22 @@ function qmDeficiencyInit(){
   }).join('');
 }
 function qmDeficiencyDiagnose(){
-  const checked = new Set(Array.from(document.querySelectorAll('#deficiencySymptomList input:checked')).map(c=> c.value));
+  const boxes = Array.from(document.querySelectorAll('#deficiencySymptomList input:checked'));
+  const checked = new Set();
+  const noLink = [];
+  boxes.forEach(c=>{
+    let defs = [];
+    try{ defs = c.dataset.def ? JSON.parse(c.dataset.def) : [c.value]; }catch(e){ defs = [c.value]; }
+    if(defs.length) defs.forEach(t=> checked.add(t)); else noLink.push(c.value);
+  });
   const out = document.getElementById('deficiencyResult');
-  if(!checked.size){ out.innerHTML = '<p style="color:#e0524f; text-align:center;">پہلے کم از کم ایک علامت منتخب کریں۔</p>'; return; }
+  const noLinkNote = noLink.length ? `<p style="color:var(--muted); font-size:.82rem; text-align:center; margin-top:6px;">ان کا تعلق کسی وٹامن/معدنیات کی کمی سے ہماری فہرست میں نہیں: ${noLink.map(escapeHtmlSearch).join('، ')}</p>` : '';
+  if(!boxes.length){ out.innerHTML = '<p style="color:#e0524f; text-align:center;">پہلے کم از کم ایک علامت منتخب کریں۔</p>'; return; }
   const matches = QM_DEFICIENCY_DATA.map(d=>{
     const hit = d.symptoms.filter(s=> checked.has(s.t));
     return { d, hit, pct: Math.round(hit.length * 100 / d.symptoms.length) };
   }).filter(x=> x.hit.length > 0).sort((a,b)=> (b.hit.length - a.hit.length) || (b.pct - a.pct));
-  if(!matches.length){ out.innerHTML = '<p style="color:var(--muted); text-align:center;">منتخب علامات سے کسی خاص کمی کا امکان ظاہر نہیں ہوتا۔</p>'; return; }
+  if(!matches.length){ out.innerHTML = '<p style="color:var(--muted); text-align:center;">منتخب علامات سے کسی خاص کمی کا امکان ظاہر نہیں ہوتا۔</p>' + noLinkNote; return; }
   out.innerHTML = matches.map(({d, hit, pct})=> `
     <div class="mujarrab-card" style="margin-bottom:14px;">
       <h4 style="color:var(--gold); margin-bottom:6px;">${escapeHtmlSearch(d.name)} <span style="color:var(--gold-soft); font-size:.78rem;">(${hit.length} میں سے ${d.symptoms.length} علامات ملیں — ${pct}%)</span></h4>
@@ -837,7 +853,7 @@ function qmDeficiencyDiagnose(){
       <ul style="margin:0 18px 0 0; padding:0; font-size:.87rem;">${d.foods.map(f=> `<li><b>${escapeHtmlSearch(f)}</b>${QM_FOOD_USAGE[f] ? ' — ' + escapeHtmlSearch(QM_FOOD_USAGE[f]) : ''}</li>`).join('')}</ul>
       ${d.note ? `<p style="font-size:.84rem; color:var(--gold-soft); background:rgba(31,122,77,0.08); border:1px solid var(--border); border-radius:8px; padding:8px 10px; margin-top:8px;">⚠ ${escapeHtmlSearch(d.note)}</p>` : ''}
     </div>`).join('') +
-    '<p style="color:var(--muted); font-size:.78rem; text-align:center; margin-top:4px;">یہ صرف علامات کی بنیاد پر امکان ہے، پکی تشخیص نہیں — یقین کے لیے بلڈ ٹیسٹ کروائیں۔</p>';
+    noLinkNote + '<p style="color:var(--muted); font-size:.78rem; text-align:center; margin-top:4px;">یہ صرف علامات کی بنیاد پر امکان ہے، پکی تشخیص نہیں — یقین کے لیے بلڈ ٹیسٹ کروائیں۔</p>';
 }
 document.addEventListener('DOMContentLoaded', qmDeficiencyInit);
 setTimeout(qmDeficiencyInit, 0);
@@ -2317,10 +2333,19 @@ function toggleSymptom(id, organKey){
   if(organKey) updateOrganSummary(organKey);
   if(checked) revealDiagnoseButton();
   onDiseaseSelectionChanged();
+  if(typeof homeCatalogSync === 'function' && document.getElementById('homeCatalog')) homeCatalogSync();
 }
 
 function filterDiseases(){
   const q = document.getElementById('diseaseSearch').value.trim();
+  const cat = document.getElementById('homeCatalog');
+  if(cat){
+    const any = pmCatalogFilter(cat, q);
+    const apiBox = document.getElementById('diseaseApiSearchBox');
+    if(apiBox) apiBox.style.display = (q && !any) ? 'block' : 'none';
+    if(q && !any) document.getElementById('diseaseApiResultBox').innerHTML = '';
+    return;
+  }
   let anyMatchOverall = false;
   organOrderList.forEach(organKey=>{
     let anyMatch = false;
@@ -5372,6 +5397,11 @@ function computeMizaj(){
   const names = {asabi:"اعصابی", adalati:"عضلاتی", ghudi:"غدی"};
   const resultDiv = document.getElementById('mizajResult');
 
+  if(answered === 0 && window.homeExtraSymptoms && window.homeExtraSymptoms.size){
+    resultDiv.innerHTML = '<div class="result-card"><h3>صرف علامات منتخب ہیں</h3><p style="color:var(--muted);">منتخب علامات (' + Array.from(window.homeExtraSymptoms).map(escapeHtmlSearch).join('، ') + ') سے اکیلے مزاج معلوم نہیں ہوتا — ساتھ کوئی بیماری یا اوپر کے سوالات بھی منتخب کریں، یا اوپر خانے میں اپنی تکلیف لکھیں۔</p></div>';
+    resultDiv.scrollIntoView({behavior:'smooth'});
+    return;
+  }
   if(answered === 0){
     resultDiv.innerHTML = '<div class="result-card"><h3>کوئی جواب منتخب نہیں کیا گیا</h3><p style="color:var(--muted);">براہ کرم اوپر کم از کم چند سوالات کے جواب دیں۔</p></div>';
     resultDiv.scrollIntoView({behavior:'smooth'});
@@ -5455,6 +5485,9 @@ function renderMizajResult(totals, answered){
   }
   if(window.unmatchedDiseaseTerms && window.unmatchedDiseaseTerms.length){
     window.unmatchedDiseaseTerms.forEach(t=> selectedSymptomLabels.push(t));
+  }
+  if(window.homeExtraSymptoms && window.homeExtraSymptoms.size){
+    window.homeExtraSymptoms.forEach(t=> selectedSymptomLabels.push(t));
   }
   const selectedDiseaseObjs = diseaseIds.filter(d=> document.getElementById(d.id).checked);
   const selectedDiseaseNames = selectedDiseaseObjs.map(d=> d.name);
@@ -7853,6 +7886,7 @@ function pmMizajOtherNames(n){
 }
 const PM_SYMPTOM_ORGAN = {};   // علامت ← عضو
 const PM_SYMPTOM_DEFICIENCY = {}; // علامت ← کن وٹامن/معدنیات کی کمی میں
+const PM_DEF_TEXTS_OF = {}; // فہرست کا نام ← "کمی کی تشخیص" کی اصل علامات (عبارت)
 // ملتے جلتے نام پہچاننے کے لیے: اسپیس، ے/ی، ہ کی شکلیں اور الفاظ کی ترتیب نظر انداز
 function pmMizajNameKey(n){
   return pmNormalizeWord(String(n).replace(/\([^)]*\)/g, ' ')).replace(/[ےۓ]/g, 'ی').replace(/[ہۃة]/g, 'ه')
@@ -7879,7 +7913,8 @@ function pmPopulateMizajSelect(){
     let target = PM_SYMPTOM_SAME[t] || keys.get(k) || t;
     target = PM_MIZAJ_ALIAS_OF[target] || target;
     // وٹامن/معدنیات کی کمی کی معلومات اسی نام کے ساتھ جوڑیں جو فہرست میں دکھایا جاتا ہے
-    if(vit){ const arr = (PM_SYMPTOM_DEFICIENCY[target] = PM_SYMPTOM_DEFICIENCY[target] || []); if(!arr.includes(vit)) arr.push(vit); }
+    if(vit){ const arr = (PM_SYMPTOM_DEFICIENCY[target] = PM_SYMPTOM_DEFICIENCY[target] || []); if(!arr.includes(vit)) arr.push(vit);
+      const tx = (PM_DEF_TEXTS_OF[target] = PM_DEF_TEXTS_OF[target] || []); if(!tx.includes(t)) tx.push(t); }
     if(target !== t || seen.has(t)) return;
     keys.set(k, t); seen.add(t); options.push(t);
     PM_SYMPTOM_ORGAN[t] = organ;
@@ -7893,60 +7928,57 @@ function pmPopulateMizajSelect(){
 // فہرست کو عضو کے مطابق accordion کی صورت میں دکھاتے ہیں (اسی طرح جیسے "میڈیکل کے مطابق" صفحے پر) —
 // ہر آپشن اب بھی class="pm-mizaj-option" data-val="..." ہی رکھتا ہے، اس لیے نیچے کا کلک لِسنر اور پوری تلاش کی منطق بغیر کسی تبدیلی کے کام کرتی رہتی ہے۔
 // عضو کے سیوڈو-انٹریز (جیسے صرف "جگر" یا "آنکھ" — diseaseList کا کوئی بھی نام نہیں) اوپر الگ قطار میں دکھائی جاتی ہیں۔
-function pmRenderMizajOptionsList(options){
-  const listEl = document.getElementById('pmMizajOptionsList');
-  if(!listEl) return;
-  if(!options.length){
-    listEl.innerHTML = `<div style="padding:10px; color:var(--muted); text-align:center;">کوئی نتیجہ نہیں ملا</div>`;
-    return;
-  }
+// عضو وار گروپ بندی — "بیماری کے مزاج"، Home اور "کمی کی تشخیص" تینوں یہی فہرست استعمال کرتے ہیں
+function pmMizajGroups(options){
   const diseaseOrganMap = {};
   diseaseList.forEach(d=>{ if(!(d.name in diseaseOrganMap)) diseaseOrganMap[d.name] = d.organ || 'عمومی/پورے جسم کی بیماریاں'; });
   Object.keys(PM_MIZAJ_ORGAN_FIX).forEach(n=> diseaseOrganMap[n] = PM_MIZAJ_ORGAN_FIX[n]);
-  const organPseudo = [];
   const byOrgan = {};
   options.forEach(o=>{
-    if(!(o in diseaseOrganMap) && PM_SYMPTOM_ORGAN[o]){
-      (byOrgan[PM_SYMPTOM_ORGAN[o]] = byOrgan[PM_SYMPTOM_ORGAN[o]] || []).push(o);
-    } else if(o in diseaseOrganMap){
-      const organ = diseaseOrganMap[o];
-      (byOrgan[organ] = byOrgan[organ] || []).push(o);
-    } else {
-      organPseudo.push(o);
-    }
+    const organ = (!(o in diseaseOrganMap) && PM_SYMPTOM_ORGAN[o]) ? PM_SYMPTOM_ORGAN[o] : diseaseOrganMap[o];
+    if(!organ) return;
+    const g = (byOrgan[organ] = byOrgan[organ] || {dis:[], sym:[]});
+    (PM_SYMPTOM_ORGAN[o] ? g.sym : g.dis).push(o);
   });
   const order = (typeof organOrderList !== 'undefined' && organOrderList.length) ? organOrderList : Object.keys(byOrgan);
   const seenOrgan = new Set();
   const orderedOrgans = order.filter(o=> byOrgan[o] && !seenOrgan.has(o) && seenOrgan.add(o));
   Object.keys(byOrgan).forEach(o=> { if(!seenOrgan.has(o)){ seenOrgan.add(o); orderedOrgans.push(o); } });
-  let html = '';
-  if(organPseudo.length){
-    html += `<div style="padding:10px 12px; border-bottom:1px solid var(--border);">
-      <div style="font-size:.8rem; color:var(--muted); margin-bottom:6px;">اعضاء (نام سے تلاش):</div>
-      <div style="display:flex; flex-wrap:wrap; gap:6px;">${organPseudo.map(o=> `<div class="pm-mizaj-option" data-val="${escapeHtmlSearch(o)}" style="padding:6px 12px; border:1px solid var(--border); border-radius:16px; cursor:pointer; color:var(--gold-soft); font-size:.82rem;">${escapeHtmlSearch(o)}</div>`).join('')}</div>
-    </div>`;
-  }
+  return orderedOrgans.map(organ=> ({organ, dis:byOrgan[organ].dis, sym:byOrgan[organ].sym}));
+}
+// فہرست کے نام کے پیچھے diseaseList کی اصل اندراجات (ایک کیے گئے ڈبل نام سمیت)
+function pmMizajMembers(n){
+  const names = new Set([n].concat(PM_MIZAJ_ALIASES[n] || []));
+  return diseaseList.filter(d=> names.has(d.name)).map(d=> d.name);
+}
+// پوری فہرست کا HTML — opts.check(n) دیا ہو تو ہر نام کے ساتھ چیک باکس (Home، کمی کی تشخیص)
+function pmCatalogHtml(options, opts){
+  opts = opts || {};
+  const groups = pmMizajGroups(options);
   let totalDis = 0, totalSym = 0;
-  html += orderedOrgans.map(organ=>{
-    const safe = escapeHtmlSearch(organ);
-    // پہلے بیماریاں، پھر علامات — علامت کے ساتھ چھوٹا سا نشان
-    const dis = byOrgan[organ].filter(n=> !PM_SYMPTOM_ORGAN[n]);
-    const sym = byOrgan[organ].filter(n=> PM_SYMPTOM_ORGAN[n]);
-    totalDis += dis.length; totalSym += sym.length;
+  const html = groups.map(g=>{
+    const safe = escapeHtmlSearch(g.organ);
+    totalDis += g.dis.length; totalSym += g.sym.length;
     const row = (n, i, isSym)=>{
       const other = pmMizajOtherNames(n);
-      return `<div class="pm-mizaj-option${isSym ? ' pm-symptom' : ''}" data-val="${escapeHtmlSearch(n)}"><span class="pm-num">${i+1}</span>${escapeHtmlSearch(n)}${other.length ? `<div class="pm-other-names">دوسرے نام: ${other.map(escapeHtmlSearch).join('، ')}</div>` : ''}</div>`;
+      const extra = opts.extra ? opts.extra(n) : '';
+      const inner = `<span class="pm-num">${i+1}</span>${escapeHtmlSearch(n)}${other.length ? `<div class="pm-other-names">دوسرے نام: ${other.map(escapeHtmlSearch).join('، ')}</div>` : ''}${extra}`;
+      return opts.check
+        ? `<label class="pm-mizaj-option pm-check-row${isSym ? ' pm-symptom' : ''}" data-val="${escapeHtmlSearch(n)}">${opts.check(n, isSym)}<span class="pm-check-body">${inner}</span></label>`
+        : `<div class="pm-mizaj-option${isSym ? ' pm-symptom' : ''}" data-val="${escapeHtmlSearch(n)}">${inner}</div>`;
     };
-    const items = (dis.length ? `<div class="pm-sub-head">بیماریاں (${dis.length})</div>` + dis.map((n,i)=> row(n,i,false)).join('') : '')
-      + (sym.length ? `<div class="pm-sub-head">علامات (${sym.length})</div>` + sym.map((n,i)=> row(n,i,true)).join('') : '');
-    const cnt = sym.length ? `${dis.length} بیماریاں + ${sym.length} علامات` : `${dis.length} بیماریاں`;
-    return `<details class="pm-organ-group">
-      <summary><span>${safe}</span><span class="pm-organ-count">${cnt}</span></summary>
+    const items = (g.dis.length ? `<div class="pm-sub-head">بیماریاں (${g.dis.length})</div>` + g.dis.map((n,i)=> row(n,i,false)).join('') : '')
+      + (g.sym.length ? `<div class="pm-sub-head">علامات (${g.sym.length})</div>` + g.sym.map((n,i)=> row(n,i,true)).join('') : '');
+    const cnt = g.sym.length ? `${g.dis.length} بیماریاں + ${g.sym.length} علامات` : `${g.dis.length} بیماریاں`;
+    return `<details class="pm-organ-group" data-organ="${safe}">
+      <summary><span>${safe}<span class="pm-picked"></span></span><span class="pm-organ-count">${cnt}</span></summary>
       <div class="pm-organ-items">${items}</div>
     </details>`;
   }).join('');
-  html = `<div class="pm-total">کل ${totalDis + totalSym}: ${totalDis} بیماریاں اور ${totalSym} علامات — ${orderedOrgans.length} اعضاء</div>` + html;
-  listEl.innerHTML = html;
+  return `<div class="pm-total">کل ${totalDis + totalSym}: ${totalDis} بیماریاں اور ${totalSym} علامات — ${groups.length} اعضاء</div>` + html;
+}
+// ایک وقت میں ایک عضو کھلا رہے، اور کھلنے پر اس کا نام اوپر نظر آئے
+function pmCatalogWire(listEl){
   listEl.querySelectorAll('details.pm-organ-group').forEach(d=> d.addEventListener('toggle', ()=>{
     if(!d.open) return;
     listEl.querySelectorAll('details.pm-organ-group[open]').forEach(o=>{ if(o !== d) o.open = false; });
@@ -7955,7 +7987,101 @@ function pmRenderMizajOptionsList(options){
     window.scrollTo({top, behavior:'smooth'});
   }));
 }
+// بند عضو کے نام کے ساتھ اس میں منتخب کیے گئے نام دکھائیں
+function pmCatalogUpdatePicked(listEl){
+  listEl.querySelectorAll('details.pm-organ-group').forEach(d=>{
+    const picked = Array.from(d.querySelectorAll('.pm-check-row input:checked')).map(c=> c.closest('.pm-check-row').dataset.val);
+    const el = d.querySelector('.pm-picked');
+    if(el) el.textContent = picked.length ? ' — منتخب: ' + picked.join('، ') : '';
+  });
+}
+// فلٹر: نام یا دوسرے نام میں لفظ ہو تو دکھائیں؛ کچھ نہ ملے تو false
+function pmCatalogFilter(listEl, query){
+  const q = pmNormalizeWord(query || '');
+  let any = false;
+  listEl.querySelectorAll('details.pm-organ-group').forEach(d=>{
+    let groupAny = false;
+    d.querySelectorAll('.pm-mizaj-option').forEach(r=>{
+      const n = r.dataset.val;
+      const ok = !q || [n].concat(pmMizajOtherNames(n)).some(x=> pmNormalizeWord(x).indexOf(q) !== -1);
+      r.style.display = ok ? '' : 'none';
+      if(ok) groupAny = true;
+    });
+    d.style.display = groupAny ? '' : 'none';
+    if(q && groupAny) d.open = true;
+    if(groupAny) any = true;
+  });
+  return any;
+}
+function pmRenderMizajOptionsList(options){
+  const listEl = document.getElementById('pmMizajOptionsList');
+  if(!listEl) return;
+  if(!options.length){
+    listEl.innerHTML = `<div style="padding:10px; color:var(--muted); text-align:center;">کوئی نتیجہ نہیں ملا</div>`;
+    return;
+  }
+  listEl.innerHTML = pmCatalogHtml(options);
+  pmCatalogWire(listEl);
+}
 pmPopulateMizajSelect();
+// ---------- Home: "تمام بیماریاں" — اوپر والی مکمل فہرست، چیک باکس کے ساتھ ----------
+// پرانے (چھپے ہوئے) چیک باکس ویسے ہی رہتے ہیں تاکہ مزاج کا حساب، متن سے خودکار انتخاب وغیرہ پہلے کی طرح چلیں؛
+// نیا ڈبہ انہی کو آن/آف کرتا ہے۔ جن علامات کا مزاج فہرست میں نہیں، وہ "علامات" کے طور پر نتیجے/AI کو جاتی ہیں۔
+window.homeExtraSymptoms = new Set();
+function homeCatalogSync(){
+  const el = document.getElementById('homeCatalog');
+  if(!el) return;
+  el.querySelectorAll('.pm-check-row').forEach(r=>{
+    const n = r.dataset.val, cb = r.querySelector('input');
+    const ids = diseaseIds.filter(d=> pmMizajMembers(n).includes(d.name)).map(d=> d.id);
+    cb.checked = ids.length ? ids.some(id=> document.getElementById(id) && document.getElementById(id).checked) : window.homeExtraSymptoms.has(n);
+    r.classList.toggle('checked', cb.checked);
+  });
+  pmCatalogUpdatePicked(el);
+}
+function homeCatalogToggle(cb){
+  const row = cb.closest('.pm-check-row'), n = row.dataset.val;
+  const ids = diseaseIds.filter(d=> pmMizajMembers(n).includes(d.name)).map(d=> d.id);
+  if(ids.length){
+    ids.forEach(id=>{
+      const h = document.getElementById(id);
+      if(h && h.checked !== cb.checked){ h.checked = cb.checked; toggleSymptom(id, organByDid[id]); }
+    });
+  } else {
+    if(cb.checked) window.homeExtraSymptoms.add(n); else window.homeExtraSymptoms.delete(n);
+    if(cb.checked && typeof revealDiagnoseButton === 'function') revealDiagnoseButton();
+  }
+  homeCatalogSync();
+}
+(function buildHomeCatalog(){
+  const grid = document.getElementById('diseaseGrid');
+  if(!grid) return;
+  const el = document.createElement('div');
+  el.id = 'homeCatalog';
+  el.style.margin = '14px 0 10px';
+  el.innerHTML = pmCatalogHtml(pmMizajOptions, { check:()=> '<input type="checkbox" onchange="homeCatalogToggle(this)">' });
+  grid.parentNode.insertBefore(el, grid);
+  grid.style.display = 'none';
+  // اضافی سوال (مثلاً لیکوریا کے ساتھ جلن) نئے ڈبے میں اسی نام کے نیچے
+  el.querySelectorAll('.pm-check-row').forEach(r=>{
+    diseaseIds.filter(d=> pmMizajMembers(r.dataset.val).includes(d.name)).forEach(d=>{
+      const fu = document.getElementById('followup-' + d.id);
+      if(fu) r.after(fu);
+    });
+  });
+  pmCatalogWire(el);
+  homeCatalogSync();
+})();
+// ---------- کمی کی تشخیص: یہی مکمل فہرست ----------
+function herbalBuildKamiCatalog(el){
+  el.style.display = 'block';
+  const short = n=> n.replace(/^وٹامن\s*/, '').replace(/\s*\([^)]*\)$/, '').trim();
+  el.innerHTML = pmCatalogHtml(pmMizajOptions, {
+    check:(n)=> `<input type="checkbox" value="${escapeHtmlSearch(n)}" data-def="${escapeHtmlSearch(JSON.stringify(PM_DEF_TEXTS_OF[n] || [])).replace(/"/g, '&quot;')}" onchange="this.closest('.pm-check-row').classList.toggle('checked', this.checked); pmCatalogUpdatePicked(document.getElementById('deficiencySymptomList'))">`,
+    extra:(n)=> (PM_SYMPTOM_DEFICIENCY[n] || []).length ? `<div class="pm-def-tag">کمی: ${PM_SYMPTOM_DEFICIENCY[n].map(v=> escapeHtmlSearch(short(v))).join('، ')}</div>` : ''
+  });
+  pmCatalogWire(el);
+}
 // ایک نام منتخب ہونے کے بعد پوری فہرست چھپا کر صرف منتخب شدہ نام دکھائیں — "تبدیل کریں" دبانے پر دوبارہ فہرست کھلے
 function pmMizajHideList(val){
   const wrap = document.getElementById('pmMizajListWrap');
