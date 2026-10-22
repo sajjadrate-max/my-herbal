@@ -176,6 +176,11 @@ tr:nth-child(even){background:rgba(31,122,77,0.04);}
 .pm-picked{display:block; font-size:.75rem; font-weight:400; opacity:.9;}
 .med-card{background:var(--card); border:1px solid var(--border); border-radius:10px; padding:6px 8px; margin:6px 0 10px;}
 .med-tip{font-size:.88rem; background:var(--navy2);}
+.med-row{padding:6px 4px; border-bottom:1px dashed var(--border);}
+.med-row:last-child{border-bottom:none;}
+.med-lbl{font-size:.78rem; font-weight:700; color:var(--gold);}
+.med-val{font-size:.9rem; color:var(--text); line-height:2; padding-right:8px;}
+.med-en{font-family:'Poppins',sans-serif; font-weight:700; font-size:.92rem; unicode-bidi:isolate;}
 .med-table{font-family:inherit; width:100%; border-collapse:collapse; font-size:.85rem; line-height:1.8;}
 .med-table th{width:36%; text-align:right; vertical-align:top; color:var(--gold); font-weight:700; padding:4px 6px; border-bottom:1px dashed var(--border); font-size:.78rem;}
 .med-table td{padding:4px 6px; border-bottom:1px dashed var(--border); color:var(--text);}
@@ -8636,7 +8641,8 @@ function wajahMedsHtml(n){
   if(m && m.e) return `<div class="mujarrab-card" style="border-right-color:#e0524f;"><h4 style="color:#e0524f; margin-bottom:6px;">🚨 ایمرجنسی / سنگین بیماری</h4><p style="font-size:.9rem; color:#e0524f; font-weight:700;">اس کی کوئی دوا گھر پر خود نہ لیں — فوراً ڈاکٹر یا ہسپتال سے رجوع کریں۔</p></div>`;
   if(!m) return `<div class="mujarrab-card"><h4 style="color:var(--gold); margin-bottom:6px;">💊 ادویات</h4><p style="font-size:.88rem; color:var(--muted);">اس کی دوا معائنے اور وجہ معلوم کرنے کے بعد ڈاکٹر ہی تجویز کرتا ہے۔ مزاج کے مطابق ہربل علاج کے لیے Home پر تشخیص کریں۔</p></div>`;
   // ہر دوا الگ ڈبے میں، ہر چیز کا لیبل: دوا کا نام، انگریزی نام، برانڈ، کمپنی، استعمال، احتیاط
-  const row = (label, val)=> `<tr><th>${label}</th><td>${val}</td></tr>`;
+  const row = (label, val)=> `<div class="med-row"><div class="med-lbl">${label}</div><div class="med-val">${val}</div></div>`;
+  const en = t=> `<bdi class="med-en" dir="ltr">${escapeHtmlSearch(t)}</bdi>`;
   // برانڈ ترتیب سے: پہلی پسند، نہ ملے تو دوسری، پھر تیسری — آخر میں: کسی معتبر کمپنی کی یہی (generic) دوا
   const ORD = ['1️⃣ پہلی پسند','2️⃣ پہلی نہ ملے تو','3️⃣ وہ بھی نہ ملے تو','4️⃣ پھر','5️⃣ پھر'];
   const brandRows = (intl, pk, eng)=>{
@@ -8645,8 +8651,12 @@ function wajahMedsHtml(n){
       const m = part.match(/^\s*(.+?)\s*\(([^)]+)\)\s*$/);
       list.push(m ? {b:m[1], c:m[2], kind} : {b:part, c:'', kind});
     }));
-    let html = list.map((x,i)=> row(ORD[i] || ((i+1) + '۔'), `<span dir="ltr"><b>${escapeHtmlSearch(x.b)}</b></span> <span class="med-co">— کمپنی: <span dir="ltr">${escapeHtmlSearch(x.c)}</span> (${x.kind})</span>`)).join('');
-    if(eng) html += row(list.length ? 'کوئی برانڈ نہ ملے تو' : 'برانڈ', `کسی معتبر کمپنی کی وہ دوا لیں جس کے پیکٹ پر <span dir="ltr"><b>${escapeHtmlSearch(eng)}</b></span> لکھا ہو — اصل دوا یہی ہے، صرف کمپنی بدلتی ہے۔`);
+    let html = list.map((x,i)=> row(ORD[i] || ((i+1) + '۔'),
+        `<div>برانڈ (بازار میں نام): ${en(x.b)}</div>`
+      + (x.c ? `<div class="med-co">کمپنی: ${en(x.c)}</div>` : '')
+      + `<div class="med-co">کمپنی کی قسم: ${x.kind}</div>`)).join('');
+    if(eng) html += row(list.length ? 'کوئی برانڈ نہ ملے تو' : 'برانڈ',
+        `<div>کسی بھی معتبر کمپنی کی یہی دوا لیں۔ پیکٹ پر یہ نام دیکھیں:</div><div>${en(eng)}</div><div class="med-co">اصل دوا یہی ہے، صرف کمپنی بدلتی ہے۔</div>`);
     return html;
   };
   const li = a=> a.map(x=>{
@@ -8656,14 +8666,14 @@ function wajahMedsHtml(n){
       if(!eng && !inf.use) return `<div class="med-card med-tip">🌿 <b>تدبیر:</b> ${escapeHtmlSearch(x)}</div>`;
       const parts = (inf.use || '').split(/\s+—\s+/);
       const how = parts.shift() || '', caution = parts.join('؛ ');
-      return `<div class="med-card"><table class="med-table">`
+      return `<div class="med-card">`
         + row('دوا کا نام (اردو)', `<b>${escapeHtmlSearch(urdu)}</b>`)
-        + (eng ? row('دوا کا اصل نام (Generic)', `<span dir="ltr"><b>${escapeHtmlSearch(eng)}</b></span> <span class="med-co">— یہ دوا کا نام ہے، کمپنی کا نہیں</span>`) : '')
+        + (eng ? row('دوا کا اصل نام (Generic)', `<div>${en(eng)}</div><div class="med-co">یہ دوا کا نام ہے، کمپنی کا نہیں</div>`) : '')
         + brandRows(inf.intl, inf.pk, eng)
         + (note ? row('کب / کس کے لیے', escapeHtmlSearch(note)) : '')
         + (how ? row('کیسے، کتنی اور کتنی بار', escapeHtmlSearch(how)) : row('کیسے، کتنی اور کتنی بار', 'ڈاکٹر یا فارماسسٹ سے پوچھیں'))
         + (caution ? row('⚠ احتیاط', escapeHtmlSearch(caution)) : '')
-        + `</table></div>`;
+        + `</div>`;
     }).join('');
   return `<div class="mujarrab-card"><h4 style="color:var(--gold); margin-bottom:6px;">💊 عام طور پر دی جانے والی ادویات</h4>`
     + (m.o && m.o.length ? `<p style="font-size:.85rem; color:var(--gold-soft); font-weight:700;">عام دوائیں / تدابیر (عموماً بغیر نسخے ملتی ہیں):</p>${li(m.o)}` : '')
