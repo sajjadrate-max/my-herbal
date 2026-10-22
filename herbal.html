@@ -6998,24 +6998,81 @@ function pmRenderMatchingDiseases(matchedDiseases, targetEl){
 // صارف صرف اسی فہرست میں سے کسی آپشن پر ٹیپ کر کے ہی نتیجہ دیکھ سکتا ہے، خود سے لکھ کر سرچ نہیں چلتی —
 // اوپر دیا گیا input صرف نیچے کی فہرست کو فلٹر کرنے کے لیے ہے۔
 let pmMizajOptions = [];
+// ایک ہی بیماری کے دو نام (الفاظ آگے پیچھے) — فہرست میں صرف ایک بار دکھائیں، ٹیپ کرنے پر دونوں کے نتائج آئیں
+const PM_MIZAJ_ALIASES = {
+  'کانچ نکلنا': ['کانچ کا نکلنا'],
+  'معدہ کی جلن': ['جلنِ معدہ'],
+  'صفراوی قے': ['قے صفراوی'],
+  'خونی بواسیر': ['بواسیرِ خونی'],
+  'رحم کا باہر نکلنا': ['رحم باہر نکلنا', 'بچہ دانی کا باہر نکلنا'],
+  'بائیں طرف کا فالج': ['فالج بائیں طرف'],
+  'لو بلڈ پریشر': ['بلڈ پریشر لو'],
+  'بےخوابی': ['انسومنیا'],
+  'سردرد': ['درد سر'],
+  'بھول جانا': ['نسیان'],
+  'آنکھوں سے پانی آنا': ['آنکھ میں پانی آنا'],
+  'ناک سے خون نکلنا': ['نکسیر', 'نکسیر آنا'],
+  'زبان کی لکنت': ['لکنت'],
+  'منہ سے بدبو': ['منہ سے گندی بدبو'],
+  'زبان کا ذائقہ محسوس نہ ہونا': ['ذائقہ ختم ہونا'],
+  'دانتوں کا بڑھنا': ['دانت بڑھنا'],
+  'دانتوں کا درد': ['درد دانت'],
+  'گلے کی سوزش': ['حلق کی سوزش'],
+  'سل': ['تپ دق'],
+  'دل کا بڑا ہونا': ['دل کا پھیل جانا', 'دل کا پھولنا', 'عظیمِ قلب'],
+  'پستان کا کینسر': ['بریسٹ کینسر'],
+  'دودھ کی کمی': ['پستان سے دودھ کی کمی'],
+  'دائیں پستان کا ورم': ['ورمِ پستان دائیں طرف'],
+  'بھوک نہ لگنا': ['بھوک کا بند ہونا'],
+  'بھوک شدید لگنا': ['ہر وقت بھوک کی خواہش'],
+  'معدے کی خرابی': ['معدہ میں گڑبڑ'],
+  'ریاح گیس معدہ': ['تبخیرِ معدہ'],
+  'بھگندر': ['بھگندرِ مقعد'],
+  'جگر کی سوزش': ['جگر کا ورم'],
+  'تلی کا بڑھنا': ['عظمِ طحال'],
+  'گردے کا درد': ['درد گردہ'],
+  'گردے کی پتھری': ['پتھری گردہ', 'گردہ میں پتھری'],
+  'رات کو بستر پر پیشاب': ['بستر پر پیشاب کرنا'],
+  'خونی پیشاب': ['بول الدم'],
+  'جریانِ منی': ['جریان'],
+  'رحم کا درد': ['رحم میں درد'],
+  'بندشِ حیض': ['بندشِ خونِ حیض'],
+  'کثرتِ حیض': ['ماہواری میں بہت زیادہ خون'],
+  'پلکوں کے بال گرنا': ['پلکوں کے بال اڑنا'],
+  'بہرہ پن': ['اونچا سننا']
+};
+const PM_MIZAJ_ALIAS_OF = {};
+Object.keys(PM_MIZAJ_ALIASES).forEach(k=> PM_MIZAJ_ALIASES[k].forEach(a=> PM_MIZAJ_ALIAS_OF[a] = k));
+// جو بیماریاں غلط یا دوسرے عضو کے خانے میں آ رہی تھیں، انہیں صحیح عضو میں دکھائیں
+const PM_MIZAJ_ORGAN_FIX = {
+  'پیلا یرقان': 'جگر و تلی', 'پتے کی پتھری': 'جگر و تلی',
+  'درد سر': 'سر', 'سر کی کھال کی خشکی': 'سر',
+  'کانچ نکلنا': 'آنتیں و مقعد',
+  'رعشہ': 'عمومی/پورے جسم کی بیماریاں',
+  'بہرہ پن': 'کان',
+  'سفید موتیا': 'آنکھ', 'نزدیک کی نظر کمزور': 'آنکھ',
+  'رال بہنا': 'منہ و زبان',
+  'ضعفِ قلب': 'دل', 'قلب کی حرکت کم ہونا': 'دل',
+  'سل': 'پھیپھڑے و دمہ', 'پس سل': 'پھیپھڑے و دمہ', 'سینے کی جکڑن': 'پھیپھڑے و دمہ',
+  'بلغم کے اخراج میں دقت': 'پھیپھڑے و دمہ', 'میٹھی بلغم آنا': 'پھیپھڑے و دمہ',
+  'کھانے کے بعد گیس': 'معدہ', 'سینے کی جلن': 'معدہ',
+  'عضوِ تناسل کا چھوٹا ہونا': 'خصیہ و عضوِ تناسل', 'عضوِ تناسل کا ڈھیلا ہونا': 'خصیہ و عضوِ تناسل',
+  'عضوِ تناسل کا لمبا و موٹا ہونا': 'خصیہ و عضوِ تناسل', 'عضوِ تناسل کا ورم': 'خصیہ و عضوِ تناسل',
+  'واریکوسل': 'خصیہ و عضوِ تناسل', 'دائیں خصیے کا سکڑنا': 'خصیہ و عضوِ تناسل',
+  'مسلسل لڑکیاں ہونا': 'رحم و حیض (خواتین)', 'حملِ ضائع ہونا': 'رحم و حیض (خواتین)',
+  'کثرتِ حیض': 'رحم و حیض (خواتین)'
+};
 function pmPopulateMizajSelect(){
   const listEl = document.getElementById('pmMizajOptionsList');
   if(!listEl) return;
   const seen = new Set();
   const options = [];
+  // اعضاء کی الگ قطار ختم — سب بیماریاں نیچے عضو کے خانوں میں ایک ہی بار
   diseaseList.forEach(d=>{
-    if(!d.name || seen.has(d.name)) return;
-    seen.add(d.name);
-    options.push(d.name);
-  });
-  const organSeen = new Set();
-  diseaseList.forEach(d=>{
-    if(!d.organ) return;
-    String(d.organ).split(/،| و /).map(s=> s.trim()).filter(Boolean).forEach(part=>{
-      if(organSeen.has(part) || seen.has(part)) return;
-      organSeen.add(part);
-      options.push(part);
-    });
+    const name = PM_MIZAJ_ALIAS_OF[d.name] || d.name;
+    if(!name || seen.has(name)) return;
+    seen.add(name);
+    options.push(name);
   });
   options.sort((a,b)=> a.localeCompare(b, 'ur'));
   pmMizajOptions = options;
@@ -7033,6 +7090,7 @@ function pmRenderMizajOptionsList(options){
   }
   const diseaseOrganMap = {};
   diseaseList.forEach(d=>{ if(!(d.name in diseaseOrganMap)) diseaseOrganMap[d.name] = d.organ || 'عمومی/پورے جسم کی بیماریاں'; });
+  Object.keys(PM_MIZAJ_ORGAN_FIX).forEach(n=> diseaseOrganMap[n] = PM_MIZAJ_ORGAN_FIX[n]);
   const organPseudo = [];
   const byOrgan = {};
   options.forEach(o=>{
@@ -7097,7 +7155,10 @@ function pmMizajShowList(){
     if(!val) return;
     Array.from(listEl.querySelectorAll('.pm-mizaj-option')).forEach(el=> el.style.background = '');
     row.style.background = 'rgba(255,213,0,0.15)';
-    const matched = pmFindMatchingDiseases(val);
+    let matched = pmFindMatchingDiseases(val);
+    (PM_MIZAJ_ALIASES[val] || []).forEach(a=>{
+      pmFindMatchingDiseases(a).forEach(d=>{ if(!matched.includes(d)) matched.push(d); });
+    });
     pmRenderMatchingDiseases(matched, resultsEl);
     // منتخب کرنے کے بعد پوری فہرست چھپا دیں — صرف منتخب کردہ نام نظر آئے، ساتھ باقی فہرست نہ آئے
     pmMizajHideList(val);
@@ -7127,7 +7188,7 @@ function pmMizajShowList(){
     filterEl.addEventListener('input', ()=>{
       const q = pmNormalizeWord(filterEl.value);
       if(!q){ pmRenderMizajOptionsList(pmMizajOptions); return; }
-      const filtered = pmMizajOptions.filter(o=> pmNormalizeWord(o).indexOf(q) !== -1);
+      const filtered = pmMizajOptions.filter(o=> [o].concat(PM_MIZAJ_ALIASES[o] || []).some(n=> pmNormalizeWord(n).indexOf(q) !== -1));
       pmRenderMizajOptionsList(filtered);
     });
   }
