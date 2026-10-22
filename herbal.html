@@ -205,16 +205,16 @@ footer{position:fixed; left:0; right:0; bottom:0; z-index:55; text-align:center;
 
   <div style="text-align:center; margin-bottom:18px;">
     <div id="knownMizajContainer" style="max-width:420px; margin:0 auto 10px;"></div>
-    <p style="color:var(--muted); font-size:.9rem;">اگر آپ کو اپنا مزاج معلوم ہو تو اوپر تکون پر کلک کر کے مزاج منتخب کریں۔ معلوم نہیں تو چھوڑ دیں، ویسے ہی جو علامات، بیماری وغیرہ آپ لکھیں گے اسی کو مدنظر رکھ کر مزاج بتا دیا جائے گا۔<br><br>اب نیچے اپنی مکمل تکلیف، علامات، بیماری وغیرہ لکھیں۔</p>
+    <p style="color:var(--muted); font-size:.9rem;">اگر آپ کو اپنا مزاج معلوم ہو تو اوپر تکون پر کلک کر کے مزاج منتخب کریں۔ معلوم نہیں تو چھوڑ دیں، ویسے ہی جو علامات اور بیماریاں آپ نیچے منتخب کریں گے انہی کو مدنظر رکھ کر مزاج بتا دیا جائے گا۔<br><br>اب نیچے علامات اور بیماریاں منتخب کریں۔</p>
     <div style="margin-top:8px;">
       <span onclick="toggleMethodInfo('1')" style="cursor:pointer; color:var(--gold-soft); font-size:.85rem; user-select:none;">استعمال کا طریقہ <span id="method-arrow-1">▾</span></span>
     </div>
-    <p id="method-info-1" style="display:none; color:var(--muted); font-size:.85rem; text-align:right; margin-top:8px; line-height:1.9;">سب سے پہلے اوپر خانے میں اپنی بیماری، تکلیف، علامات وغیرہ تفصیل سے لکھیں — جتنی زیادہ تفصیل ہوگی، تشخیص اتنی ہی درست ہوگی۔ اس کے بعد یہ بٹن دبائیں۔ آپ کی تحریر کو خود بخود پڑھا جائے گا: جو بیماریاں آپ نے لکھی ہوں وہ خودکار طور پر شناخت ہو کر منتخب ہو جائیں گی، اور اگر کوئی بات مزید واضح کرنے کی ضرورت ہو تو صرف وہی اضافی سوالات دکھائے جائیں گے جو واقعی ضروری ہوں (ممکن ہے ایک بھی سوال نہ آئے)۔ ان سوالات کے جواب دینے کے بعد، یا اگر پہلے ہی معلومات کافی ہوں تو فوراً، آپ کے مزاج کے مطابق تشخیص کی جائے گی اور دوائی بتائی جائے گی۔</p>
+    <p id="method-info-1" style="display:none; color:var(--muted); font-size:.85rem; text-align:right; margin-top:8px; line-height:1.9;">نیچے پہلے "تمام علامات" کے سوالات میں سے جو یقینی طور پر موجود ہوں وہ منتخب کریں، پھر "تمام بیماریاں" میں متاثرہ عضو کھول کر مریض کی بیماریاں اور علامات پر ✓ لگائیں۔ آخر میں "مزاج کی تشخیص اور علاج" دبائیں — منتخب علامات اور بیماریوں کے مطابق مزاج بتایا جائے گا اور اسی کے مطابق دوائی بھی۔</p>
   </div>
 
-  <h3 style="color:var(--gold-soft); text-align:center; margin-bottom:8px;">اپنی مکمل تکلیف لکھیں</h3>
+  <h3 style="display:none; color:var(--gold-soft); text-align:center; margin-bottom:8px;">اپنی مکمل تکلیف لکھیں</h3>
 
-  <div id="freeComplaintBox" style="background:var(--card); border:1px solid var(--gold); border-radius:10px; padding:16px; margin-bottom:20px;">
+  <div id="freeComplaintBox" style="display:none; background:var(--card); border:1px solid var(--gold); border-radius:10px; padding:16px; margin-bottom:20px;">
     <p style="color:var(--muted); font-size:.85rem; text-align:center; margin-bottom:10px;">اپنی بیماری، تکلیف اور علامات تفصیل سے لکھیں — بس اتنا کافی ہے۔</p>
     <textarea id="freeComplaintText" rows="4" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--gold); background:rgba(31,122,77,0.05); color:var(--text); font-family:inherit; font-size:1rem;" placeholder="مثلاً: مجھے دو ہفتوں سے خشک کھانسی ہے، رات کو زیادہ ہوتی ہے..." oninput="homeSuggestDiseases()"></textarea>
     <div id="complaintSuggest" style="display:none; max-height:260px; overflow-y:auto; border:1px solid var(--gold); border-radius:8px; margin-top:6px; background:var(--card);"></div>
@@ -226,7 +226,7 @@ footer{position:fixed; left:0; right:0; bottom:0; z-index:55; text-align:center;
     <p id="complaintAnalysisStatus" style="color:var(--muted); font-size:.85rem; text-align:center; margin-top:12px;"></p>
   </div>
 
-  <div id="combinedWrap" style="display:none; background:var(--card); border:1px solid var(--gold); border-radius:10px; padding:16px; margin-bottom:20px;">
+  <div id="combinedWrap" style="background:var(--card); border:1px solid var(--gold); border-radius:10px; padding:16px; margin-bottom:20px;">
     <div id="diagnosisFieldsWrap">
     <h3 style="color:var(--gold-soft); text-align:center; margin-bottom:6px;">تمام علامات</h3>
     <p style="color:var(--muted); font-size:.8rem; text-align:center; margin-bottom:10px;">جو علامت یقینی طور پر موجود ہو صرف اسی کو منتخب کریں — غیر یقینی یا نامعلوم علامت کو چھوڑ دیں۔</p>
@@ -237,7 +237,7 @@ footer{position:fixed; left:0; right:0; bottom:0; z-index:55; text-align:center;
     </div>
     </div>
 
-    <div id="diseaseSectionWrap" style="display:none;">
+    <div id="diseaseSectionWrap">
     <h3 style="color:var(--gold); margin-top:24px; padding-top:16px; border-top:1px solid var(--border); text-align:center;">تمام بیماریاں</h3>
     <div class="rule-box">نیچے اعضاء کے مطابق بیماریوں کے بٹن ہیں۔ جو عضو متاثر ہو اس کا بٹن دبا کر فہرست میں سے مریض کی بیماری/علامت منتخب کریں۔ جو بیماری یقینی طور پر موجود ہو صرف اسی کو منتخب کریں — جو معلوم نہ ہو یا یقین نہ ہو، اسے چھوڑ دیں، کوئی مسئلہ نہیں ہوگا۔</div>
     <input class="search" id="diseaseSearch" placeholder="بیماری تلاش کریں..." onkeyup="filterDiseases()">
@@ -247,6 +247,9 @@ footer{position:fixed; left:0; right:0; bottom:0; z-index:55; text-align:center;
     </div>
     <div id="diseaseApiResultBox" style="margin:10px 0;"></div>
     <div class="mizaj-columns" id="diseaseGrid"></div>
+    <div style="text-align:center; margin-top:16px;">
+      <button class="btn" onclick="computeMizaj()" style="box-shadow:0 4px 14px rgba(0,0,0,0.3); padding:14px 22px; font-size:.95rem; border-radius:30px;">مزاج کی تشخیص اور علاج</button>
+    </div>
     </div>
   </div>
 
