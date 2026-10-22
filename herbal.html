@@ -161,6 +161,7 @@ tr:nth-child(even){background:rgba(31,122,77,0.04);}
 .pm-check-row .pm-check-body{flex:1;}
 .pm-check-row.checked{border-color:var(--gold) !important; background:rgba(31,122,77,.10) !important;}
 .pm-picked{display:block; font-size:.75rem; font-weight:400; opacity:.9;}
+.pm-def-none{color:var(--muted) !important; opacity:.8;}
 .pm-def-tag{margin:2px 34px 0 0; font-size:.72rem; color:var(--leaf);}
 #homeCatalog .pm-other-names, #deficiencySymptomList .pm-other-names{margin-right:34px;}
 .pm-other-names{margin:2px 34px 0 0; font-size:.75rem; line-height:1.8; color:var(--muted);}
@@ -831,22 +832,29 @@ function qmDeficiencyDiagnose(){
   const boxes = Array.from(document.querySelectorAll('#deficiencySymptomList input:checked'));
   const checked = new Set();
   const noLink = [];
+  const linked = []; // {name, defs:[کمی کے نام]} — اصل علامت کی عبارت کے بغیر جوڑے گئے نام
   boxes.forEach(c=>{
-    let defs = [];
+    let defs = [], defv = [];
     try{ defs = c.dataset.def ? JSON.parse(c.dataset.def) : [c.value]; }catch(e){ defs = [c.value]; }
-    if(defs.length) defs.forEach(t=> checked.add(t)); else noLink.push(c.value);
+    try{ defv = c.dataset.defv ? JSON.parse(c.dataset.defv) : []; }catch(e){}
+    defs.forEach(t=> checked.add(t));
+    if(!defs.length && !defv.length) noLink.push(c.value);
+    if(defv.length) linked.push({name:c.value, defs:defv, texts:defs});
   });
   const out = document.getElementById('deficiencyResult');
   const noLinkNote = noLink.length ? `<p style="color:var(--muted); font-size:.82rem; text-align:center; margin-top:6px;">ان کا تعلق کسی وٹامن/معدنیات کی کمی سے ہماری فہرست میں نہیں: ${noLink.map(escapeHtmlSearch).join('، ')}</p>` : '';
   if(!boxes.length){ out.innerHTML = '<p style="color:#e0524f; text-align:center;">پہلے کم از کم ایک علامت منتخب کریں۔</p>'; return; }
   const matches = QM_DEFICIENCY_DATA.map(d=>{
     const hit = d.symptoms.filter(s=> checked.has(s.t));
-    return { d, hit, pct: Math.round(hit.length * 100 / d.symptoms.length) };
+    // اضافی جوڑے گئے نام (جن کی عبارت اس کمی کی اپنی علامات میں نہیں)
+    linked.forEach(l=>{ if(l.defs.includes(d.name) && !d.symptoms.some(s=> l.texts.includes(s.t))) hit.push({t:l.name}); });
+    const total = d.symptoms.length + (PM_EXTRA_DEF_COUNT[d.name] || []).length;
+    return { d, hit, total, pct: Math.round(hit.length * 100 / total) };
   }).filter(x=> x.hit.length > 0).sort((a,b)=> (b.hit.length - a.hit.length) || (b.pct - a.pct));
   if(!matches.length){ out.innerHTML = '<p style="color:var(--muted); text-align:center;">منتخب علامات سے کسی خاص کمی کا امکان ظاہر نہیں ہوتا۔</p>' + noLinkNote; return; }
-  out.innerHTML = matches.map(({d, hit, pct})=> `
+  out.innerHTML = matches.map(({d, hit, total, pct})=> `
     <div class="mujarrab-card" style="margin-bottom:14px;">
-      <h4 style="color:var(--gold); margin-bottom:6px;">${escapeHtmlSearch(d.name)} <span style="color:var(--gold-soft); font-size:.78rem;">(${hit.length} میں سے ${d.symptoms.length} علامات ملیں — ${pct}%)</span></h4>
+      <h4 style="color:var(--gold); margin-bottom:6px;">${escapeHtmlSearch(d.name)} <span style="color:var(--gold-soft); font-size:.78rem;">(${hit.length} ${hit.length === 1 ? 'علامت ملی' : 'علامات ملیں'})</span></h4>
       ${d.about ? `<p style="font-size:.85rem; color:var(--text); margin-bottom:6px;">یہ کیا ہے: ${escapeHtmlSearch(d.about)}</p>` : ''}
       <p style="font-size:.85rem; color:var(--muted); margin-bottom:8px;">ملنے والی علامات: ${hit.map(s=> escapeHtmlSearch(s.t)).join('، ')}</p>
       <p style="font-size:.9rem; margin-bottom:4px;"><b style="color:var(--gold-soft);">یہ کمی پوری کرنے کے لیے غذائیں:</b></p>
@@ -7887,6 +7895,442 @@ function pmMizajOtherNames(n){
 const PM_SYMPTOM_ORGAN = {};   // علامت ← عضو
 const PM_SYMPTOM_DEFICIENCY = {}; // علامت ← کن وٹامن/معدنیات کی کمی میں
 const PM_DEF_TEXTS_OF = {}; // فہرست کا نام ← "کمی کی تشخیص" کی اصل علامات (عبارت)
+// باقی بیماریوں/علامات کا وٹامن/معدنیات کی کمی سے عام طور پر مانا جانے والا تعلق (مختصر نام → اوپر QM_DEFICIENCY_DATA کا نام)
+const PM_EXTRA_DEFICIENCY = {
+"سردرد": [
+"میگنیشیم",
+"B2",
+"آئرن"
+],
+"عام سردرد": [
+"میگنیشیم",
+"B2",
+"آئرن"
+],
+"دائمی سردرد": [
+"میگنیشیم",
+"B2",
+"آئرن"
+],
+"ذہنی سردرد": [
+"میگنیشیم",
+"B2",
+"آئرن"
+],
+"دماغی کمزوری کا سردرد": [
+"میگنیشیم",
+"B2",
+"آئرن"
+],
+"ٹھنڈا سر درد": [
+"میگنیشیم",
+"B2",
+"آئرن"
+],
+"درد شقیقہ دائیں طرف": [
+"میگنیشیم",
+"B2"
+],
+"سردرد شقیقہ بائیں طرف": [
+"میگنیشیم",
+"B2"
+],
+"بے ہوشی": [
+"آئرن",
+"B12"
+],
+"مرگی": [
+"B6",
+"میگنیشیم"
+],
+"مالیخولیا": [
+"D",
+"B12",
+"B9"
+],
+"گھبراہٹ اور بے چینی": [
+"میگنیشیم",
+"B6"
+],
+"غصہ زیادہ آنا": [
+"میگنیشیم",
+"B6"
+],
+"سر بھاری رہنا": [
+"آئرن"
+],
+"سر کی کھال کی خشکی": [
+"زنک",
+"B6",
+"B7"
+],
+"آنکھوں کے گرد سیاہ حلقے": [
+"آئرن",
+"K"
+],
+"آنکھ پھڑکنا": [
+"میگنیشیم"
+],
+"سفید موتیا": [
+"C",
+"E"
+],
+"روشنی سے آنکھیں چندھیانا": [
+"A",
+"B2"
+],
+"دھندلا نظر آنا": [
+"A"
+],
+"کان کا بجنا": [
+"B12",
+"زنک",
+"میگنیشیم"
+],
+"بار بار زکام ہونا": [
+"C",
+"D",
+"زنک"
+],
+"نزلہ": [
+"C",
+"D",
+"زنک"
+],
+"ناک سے خون نکلنا": [
+"C",
+"K"
+],
+"ہونٹوں کا پھٹنا": [
+"B2",
+"B3",
+"آئرن",
+"زنک"
+],
+"ہونٹ کی خشکی": [
+"B2",
+"B3"
+],
+"زبان پر چھالے": [
+"B12",
+"B9",
+"آئرن"
+],
+"زبان کا ذائقہ محسوس نہ ہونا": [
+"زنک"
+],
+"زبان کا پھولنا": [
+"B2",
+"B3",
+"B12"
+],
+"زبان کا سوجن": [
+"B2",
+"B3",
+"B12"
+],
+"زبان کا کھردرا پن": [
+"B3"
+],
+"دانتوں کا ہلنا": [
+"C",
+"D"
+],
+"مسوڑوں کا ورم": [
+"C"
+],
+"مسوڑھوں کی بیماری": [
+"C",
+"D"
+],
+"مسوڑھوں میں پیپ (پائیوریا)": [
+"C",
+"D"
+],
+"دانتوں کا ریزہ ریزہ ہونا": [
+"کیلشیم",
+"D"
+],
+"دانتوں کا گرنا": [
+"کیلشیم",
+"D"
+],
+"دانتوں میں کیڑا لگنا": [
+"کیلشیم",
+"D"
+],
+"دانتوں میں ٹھنڈا گرم لگنا": [
+"کیلشیم",
+"D"
+],
+"دانت پیسنا": [
+"میگنیشیم"
+],
+"دمہ": [
+"D",
+"میگنیشیم"
+],
+"سانس لینے میں دقت": [
+"آئرن"
+],
+"دل کی گھبراہٹ": [
+"میگنیشیم",
+"آئرن"
+],
+"ضعفِ قلب": [
+"B1",
+"میگنیشیم"
+],
+"جی متلانا": [
+"B6"
+],
+"قبض": [
+"میگنیشیم"
+],
+"پرانی قبض": [
+"میگنیشیم"
+],
+"شدید قبض": [
+"میگنیشیم"
+],
+"سنگرہنی": [
+"B12",
+"B9",
+"آئرن"
+],
+"ضعفِ باہ": [
+"زنک",
+"D"
+],
+"نامردی": [
+"زنک",
+"D"
+],
+"انتشار کی کمی": [
+"زنک",
+"D"
+],
+"شہوت کی کمی": [
+"زنک",
+"D"
+],
+"سپرم کی کمی": [
+"زنک",
+"B12"
+],
+"منی کی کمی": [
+"زنک",
+"B12"
+],
+"مادہ منویہ کی کمی (ٹیسٹوسٹیرون کی کمی)": [
+"زنک",
+"D"
+],
+"مردانہ بانجھ پن": [
+"زنک",
+"B12",
+"D"
+],
+"کثرتِ حیض": [
+"آئرن",
+"K"
+],
+"ماہواری میں درد": [
+"میگنیشیم",
+"B6"
+],
+"ماہواری کا بے قاعدہ آنا": [
+"B9",
+"D",
+"آئرن"
+],
+"زنانہ بانجھ پن": [
+"B9",
+"D",
+"آئرن"
+],
+"حملِ ضائع ہونا": [
+"B9",
+"D"
+],
+"پٹھوں کا اکڑاؤ": [
+"میگنیشیم",
+"کیلشیم",
+"D"
+],
+"پٹھوں میں درد": [
+"میگنیشیم",
+"D"
+],
+"ہاتھ پاؤں میں اینٹھن": [
+"میگنیشیم",
+"کیلشیم"
+],
+"پنڈلیوں میں درد": [
+"میگنیشیم",
+"کیلشیم"
+],
+"کمر درد": [
+"D",
+"کیلشیم"
+],
+"مہرے میں درد": [
+"D",
+"کیلشیم"
+],
+"گھٹنے کا درد": [
+"D",
+"کیلشیم"
+],
+"ایڑی میں درد": [
+"D",
+"کیلشیم"
+],
+"کولہے کا درد": [
+"D",
+"کیلشیم"
+],
+"ہڈیوں کا بھربھرا پن": [
+"کیلشیم",
+"D",
+"K"
+],
+"جوڑوں کا اکڑنا": [
+"D"
+],
+"گنجا پن": [
+"آئرن",
+"زنک",
+"B7",
+"D"
+],
+"پلکوں کے بال گرنا": [
+"آئرن",
+"زنک",
+"B7"
+],
+"ناخن سفید ہونا": [
+"زنک",
+"آئرن"
+],
+"ناخن کا پتلا ہونا": [
+"آئرن",
+"B7"
+],
+"ناخن کا پھٹنا": [
+"B7",
+"آئرن"
+],
+"ناخن کا بیٹھنا": [
+"آئرن"
+],
+"جلد کا پھٹنا": [
+"A",
+"E",
+"B3"
+],
+"ایڑیاں پھٹنا": [
+"A",
+"E",
+"B3"
+],
+"کیل مہاسے": [
+"زنک",
+"A"
+],
+"ایگزیما": [
+"D",
+"زنک"
+],
+"بالوں کا سفید ہونا": [
+"B12",
+"آئرن",
+"B9"
+],
+"جلد کا کالا پڑنا": [
+"B12",
+"B9"
+],
+"چھائیاں": [
+"B12",
+"B9"
+],
+"چنبل": [
+"D"
+],
+"برص": [
+"B12",
+"B9"
+],
+"وزن کم ہونا": [
+"پروٹین"
+],
+"سستی اور کاہلی": [
+"آئرن",
+"B12",
+"D"
+],
+"پورے جسم میں درد": [
+"D",
+"میگنیشیم"
+],
+"سردی زیادہ لگنا": [
+"آئرن",
+"B12"
+],
+"ہاتھ پاؤں ٹھنڈے رہنا": [
+"آئرن",
+"B12"
+],
+"پسینہ زیادہ آنا": [
+"D"
+],
+"ہاتھ پاؤں کی جلن": [
+"B12",
+"B1",
+"B6"
+],
+"درد اعصابہ": [
+"B1",
+"B6",
+"B12"
+],
+"ڈپریشن": [
+"D",
+"B12",
+"B9"
+],
+"بچوں کا سوکڑا": [
+"پروٹین"
+],
+"الرجی": [
+"D",
+"C"
+],
+"انفکشن": [
+"C",
+"D",
+"زنک"
+],
+"بار بار بخار ہونا": [
+"C",
+"D",
+"زنک"
+],
+"گہری نیند/غفلت کی نیند": [
+"آئرن",
+"B12"
+],
+"جسم کا پھول جانا": [
+"پروٹین"
+]
+};
+const PM_EXTRA_DEF_COUNT = {}; // کمی ← اس سے جوڑے گئے اضافی نام
+function pmDefFullName(short){
+  if(typeof QM_DEFICIENCY_DATA === 'undefined') return null;
+  const d = QM_DEFICIENCY_DATA.find(x=> x.name === short || x.name.startsWith(short + ' ') || x.name.startsWith(short + '(') || x.name === 'وٹامن ' + short || x.name.startsWith('وٹامن ' + short + ' '));
+  return d ? d.name : null;
+}
 // ملتے جلتے نام پہچاننے کے لیے: اسپیس، ے/ی، ہ کی شکلیں اور الفاظ کی ترتیب نظر انداز
 function pmMizajNameKey(n){
   return pmNormalizeWord(String(n).replace(/\([^)]*\)/g, ' ')).replace(/[ےۓ]/g, 'ی').replace(/[ہۃة]/g, 'ه')
@@ -7921,6 +8365,14 @@ function pmPopulateMizajSelect(){
   };
   if(typeof QM_DEFICIENCY_DATA !== 'undefined') QM_DEFICIENCY_DATA.forEach(v=> (v.symptoms || []).forEach(sy=> addSymptom(sy.t, sy.o, v.name)));
   Object.keys(PM_MIZAJ_EXTRA_SYMPTOMS).forEach(organ=> PM_MIZAJ_EXTRA_SYMPTOMS[organ].forEach(t=> addSymptom(t, organ)));
+  Object.keys(PM_EXTRA_DEFICIENCY).forEach(n=> PM_EXTRA_DEFICIENCY[n].forEach(sh=>{
+    const full = pmDefFullName(sh);
+    if(!full) return;
+    const arr = (PM_SYMPTOM_DEFICIENCY[n] = PM_SYMPTOM_DEFICIENCY[n] || []);
+    if(arr.includes(full)) return;
+    arr.push(full);
+    (PM_EXTRA_DEF_COUNT[full] = PM_EXTRA_DEF_COUNT[full] || []).push(n);
+  }));
   options.sort((a,b)=> a.localeCompare(b, 'ur'));
   pmMizajOptions = options;
   pmRenderMizajOptionsList(options);
@@ -8077,8 +8529,10 @@ function herbalBuildKamiCatalog(el){
   el.style.display = 'block';
   const short = n=> n.replace(/^وٹامن\s*/, '').replace(/\s*\([^)]*\)$/, '').trim();
   el.innerHTML = pmCatalogHtml(pmMizajOptions, {
-    check:(n)=> `<input type="checkbox" value="${escapeHtmlSearch(n)}" data-def="${escapeHtmlSearch(JSON.stringify(PM_DEF_TEXTS_OF[n] || [])).replace(/"/g, '&quot;')}" onchange="this.closest('.pm-check-row').classList.toggle('checked', this.checked); pmCatalogUpdatePicked(document.getElementById('deficiencySymptomList'))">`,
-    extra:(n)=> (PM_SYMPTOM_DEFICIENCY[n] || []).length ? `<div class="pm-def-tag">کمی: ${PM_SYMPTOM_DEFICIENCY[n].map(v=> escapeHtmlSearch(short(v))).join('، ')}</div>` : ''
+    check:(n)=> `<input type="checkbox" value="${escapeHtmlSearch(n)}" data-defv="${escapeHtmlSearch(JSON.stringify(PM_SYMPTOM_DEFICIENCY[n] || [])).replace(/"/g, '&quot;')}" data-def="${escapeHtmlSearch(JSON.stringify(PM_DEF_TEXTS_OF[n] || [])).replace(/"/g, '&quot;')}" onchange="this.closest('.pm-check-row').classList.toggle('checked', this.checked); pmCatalogUpdatePicked(document.getElementById('deficiencySymptomList'))">`,
+    extra:(n)=> (PM_SYMPTOM_DEFICIENCY[n] || []).length
+      ? `<div class="pm-def-tag">کمی: ${PM_SYMPTOM_DEFICIENCY[n].map(v=> escapeHtmlSearch(short(v))).join('، ')}</div>`
+      : `<div class="pm-def-tag pm-def-none">کمی: کسی خاص وٹامن/معدنیات کی کمی سے تعلق معلوم نہیں</div>`
   });
   pmCatalogWire(el);
 }
