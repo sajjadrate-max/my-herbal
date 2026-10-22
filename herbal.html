@@ -10831,6 +10831,14 @@ if('serviceWorker' in navigator && herbalCanLoadSiteFiles()){
   window.addEventListener('load', ()=>{
     navigator.serviceWorker.register('sw.js').catch(()=>{});
   });
+  // نیا ورژن آتے ہی صفحہ ایک بار خود تازہ ہو جائے (پہلی بار انسٹال پر نہیں)
+  const hadController = !!navigator.serviceWorker.controller;
+  let swReloaded = false;
+  navigator.serviceWorker.addEventListener('controllerchange', ()=>{
+    if(!hadController || swReloaded) return;
+    swReloaded = true;
+    location.reload();
+  });
 }
 // "ایپ انسٹال کریں" — Android/Chrome پر براہِ راست انسٹال، iPhone پر طریقہ بتائیں
 (function(){

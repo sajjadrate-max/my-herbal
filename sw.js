@@ -1,7 +1,7 @@
 // sw.js — My Herbal | قانونِ مفرد اعضاء
 // مقصد: سائٹ کو آف لائن اور ایپ کی طرح انسٹال کے قابل بنانا، اور دوبارہ کھولنے پر فوراً کھلنا
 
-const CACHE_NAME = 'my-herbal-cache-v21';
+const CACHE_NAME = 'my-herbal-cache-v22';
 const ASSETS_TO_CACHE = [
   '/',
   '/herbal.html',
@@ -52,6 +52,25 @@ self.addEventListener('fetch', (event) => {
 
   if (event.request.method !== 'GET') return;
 
+  // صفحات (HTML): ہمیشہ نیٹ ورک سے تازہ ورژن — نیٹ ورک نہ ہو یا 5 سیکنڈ میں جواب نہ آئے تو محفوظ ورژن
+  const isPage = event.request.mode === 'navigate' || url.pathname === '/' || url.pathname.endsWith('.html');
+  if (isPage) {
+    event.respondWith(
+      caches.open(CACHE_NAME).then((cache) => {
+        const network = fetch(event.request).then((res) => {
+          if (res && res.status === 200) cache.put(event.request, res.clone());
+          return res;
+        });
+        const timeout = new Promise((resolve) => setTimeout(() => resolve(null), 5000));
+        return Promise.race([network.catch(() => null), timeout]).then((res) =>
+          res || cache.match(event.request).then((cached) => cached || network)
+        );
+      })
+    );
+    return;
+  }
+
+  // باقی فائلیں (تصاویر، ڈیٹا): محفوظ ورژن فوراً، پیچھے سے تازہ
   event.respondWith(
     caches.open(CACHE_NAME).then((cache) =>
       cache.match(event.request).then((cached) => {
