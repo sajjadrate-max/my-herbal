@@ -39,13 +39,18 @@ body::before{
   opacity:0.08;
 }
 body > *{position:relative; z-index:1;}
-header{position:sticky; top:0; z-index:50; background:rgba(255,255,255,0.95); border-bottom:2px solid var(--gold); box-shadow:0 2px 10px rgba(31,122,77,.08);
-  backdrop-filter:blur(6px); padding:14px 20px; display:flex; align-items:center; justify-content:center; flex-wrap:wrap; gap:10px;}
+header{position:relative; z-index:50; background:rgba(255,255,255,0.95); border-bottom:2px solid var(--gold); box-shadow:0 2px 10px rgba(31,122,77,.08);
+  backdrop-filter:blur(6px); padding:10px 10px; display:flex; align-items:center; justify-content:center; flex-wrap:wrap; gap:10px;}
 .brand{font-size:1.6rem; color:var(--gold); font-weight:700; text-decoration:none; font-family:'Poppins',sans-serif; letter-spacing:1px;}
 .brand span{font-family:'Poppins',sans-serif; font-size:.85rem; color:var(--muted); display:block; letter-spacing:1px;}
-nav{display:flex; gap:10px 16px; flex-wrap:wrap;}
-nav a{color:var(--text); text-decoration:none; font-size:.95rem; opacity:.85; cursor:pointer;}
-nav a:hover, nav a.active{color:var(--gold); opacity:1;}
+nav{display:grid; grid-template-columns:1fr 1fr; gap:8px; width:100%; max-width:760px;}
+nav a{display:flex; align-items:center; gap:6px; color:var(--text); text-decoration:none; font-size:.82rem; line-height:1.6; cursor:pointer;
+  background:var(--card); border:1px solid var(--border); border-radius:10px; padding:6px 8px; min-height:46px;}
+nav a .ni{font-size:1.05rem; flex:none;}
+nav a:hover{border-color:var(--gold);}
+nav a.active{background:var(--gold); color:#fff; border-color:var(--gold);}
+#nav-khata{color:var(--leaf); font-weight:700;}
+@media(min-width:700px){ nav{grid-template-columns:repeat(4,1fr);} }
 main{max-width:1000px; margin:0 auto; padding:30px 18px 130px;}
 .page-section{display:none;}
 .page-section.active{display:block;}
@@ -191,14 +196,14 @@ footer{position:fixed; left:0; right:0; bottom:0; z-index:55; text-align:center;
 
 <header>
   <nav>
-    <a onclick="location.reload()" id="nav-home">Home</a>
-    <a onclick="showPage('ghiza')" id="nav-ghiza">غذائی چارٹ</a>
-    <a onclick="showPage('nuskhe')" id="nav-nuskhe">نسخہ جات</a>
-    <a onclick="showPage('naskhesaz')" id="nav-naskhesaz">نسخہ سازی</a>
-    <a onclick="showPage('pdfmulti')" id="nav-pdfmulti">بیماری کی تلاش</a>
-    <a onclick="showPage('kami')" id="nav-kami">کمی کی تشخیص</a>
-    <a onclick="showPage('wajah')" id="nav-wajah">میڈیکل کے مطابق</a>
-    <a href="mareez-khata.html" id="nav-khata" style="color:var(--leaf); font-weight:700;">📒 مریضوں کا کھاتہ</a>
+    <a onclick="location.reload()" id="nav-home" class="active"><span class="ni">🏠</span>ہوم — مزاج کی تشخیص و علاج</a>
+    <a onclick="showPage('pdfmulti')" id="nav-pdfmulti"><span class="ni">🔍</span>بیماری کی تلاش اور مزاج</a>
+    <a onclick="showPage('nuskhe')" id="nav-nuskhe"><span class="ni">📜</span>نسخہ جات — مزاج کے مطابق</a>
+    <a onclick="showPage('naskhesaz')" id="nav-naskhesaz"><span class="ni">🌿</span>نسخہ سازی — جڑی بوٹیوں سے</a>
+    <a onclick="showPage('ghiza')" id="nav-ghiza"><span class="ni">🥗</span>غذائی چارٹ — مزاج کے مطابق</a>
+    <a onclick="showPage('kami')" id="nav-kami"><span class="ni">🩺</span>وٹامن و معدنیات کی کمی کی تشخیص</a>
+    <a onclick="showPage('wajah')" id="nav-wajah"><span class="ni">💊</span>میڈیکل کے مطابق ادویات</a>
+    <a href="mareez-khata.html" id="nav-khata"><span class="ni">📒</span>مریضوں کا کھاتہ</a>
   </nav>
 </header>
 
@@ -8475,7 +8480,7 @@ function pmCatalogWire(listEl){
     if(!d.open) return;
     listEl.querySelectorAll('details.pm-organ-group[open]').forEach(o=>{ if(o !== d) o.open = false; });
     const hdr = document.querySelector('header');
-    const top = d.getBoundingClientRect().top + window.scrollY - (hdr ? hdr.offsetHeight : 0) - 8;
+    const top = d.getBoundingClientRect().top + window.scrollY - (hdr && getComputedStyle(hdr).position === 'sticky' ? hdr.offsetHeight : 0) - 8;
     window.scrollTo({top, behavior:'smooth'});
   }));
 }
@@ -8667,7 +8672,7 @@ function wajahShow(n){
   html += `<p style="text-align:center; color:#e0524f; font-size:.82rem; margin-top:6px;">⚠ یہ کوئی ڈاکٹر نہیں — صرف معلومات کے لیے ہے۔ دوا ڈاکٹر کے مشورے سے ہی لیں۔</p>`;
   out.innerHTML = html;
   const hdr = document.querySelector('header');
-  window.scrollTo({top: out.getBoundingClientRect().top + window.scrollY - (hdr ? hdr.offsetHeight : 0) - 8, behavior:'smooth'});
+  window.scrollTo({top: out.getBoundingClientRect().top + window.scrollY - (hdr && getComputedStyle(hdr).position === 'sticky' ? hdr.offsetHeight : 0) - 8, behavior:'smooth'});
 }
 function wajahBuildCatalog(){
   const el = document.getElementById('wajahCatalog');
@@ -8689,7 +8694,7 @@ function kamiFilterList(){
 // چپکی سرچ پٹی ہیڈر کے بالکل نیچے رہے
 function herbalSetHeaderHeight(){
   const h = document.querySelector('header');
-  if(h) document.documentElement.style.setProperty('--hdr-h', h.offsetHeight + 'px');
+  if(h) document.documentElement.style.setProperty('--hdr-h', (getComputedStyle(h).position === 'sticky' ? h.offsetHeight : 0) + 'px');
 }
 herbalSetHeaderHeight();
 window.addEventListener('resize', herbalSetHeaderHeight);
