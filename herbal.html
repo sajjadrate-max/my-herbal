@@ -154,9 +154,11 @@ tr:nth-child(even){background:rgba(31,122,77,0.04);}
 .pm-organ-group[open] .pm-organ-count{background:rgba(255,255,255,.2); border-color:transparent; color:#fff;}
 .pm-organ-items{padding:4px 10px 10px;}
 .pm-organ-items .pm-mizaj-option{padding:8px 12px; margin-top:6px; border:1px solid var(--border); border-radius:8px; cursor:pointer; color:var(--text); background:var(--navy);}
-.pm-organ-items .pm-mizaj-option::before{content:"• "; color:var(--leaf);}
+.pm-num{display:inline-block; min-width:26px; margin-left:8px; padding:0 4px; text-align:center; border-radius:6px; font-size:.75rem; font-family:'Poppins',sans-serif; background:var(--gold); color:#fff;}
+.pm-symptom .pm-num{background:var(--leaf);}
+.pm-sub-head{margin:10px 2px 0; font-size:.8rem; font-weight:700; color:var(--muted);}
+.pm-total{text-align:center; font-size:.85rem; color:var(--muted); margin:0 0 8px;}
 .pm-organ-items .pm-symptom{background:var(--card); border-style:dashed;}
-.pm-sym-tag{font-size:.65rem; margin-right:8px; padding:0 6px; border-radius:8px; background:var(--navy2); color:var(--muted); border:1px solid var(--border);}
 footer{position:fixed; left:0; right:0; bottom:0; z-index:55; text-align:center; padding:10px; background:var(--gold); color:#eef7ea; border-top:1px solid var(--border); font-size:.85rem;}
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
@@ -7340,16 +7342,23 @@ function pmRenderMizajOptionsList(options){
       <div style="display:flex; flex-wrap:wrap; gap:6px;">${organPseudo.map(o=> `<div class="pm-mizaj-option" data-val="${escapeHtmlSearch(o)}" style="padding:6px 12px; border:1px solid var(--border); border-radius:16px; cursor:pointer; color:var(--gold-soft); font-size:.82rem;">${escapeHtmlSearch(o)}</div>`).join('')}</div>
     </div>`;
   }
+  let totalDis = 0, totalSym = 0;
   html += orderedOrgans.map(organ=>{
     const safe = escapeHtmlSearch(organ);
     // پہلے بیماریاں، پھر علامات — علامت کے ساتھ چھوٹا سا نشان
-    const list = byOrgan[organ].filter(n=> !PM_SYMPTOM_ORGAN[n]).concat(byOrgan[organ].filter(n=> PM_SYMPTOM_ORGAN[n]));
-    const items = list.map(n=> `<div class="pm-mizaj-option${PM_SYMPTOM_ORGAN[n] ? ' pm-symptom' : ''}" data-val="${escapeHtmlSearch(n)}">${escapeHtmlSearch(n)}${PM_SYMPTOM_ORGAN[n] ? '<span class="pm-sym-tag">علامت</span>' : ''}</div>`).join('');
+    const dis = byOrgan[organ].filter(n=> !PM_SYMPTOM_ORGAN[n]);
+    const sym = byOrgan[organ].filter(n=> PM_SYMPTOM_ORGAN[n]);
+    totalDis += dis.length; totalSym += sym.length;
+    const row = (n, i, isSym)=> `<div class="pm-mizaj-option${isSym ? ' pm-symptom' : ''}" data-val="${escapeHtmlSearch(n)}"><span class="pm-num">${i+1}</span>${escapeHtmlSearch(n)}</div>`;
+    const items = (dis.length ? `<div class="pm-sub-head">بیماریاں (${dis.length})</div>` + dis.map((n,i)=> row(n,i,false)).join('') : '')
+      + (sym.length ? `<div class="pm-sub-head">علامات (${sym.length})</div>` + sym.map((n,i)=> row(n,i,true)).join('') : '');
+    const cnt = sym.length ? `${dis.length} بیماریاں + ${sym.length} علامات` : `${dis.length} بیماریاں`;
     return `<details class="pm-organ-group">
-      <summary><span>${safe}</span><span class="pm-organ-count">${byOrgan[organ].length}</span></summary>
+      <summary><span>${safe}</span><span class="pm-organ-count">${cnt}</span></summary>
       <div class="pm-organ-items">${items}</div>
     </details>`;
   }).join('');
+  html = `<div class="pm-total">کل ${totalDis + totalSym}: ${totalDis} بیماریاں اور ${totalSym} علامات — ${orderedOrgans.length} اعضاء</div>` + html;
   listEl.innerHTML = html;
   listEl.querySelectorAll('details.pm-organ-group').forEach(d=> d.addEventListener('toggle', ()=>{
     if(!d.open) return;
