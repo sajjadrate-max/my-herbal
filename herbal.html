@@ -7622,7 +7622,8 @@ function wajahShow(n){
   html += wajahMedsHtml(n) + wajahSpecialistHtml(n);
   if(vit.length) html += `<div class="mujarrab-card"><p style="font-size:.88rem;">یہ ان کی کمی سے بھی ہو سکتی ہے: <b>${vit.map(escapeHtmlSearch).join('، ')}</b> — تفصیل "کمی کی تشخیص" میں۔</p></div>`;
   html += `<p style="text-align:center; color:#e0524f; font-size:.82rem; margin-top:6px;">⚠ یہ کوئی ڈاکٹر نہیں — صرف معلومات کے لیے ہے۔ دوا ڈاکٹر کے مشورے سے ہی لیں۔</p>` + back;
-  out.innerHTML = html;
+  out.innerHTML = html + '<div class="dd-wrap"></div>';
+  herbalDiseaseDetail(n, out.querySelector('.dd-wrap'));
   const hdr = document.querySelector('header');
   window.scrollTo({top: out.getBoundingClientRect().top + window.scrollY - (hdr && getComputedStyle(hdr).position === 'sticky' ? hdr.offsetHeight : 0) - 8, behavior:'smooth'});
 }
@@ -7643,6 +7644,86 @@ function wajahBuildCatalog(){
 function wajahFilterList(){
   const el = document.getElementById('wajahCatalog'), f = document.getElementById('wajahListFilter');
   if(el && f) pmCatalogFilter(el, f.value, document.getElementById('wajahListFilterCount'));
+}
+// ===== بیماری کی مکمل تفصیل — ہر طب کے مطابق (قانون مفرد اعضاء، یونانی، ایلوپیتھک، میڈیکل، ہومیو، بائیوکیمک، آیوروید) =====
+// کتابوں کا جو متن سائٹ کے پاس ہے اس میں سے اقتباسات (حوالے کے ساتھ) + AI کی ترتیب دی ہوئی تفصیل؛ ایک بار بنے تو اسی فون میں محفوظ
+const DD_CACHE_KEY = 'ddet1:';
+function ddBookExcerpts(name){
+  if(typeof pmLibrary === 'undefined' || !pmLibrary.length) return [];
+  const terms = [...new Set([name].concat(pmMizajOtherNames(name)).map(t=> String(t).replace(/\s*\([^)]*\)\s*/g, ' ').trim()).filter(t=> t.length >= 3))];
+  const nt = terms.map(t=> pmNormalizeWord(t));
+  const hits = [];
+  pmLibrary.forEach(entry=>{
+    if(pmIsBlockedBook(entry.fileName)) return;
+    (entry.pages || []).forEach(pg=>{
+      const text = String(pg.text || '');
+      if(text.length < 40) return;
+      const norm = pmNormalizeWord(text);
+      const i = nt.findIndex(t=> norm.indexOf(t) !== -1);
+      if(i < 0) return;
+      const at = Math.max(0, norm.indexOf(nt[i]));
+      hits.push({ entry, page: pg.printedPageNum || pg.pageNum, pageNum: pg.pageNum, term: terms[i], len: text.length,
+        text: (at > 220 ? '…' : '') + text.slice(Math.max(0, at - 220), at + 480).trim() + (at + 480 < text.length ? '…' : '') });
+    });
+  });
+  // لمبے (پورے متن والے) صفحے پہلے، ایک کتاب سے زیادہ سے زیادہ 3
+  hits.sort((a, b)=> b.len - a.len);
+  const per = {}, out = [];
+  hits.forEach(h=>{ const k = h.entry.fileName; if((per[k] = (per[k] || 0) + 1) <= 3 && out.length < 8) out.push(h); });
+  return out;
+}
+function ddList(arr){ return arr && arr.length ? '<ul style="margin:4px 18px 8px 0; padding:0;">' + arr.map(x=> `<li>${escapeHtmlSearch(x)}</li>`).join('') + '</ul>' : ''; }
+function ddRenderAi(d){
+  const row = (label, body)=> body ? `<div style="margin:6px 0;"><b style="color:var(--gold-soft);">${label}</b>${body}</div>` : '';
+  const p = t=> t ? `<p style="margin:2px 0;">${escapeHtmlSearch(t)}</p>` : '';
+  return (d.summary ? `<p style="margin:6px 0 10px;">${escapeHtmlSearch(d.summary)}</p>` : '')
+    + (d.warning ? `<p style="margin:0 0 10px; color:#e0524f; font-weight:700;">🚨 ${escapeHtmlSearch(d.warning)}</p>` : '')
+    + (d.systems || []).map((s, i)=> `<details class="pm-organ-group"${i === 0 ? ' open' : ''}>
+        <summary><span>${escapeHtmlSearch(s.title)}</span></summary>
+        <div style="padding:8px 12px; line-height:1.9;">
+          ${row('یہ کیوں ہوتی ہے', p(s.why))}
+          ${row('وجوہات', ddList(s.causes))}
+          ${row('علامات / پہچان', ddList(s.signs))}
+          ${row('علاج کا اصول', p(s.principle))}
+          ${row('دوائیں', (s.remedies || []).length ? ddList(s.remedies.map(r=> r.name + (r.when ? ' — ' + r.when : ''))) : '')}
+          ${row('ٹیسٹ', ddList(s.tests))}
+          ${row('غذا / پرہیز', p(s.diet))}
+          ${row('⚠ احتیاط', p(s.caution))}
+        </div></details>`).join('')
+    + `<p style="font-size:.75rem; color:var(--muted); margin-top:8px;">یہ تفصیل عام طبی معلومات سے AI نے ترتیب دی ہے (قانون مفرد اعضاء کی تحریک سائٹ کی کتاب کے مطابق) — علاج سے پہلے معالج سے تصدیق کریں۔</p>`;
+}
+async function herbalDiseaseDetail(name, el){
+  if(!el || !name) return;
+  el.innerHTML = `<div class="mujarrab-card" style="border-right-width:6px;"><h4 style="color:var(--gold); margin-bottom:6px;">📚 مکمل تفصیل — ہر طب کے مطابق</h4>
+    <div class="dd-ai"><p style="color:var(--muted);">⏳ تفصیل تیار ہو رہی ہے...</p></div><div class="dd-books"></div></div>`;
+  const aiEl = el.querySelector('.dd-ai'), booksEl = el.querySelector('.dd-books');
+  // کتابوں کے اقتباسات (اگر کتابیں ابھی لوڈ نہیں تو انتظار)
+  try{ await Promise.race([herbalEnsureBooks(), new Promise(r=> setTimeout(r, 8000))]); }catch(e){}
+  const ex = ddBookExcerpts(name);
+  if(el.isConnected && ex.length){
+    booksEl.innerHTML = `<h4 style="color:var(--gold-soft); margin:12px 0 4px;">📖 سائٹ کی کتابوں میں اس کا ذکر</h4>` + ex.map((h, i)=> `<div style="border-top:1px solid var(--border); padding:6px 0; font-size:.9rem;">
+        <b>${escapeHtmlSearch(h.entry.title || h.entry.fileName)}</b> — صفحہ ${escapeHtmlSearch(String(h.page))}
+        <button class="btn" type="button" data-i="${i}" style="padding:2px 10px; font-size:.75rem; border-radius:12px; margin-right:6px;">📖 کھولیں</button>
+        <p style="margin:4px 0 0; color:var(--muted);">${escapeHtmlSearch(h.text)}</p></div>`).join('');
+    booksEl.querySelectorAll('button[data-i]').forEach(b=> b.onclick = ()=>{ const h = ex[+b.dataset.i]; herbalOpenLibraryPdf(h.entry, h.pageNum, h.term); });
+  }
+  let d = null;
+  try{ d = JSON.parse(localStorage.getItem(DD_CACHE_KEY + name) || 'null'); }catch(e){}
+  if(!d){
+    if(!qmAiLive()){ aiEl.innerHTML = '<p style="color:var(--muted);">ہر طب کے مطابق تفصیل صرف اصل ویب سائٹ (انٹرنیٹ) پر بنتی ہے۔</p>'; return; }
+    const dz = diseaseList.find(x=> pmMizajMembers(name).includes(x.name));
+    d = await qmFetchJson('/api/disease-detail', {
+      name, otherNames: pmMizajOtherNames(name),
+      organ: dz ? dz.organ : (PM_SYMPTOM_ORGAN[name] || ''),
+      tehreek: qmTendenciesFor(name).map(t=> QM_T[t].name + ' (' + QM_T[t].kaifiyat + ')'),
+      excerpts: ex.map(h=> ({ book: h.entry.title || h.entry.fileName, page: String(h.page), text: h.text }))
+    }, 55000);
+    if(d && d.systems && d.systems.length){ try{ localStorage.setItem(DD_CACHE_KEY + name, JSON.stringify(d)); }catch(e){} }
+  }
+  if(!el.isConnected) return;
+  aiEl.innerHTML = d && d.systems && d.systems.length ? ddRenderAi(d)
+    : `<p style="color:var(--muted);">تفصیل نہیں بن سکی (انٹرنیٹ یا سرور) — <a href="#" style="color:var(--gold);">دوبارہ کوشش کریں</a></p>`;
+  const retry = aiEl.querySelector('a'); if(retry) retry.onclick = e=>{ e.preventDefault(); herbalDiseaseDetail(name, el); };
 }
 // ---------- کمی کی تشخیص: یہی مکمل فہرست ----------
 function kamiFilterList(){
@@ -7713,6 +7794,8 @@ function pmMizajShowList(){
       const vit = PM_SYMPTOM_DEFICIENCY[val] || [];
       if(vit.length) resultsEl.insertAdjacentHTML('beforeend', `<p style="color:var(--muted); margin:4px 0; font-size:.9rem;">یہ ان کی کمی سے بھی ہو سکتی ہے: ${vit.map(escapeHtmlSearch).join('، ')}</p>`);
     }
+    resultsEl.insertAdjacentHTML('beforeend', '<div class="dd-wrap"></div>');
+    herbalDiseaseDetail(val, resultsEl.querySelector('.dd-wrap'));
     // منتخب کرنے کے بعد پوری فہرست چھپا دیں — صرف منتخب کردہ نام نظر آئے، ساتھ باقی فہرست نہ آئے
     pmMizajHideList(val);
     // اسی منتخب کردہ بیماری کے diseaseList میں موجود تمام متبادل ناموں سے بھی PDF سرچ خودکار طور پر چلائیں
