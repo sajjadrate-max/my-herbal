@@ -421,12 +421,13 @@ footer{position:fixed; left:0; right:0; bottom:0; z-index:55; text-align:center;
   <div class="result-card" id="qmBuilder" style="margin-bottom:22px;">
     <h3 style="color:var(--gold); text-align:center; margin-bottom:12px;">📜 قانون مفرد اعضاء کے مطابق نسخہ بنائیں</h3>
 
-    <label style="color:var(--gold-soft); font-size:.9rem;">بیماری کا نام (اختیاری)</label>
-    <div class="suggest-box">
-      <input class="search" id="qmDisease" placeholder="مثلاً: قبض، دمہ، یرقان..." autocomplete="off" style="margin:4px 0 4px;"
-        oninput="qmFilterDiseaseSuggestions()" onfocus="qmFilterDiseaseSuggestions()" onblur="setTimeout(()=>{ document.getElementById('qmDiseaseDropdown').style.display='none'; }, 200)">
-      <div id="qmDiseaseDropdown" class="suggest-dropdown"></div>
+    <label style="color:var(--gold-soft); font-size:.9rem;">بیماری یا علامت چنیں (اختیاری) — وہی مکمل فہرست جو "بیماری کی تلاش" میں ہے</label>
+    <div class="big-search-wrap"><input class="search big-search" id="qmDisease" type="search" placeholder="بیماری یا علامت تلاش کریں..." autocomplete="off" oninput="qmCatalogFilter()"><div class="big-search-count" id="qmCatalogCount"></div></div>
+    <div id="qmPickedBox" style="display:none; align-items:center; justify-content:space-between; gap:8px; flex-wrap:wrap; border:2px solid var(--gold); border-radius:12px; padding:8px 12px; margin-bottom:8px;">
+      <b id="qmPickedLabel" style="color:var(--gold);"></b>
+      <button class="btn" type="button" onclick="qmShowCatalog()" style="border-radius:16px; padding:6px 14px; font-size:.85rem;">تبدیل کریں</button>
     </div>
+    <div id="qmCatalog" data-pending="1" style="margin-bottom:8px;"></div>
     <p id="qmDiseaseHint" style="color:var(--muted); font-size:.78rem; margin:0 0 12px;">فہرست سے بیماری چنیں تو تحریک خود بھر جائے گی۔</p>
 
     <!-- بیمار عضو اور اس کا مزاج صارف کو نظر نہیں آتے — بیماری کے نام سے پس منظر میں خود معلوم کیے جاتے ہیں -->
@@ -705,6 +706,7 @@ function showPage(id){
   // بھاری فہرستیں صرف اپنا صفحہ کھلنے پر بنائیں
   if(id === 'kami'){ const el = document.getElementById('deficiencySymptomList'); if(el && el.dataset.pending){ delete el.dataset.pending; herbalBuildKamiCatalog(el); } }
   if(id === 'wajah' && typeof wajahBuildCatalog === 'function') wajahBuildCatalog();
+  if(id === 'naskhesaz' && typeof qmBuildCatalog === 'function') qmBuildCatalog();
   if(id === 'pdfmulti'){ const el = document.getElementById('pmMizajOptionsList'); if(el && el.dataset.pending){ delete el.dataset.pending; pmRenderMizajOptionsList(pmMizajOptions); } }
   if(typeof herbalEnsureBooks === 'function' && id !== 'home') herbalEnsureBooks();
   document.querySelectorAll('.page-section').forEach(p=>p.classList.remove('active'));
@@ -3928,38 +3930,61 @@ function qmMatchOrgan(organText){
   }
   return '';
 }
-function qmDiseaseChanged(){
-  const v = document.getElementById('qmDisease').value.trim();
-  const hint = document.getElementById('qmDiseaseHint');
-  const d = (typeof diseaseList !== 'undefined' ? diseaseList : []).find(x=> x.name === v);
-  if(!d){ hint.textContent = 'فہرست سے بیماری چنیں تو تحریک خود بھر جائے گی۔'; return; }
-  document.getElementById('qmDisease').value = d.name;
-  document.getElementById('qmTehreek').value = String(d.tendency);
-  const o = qmMatchOrgan(d.organ);
-  if(o){ document.getElementById('qmOrgan').value = o; qmOrganChanged(); }
-  hint.textContent = `✔ "${d.name}" — تحریک: ${QM_T[d.tendency].name}، عضو: ${d.organ}`;
+// نسخہ سازی: "بیماری کی تلاش" والی مکمل فہرست (سب بیماریاں + علامات، عضو وار)
+function qmBuildCatalog(){
+  const el = document.getElementById('qmCatalog');
+  if(!el || !el.dataset.pending || !pmMizajOptions.length) return;
+  delete el.dataset.pending;
+  el.innerHTML = pmCatalogHtml(pmMizajOptions, { extra:(n)=>{
+    const ts = qmTendenciesFor(n);
+    return ts.length ? `<div class="pm-def-tag">تحریک: ${ts.map(t=> QM_T[t].name).join('، ')}</div>` : '<div class="pm-def-tag pm-def-none">علامت — تحریک خود چنیں</div>';
+  }});
+  pmCatalogWire(el);
+  el.addEventListener('click', e=>{ const r = e.target.closest('.pm-mizaj-option'); if(r) qmSelectDisease(r.dataset.val); });
+  if(document.getElementById('qmDisease').value.trim()) qmCatalogFilter();
 }
-function qmFilterDiseaseSuggestions(){
-  const box = document.getElementById('qmDiseaseDropdown');
-  const q = document.getElementById('qmDisease').value.trim();
-  const list = (typeof diseaseList !== 'undefined' ? diseaseList : []);
-  const seen = new Set();
-  const matches = [];
-  for(const d of list){
-    if(seen.has(d.name)) continue;
-    if(q && !d.name.includes(q)) continue;
-    seen.add(d.name);
-    matches.push(d.name);
-    if(matches.length >= 40) break;
-  }
-  if(!matches.length){ box.style.display = 'none'; box.innerHTML = ''; return; }
-  box.innerHTML = matches.map(name=> `<div class="suggest-item" onmousedown="qmSelectDisease('${escapeJsAttr(name)}')">${escapeHtmlSearch(name)}</div>`).join('');
-  box.style.display = 'block';
+// فہرست کے نام کی تحریکیں (ایک کیے گئے دوسرے ناموں سمیت)
+function qmTendenciesFor(n){
+  const names = new Set([n].concat(PM_MIZAJ_ALIASES[n] || []));
+  const ts = [];
+  diseaseList.forEach(d=>{ if(names.has(d.name) && d.tendency && !ts.includes(d.tendency)) ts.push(d.tendency); });
+  return ts;
 }
-function qmSelectDisease(name){
+function qmCatalogFilter(){
+  const el = document.getElementById('qmCatalog');
+  if(!el) return;
+  if(el.style.display === 'none') qmShowCatalog(true);
+  pmCatalogFilter(el, document.getElementById('qmDisease').value, document.getElementById('qmCatalogCount'));
+}
+function qmShowCatalog(keepText){
+  document.getElementById('qmPickedBox').style.display = 'none';
+  document.getElementById('qmCatalog').style.display = '';
+  if(!keepText){ document.getElementById('qmDisease').value = ''; qmCatalogFilter(); document.getElementById('qmDisease').focus(); }
+}
+function qmSelectDisease(name, t){
   document.getElementById('qmDisease').value = name;
-  document.getElementById('qmDiseaseDropdown').style.display = 'none';
-  qmDiseaseChanged();
+  const hint = document.getElementById('qmDiseaseHint');
+  const ts = qmTendenciesFor(name);
+  const sel = document.getElementById('qmTehreek');
+  if(t) sel.value = String(t); else if(ts.length) sel.value = String(ts[0]); else sel.value = '';
+  const d = diseaseList.find(x=> x.name === name) || diseaseList.find(x=> pmMizajMembers(name).includes(x.name));
+  const organ = d ? d.organ : (PM_SYMPTOM_ORGAN[name] || '');
+  const o = qmMatchOrgan(organ);
+  if(o){ document.getElementById('qmOrgan').value = o; qmOrganChanged(); }
+  if(!ts.length){
+    hint.innerHTML = `🔸 "${escapeHtmlSearch(name)}" ایک علامت ہے${organ ? ' (' + escapeHtmlSearch(organ) + ')' : ''} — نیچے مرض کی تحریک خود منتخب کریں۔`;
+  } else if(ts.length > 1){
+    hint.innerHTML = `✔ "${escapeHtmlSearch(name)}" — یہ مرض ${ts.length} تحریکوں میں آتا ہے، مریض کے مطابق چنیں: `
+      + ts.map(x=> `<span onclick="qmSelectDisease('${escapeJsAttr(name)}', ${x})" style="cursor:pointer; display:inline-block; margin:3px; padding:3px 10px; border-radius:14px; border:1px solid var(--gold); ${String(x) === sel.value ? 'background:var(--gold); color:#fff;' : ''}">${QM_T[x].name}</span>`).join('');
+  } else {
+    hint.textContent = `✔ "${name}" — تحریک: ${QM_T[ts[0]].name}${organ ? '، عضو: ' + organ : ''}`;
+  }
+  document.getElementById('qmCatalog').style.display = 'none';
+  document.getElementById('qmCatalogCount').textContent = '';
+  document.getElementById('qmPickedLabel').textContent = '✔ ' + name;
+  document.getElementById('qmPickedBox').style.display = 'flex';
+  const step2 = document.getElementById('qmStep2'), res = document.getElementById('qmResult');
+  if(step2) step2.innerHTML = ''; if(res) res.innerHTML = '';
 }
 document.addEventListener('DOMContentLoaded', qmInit);
 setTimeout(qmInit, 0);
