@@ -5,14 +5,14 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <style>[hidden]{display:none!important}body{margin:0}</style>
 <title>مریضوں کا کھاتہ | My Herbal</title>
-<link rel="manifest" href="manifest.json">
+<link rel="manifest" href="manifest-khata.json">
 <meta name="theme-color" content="#1d5b4f">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="My Herbal">
+<meta name="apple-mobile-web-app-title" content="مریض کھاتہ">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<link rel="icon" type="image/png" href="icon-192.png">
-<link rel="apple-touch-icon" href="icon-512-maskable.png">
+<link rel="icon" type="image/png" href="khata-icon-192.png">
+<link rel="apple-touch-icon" href="khata-icon-512-maskable.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Nastaliq+Urdu:wght@500;700&family=Noto+Naskh+Arabic:wght@400;600;700&display=swap">
@@ -186,7 +186,7 @@ dialog h3{font-family:var(--title);margin:0;line-height:2.1;color:var(--accent)}
   </header>
 
   <div class="install" id="installBar" hidden>
-    <img src="icon-192.png" alt="">
+    <img src="khata-icon-192.png" alt="">
     <div class="txt"><b>ایپ انسٹال کریں</b><span id="installHint">فون کی ہوم اسکرین پر لگائیں، انٹرنیٹ کے بغیر بھی چلے گی</span></div>
     <button class="btn sm" id="installBtn">انسٹال</button>
     <button class="x" id="installX" aria-label="بند کریں">×</button>
@@ -815,7 +815,6 @@ render();
   if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
   // انسٹال ایپ میں براؤزر ڈیٹا خود سے نہ مٹائے
   if(navigator.storage&&navigator.storage.persist) navigator.storage.persist().catch(()=>{});
-  return; // انسٹال My Herbal کے مرکزی صفحے سے ہوتا ہے
   if(standalone) return;
   window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferred=e;btn.hidden=false;if(!dismissed())bar.hidden=false});
   btn.onclick=async()=>{

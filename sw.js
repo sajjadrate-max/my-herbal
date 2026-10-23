@@ -1,12 +1,14 @@
 // sw.js — My Herbal | قانونِ مفرد اعضاء
 // مقصد: سائٹ کو آف لائن اور ایپ کی طرح انسٹال کے قابل بنانا، اور دوبارہ کھولنے پر فوراً کھلنا
 
-const CACHE_NAME = 'my-herbal-cache-v43';
+const CACHE_NAME = 'my-herbal-cache-v44';
 const ASSETS_TO_CACHE = [
   '/',
   '/herbal.html',
   '/mareez-khata.html',
   '/manifest.json',
+  '/manifest-khata.json',
+  '/khata-icon-192.png',
   '/icon-192.png',
   '/icon-512.png',
   '/icon-512-maskable.png'
