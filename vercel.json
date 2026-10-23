@@ -1,6 +1,5 @@
 {
   "rewrites": [
-    { "source": "/", "destination": "/herbal.html" },
-    { "source": "/khata", "destination": "/mareez-khata.html" }
+    { "source": "/", "destination": "/herbal.html" }
   ]
 }
