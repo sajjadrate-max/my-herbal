@@ -6736,7 +6736,7 @@ const PM_BLOCKED_BOOKS = [
 function pmIsBlockedBook(name){ return PM_BLOCKED_BOOKS.includes(String(name||'').toLowerCase()); }
 async function pmDiscoverBuiltinDataFiles(){
   try{
-    const res = await pmWithTimeout(fetch('https://api.github.com/repos/sajjadrate-max/Herbal/contents/'), 8000);
+    const res = await pmWithTimeout(fetch('https://api.github.com/repos/sajjadrate-max/my-herbal/contents/books'), 8000);
     if(!res.ok) return PM_BUILTIN_DATA_FILES;
     const items = await res.json();
     if(!Array.isArray(items)) return PM_BUILTIN_DATA_FILES;
@@ -9024,8 +9024,8 @@ function herbalMakeMultiPartPdfDoc(parts){
 function pmNormFileName(n){ return String(n||'').toLowerCase().replace(/\.pdf$/,'').replace(/[\s_\-.()]+/g,''); }
 // ایک ہی کتاب کی PDF دوسرے نام سے ریپو میں موجود ہو
 const PM_PDF_ALIASES = { 'Mufrad_Aza_Aur_Amraz_e_Jild.pdf': 'Amraz_e_Jild.pdf', 'Tehqiqat_o_Ilaj.pdf': 'Amraz_e_Maida.pdf' };
-// کتابوں کی PDF فائلیں اصل Herbal ریپو سے براہِ راست لوڈ ہوتی ہیں (یہاں دوبارہ اپ لوڈ کرنے کی ضرورت نہیں)
-const HERBAL_PDF_BASE = 'https://raw.githubusercontent.com/sajjadrate-max/Herbal/main/';
+// کتابوں کی PDF فائلیں اسی سائٹ کے books/ فولڈر سے (پرانی Herbal ریپو اب موجود نہیں)
+const HERBAL_PDF_BASE = 'books/';
 function herbalPdfUrl(name){ return /^(https?:|blob:|data:)/i.test(name) ? name : HERBAL_PDF_BASE + encodeURI(name); }
 function pmResolvePdfPath(fileName){
   const list = window.PM_REPO_PDFS;
@@ -9099,7 +9099,7 @@ function pmOpenTextViewer(fileName, pageNum, queryText){
     const body = modal.querySelector('#pmTvBody');
     body.dir = isRtl(p.text) ? 'rtl' : 'ltr';
     body.style.textAlign = isRtl(p.text) ? 'right' : 'left';
-    body.innerHTML = hl(p.text);
+    body.innerHTML = hl(p.text) + (p.text.trim().length < 150 ? '<div style="margin-top:18px; padding:12px; border:1px dashed #e0a050; border-radius:10px; color:#e0a050; font-size:.9rem; line-height:1.9;">⚠ اس صفحے کا صرف عنوان محفوظ ہے — پورا صفحہ (نسخے، جدول) کتاب کی اصل PDF میں ہے، جو ابھی سائٹ پر اپ لوڈ نہیں۔ PDF اپ لوڈ ہوتے ہی یہاں پورا صفحہ تصویر کی صورت میں کھلے گا۔</div>' : '');
     body.scrollTop = 0;
     const m = body.querySelector('mark'); if(m) m.scrollIntoView({ block:'center' });
   }
