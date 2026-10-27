@@ -19,6 +19,8 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.Toast;
 
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
+
 // My Herbal — ویب سائٹ myherbalpk.com کو ایپ کی شکل میں کھولتا ہے۔
 // سائٹ میں جو بھی تبدیلی ہو وہ ایپ میں خود آ جاتی ہے، ایپ دوبارہ بنانے کی ضرورت نہیں۔
 public class MainActivity extends Activity {
@@ -28,13 +30,31 @@ public class MainActivity extends Activity {
     private static final int FILE_CHOOSER_REQUEST = 1001;
 
     private WebView webView;
+    private SwipeRefreshLayout swipe;
+    private long pausedAt = 0;
     private ValueCallback<Uri[]> filePathCallback;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         webView = new WebView(this);
-        setContentView(webView);
+        // اوپر سے نیچے کھینچیں تو صفحہ تازہ (نیا ورژن) ہو جائے — Chrome کی طرح
+        swipe = new SwipeRefreshLayout(this);
+        swipe.setColorSchemeColors(0xFF1F7A4D);
+        swipe.addView(webView);
+        swipe.setOnChildScrollUpCallback(new SwipeRefreshLayout.OnChildScrollUpCallback() {
+            @Override
+            public boolean canChildScrollUp(SwipeRefreshLayout parent, View child) {
+                return webView.getScrollY() > 0;
+            }
+        });
+        swipe.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                refreshPage();
+            }
+        });
+        setContentView(swipe);
 
         WebSettings s = webView.getSettings();
         s.setJavaScriptEnabled(true);
@@ -48,6 +68,11 @@ public class MainActivity extends Activity {
         CookieManager.getInstance().setAcceptCookie(true);
 
         webView.setWebViewClient(new WebViewClient() {
+            @Override
+            public void onPageFinished(WebView view, String url) {
+                swipe.setRefreshing(false);
+            }
+
             @Override
             public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
                 return openExternally(request.getUrl());
@@ -107,6 +132,18 @@ public class MainActivity extends Activity {
         }
     }
 
+    // پرانی محفوظ فائلیں ہٹا کر ویب سائٹ کا تازہ ورژن لائیں (کتابیں اور محفوظ ڈیٹا نہیں ہٹتے)
+    private void refreshPage() {
+        webView.clearCache(true);
+        checkSiteUpdate();
+        webView.reload();
+    }
+
+    // ویب سائٹ سے نیا ورژن پوچھیں؛ نیا ہو تو سائٹ خود ایک بار تازہ ہو جاتی ہے
+    private void checkSiteUpdate() {
+        webView.evaluateJavascript("try{navigator.serviceWorker&&navigator.serviceWorker.getRegistration().then(function(r){r&&r.update()})}catch(e){}", null);
+    }
+
     // سائٹ کے اپنے صفحات ایپ کے اندر؛ واٹس ایپ، فون، ای میل اور دوسری سائٹیں باہر والی ایپ میں
     private boolean openExternally(Uri uri) {
         String scheme = uri.getScheme();
@@ -161,6 +198,7 @@ public class MainActivity extends Activity {
     protected void onPause() {
         super.onPause();
         webView.onPause();
+        pausedAt = System.currentTimeMillis();
         CookieManager.getInstance().flush();
     }
 
@@ -168,6 +206,8 @@ public class MainActivity extends Activity {
     protected void onResume() {
         super.onResume();
         webView.onResume();
+        // واپس آنے پر ویب سائٹ کا نیا ورژن چیک کریں
+        if (pausedAt > 0) checkSiteUpdate();
     }
 
     @Override
