@@ -319,6 +319,7 @@ footer{position:fixed; left:0; right:0; bottom:0; z-index:55; text-align:center;
     </div>
     <p id="patientFeedbackStatus" style="color:var(--muted); font-size:.68rem; text-align:center; margin-top:5px;"></p>
   </div>
+  <p style="color:var(--muted); font-size:.7rem; text-align:center; margin-top:14px;">نوٹ: جوابات کی درستگی جانچنے کے لیے آپ کے منتخب کردہ جوابات اور سائٹ کا دیا ہوا نتیجہ حکیم صاحب کو بھیجا جاتا ہے۔ اپنا نام، فون نمبر یا پتہ نہ لکھیں۔</p>
 </section>
 
 <!-- ===================== GHIZA / MIZAJ ===================== -->
@@ -10267,6 +10268,108 @@ if('serviceWorker' in navigator && herbalCanLoadSiteFiles()){
     try{ localStorage.setItem('installDismissed', '1'); }catch(e){}
   });
   window.addEventListener('appinstalled', ()=> bar.classList.remove('show'));
+})();
+</script>
+<script>
+// ===== سرگرمی رپورٹ: ہر وزیٹر نے کیا لکھا/چنا اور سائٹ نے کیا جواب دیا — سب مالک کو ای میل (Resend کے ذریعے) =====
+// تاکہ کہیں غلط جواب ہو تو مالک دیکھ کر درست کروا سکیں۔ نام/فون وغیرہ نہیں لیا جاتا؛ اپ لوڈ اور فائلیں شامل نہیں۔
+(function(){
+  const SID = Math.random().toString(36).slice(2, 8).toUpperCase();
+  const events = [];
+  let sentUpTo = 0, idleTimer = null;
+  const RESULT_IDS = ['mizajResult','diseaseApiResultBox','deficiencyResult','kamiSearchResult','nuskhaResult','qmResult','wajahResult','wajahSearchResult','itemInfoResult','pmResults','pmMizajResults','hzResults'];
+  const clean = (s, n)=> String(s == null ? '' : s).replace(/\s+/g, ' ').trim().slice(0, n || 600);
+  function pageName(){
+    const sec = document.querySelector('.page-section.active');
+    const t = sec && sec.querySelector('.section-title');
+    if(!sec || sec.id === 'page-home') return 'ہوم';
+    return clean(t ? t.textContent : sec.id.replace('page-',''), 60);
+  }
+  function add(type, text, n){
+    text = clean(text, n);
+    if(!text) return;
+    const last = events[events.length - 1];
+    if(last && last.type === type && last.text === text) return;
+    events.push({ t: Date.now(), page: pageName(), type, text });
+    if(events.length > 500){ events.splice(0, 100); sentUpTo = Math.max(0, sentUpTo - 100); }
+    clearTimeout(idleTimer);
+    idleTimer = setTimeout(()=> send(false), 120000); // 2 منٹ کچھ نہ ہو تو بھیج دیں
+  }
+  const skip = el=> !el || el.closest('#upBox, #apkBox, #installBar') || (el.type === 'file') || (el.type === 'password');
+  function labelOf(el){
+    let l = el.id && document.querySelector('label[for="' + CSS.escape(el.id) + '"]');
+    if(!l) l = el.closest('label');
+    let t = l ? (l.innerText || l.textContent) : '';
+    if(!t && el.parentElement){ const pl = el.parentElement.querySelector('label'); if(pl) t = pl.innerText || pl.textContent; }
+    return clean(t || el.getAttribute('aria-label') || el.placeholder || el.name || el.id, 120);
+  }
+  document.addEventListener('change', e=>{
+    const el = e.target;
+    if(skip(el)) return;
+    if(el.type === 'checkbox' || el.type === 'radio'){
+      add('چنا', (el.checked ? '✔ ' : '✘ ') + labelOf(el));
+    } else if(el.tagName === 'SELECT'){
+      add('چنا', labelOf(el) + ': ' + (el.selectedOptions[0] ? el.selectedOptions[0].textContent : el.value));
+    } else if(el.value){
+      add('لکھا', labelOf(el) + ': ' + el.value);
+    }
+  }, true);
+  document.addEventListener('click', e=>{
+    const el = e.target.closest && e.target.closest('button, a, [onclick], [role="button"], summary');
+    if(skip(el)) return;
+    if(el.matches('input, select, textarea')) return;
+    const t = clean(el.innerText || el.textContent, 100);
+    if(t) add('دبایا', t, 100);
+  }, true);
+  // نتیجے والے خانوں میں جو کچھ دکھایا جائے
+  const seen = {};
+  function watch(id){
+    const el = document.getElementById(id);
+    if(!el) return;
+    let timer = null;
+    new MutationObserver(()=>{
+      clearTimeout(timer);
+      timer = setTimeout(()=>{
+        const txt = clean(el.innerText, 4000);
+        if(txt && txt !== seen[id] && el.offsetParent !== null){ seen[id] = txt; add('نتیجہ', txt, 4000); }
+      }, 1500);
+    }).observe(el, { childList:true, subtree:true, characterData:true });
+  }
+  window.addEventListener('DOMContentLoaded', ()=> RESULT_IDS.forEach(watch));
+  // AI والے سوال/جواب (سرور API) — جو بھیجا اور جو جواب آیا
+  const origFetch = window.fetch;
+  window.fetch = function(input, init){
+    const url = typeof input === 'string' ? input : (input && input.url) || '';
+    const p = origFetch.apply(this, arguments);
+    if(/\/api\//.test(url) && !/notify-disease/.test(url)){
+      const name = url.replace(/^.*\/api\//, '').replace(/\?.*$/, '');
+      let q = init && typeof init.body === 'string' ? init.body : '';
+      try{ q = JSON.stringify(JSON.parse(q)); }catch(e){}
+      p.then(r=> r.clone().text()).then(t=>{
+        let a = t; try{ a = JSON.stringify(JSON.parse(t)); }catch(e){}
+        add('AI سوال/جواب', name + ' — بھیجا: ' + clean(q, 800) + ' ⟶ جواب: ' + clean(a, 2500), 3500);
+      }).catch(()=>{});
+    }
+    return p;
+  };
+  function send(leaving){
+    const batch = events.slice(sentUpTo);
+    // صرف صفحے بدلنے/بٹن دبانے کی رپورٹ نہ بھیجیں — کچھ لکھا/چنا/نتیجہ ہو تب
+    if(!batch.some(ev=> ev.type !== 'دبایا')) return;
+    let payload = { activityLog: { sid: SID, events: batch, lang: navigator.language || '', screen: screen.width + 'x' + screen.height } };
+    let body = JSON.stringify(payload);
+    while(body.length > 60000 && payload.activityLog.events.length > 1){
+      payload.activityLog.events = payload.activityLog.events.slice(1);
+      body = JSON.stringify(payload);
+    }
+    sentUpTo = events.length;
+    try{
+      if(leaving && navigator.sendBeacon && navigator.sendBeacon('/api/notify-disease', new Blob([body], { type:'application/json' }))) return;
+      origFetch('/api/notify-disease', { method:'POST', headers:{ 'Content-Type':'application/json' }, body, keepalive:true }).catch(()=>{});
+    }catch(e){}
+  }
+  document.addEventListener('visibilitychange', ()=>{ if(document.visibilityState === 'hidden') send(true); });
+  window.addEventListener('pagehide', ()=> send(true));
 })();
 </script>
 </body>

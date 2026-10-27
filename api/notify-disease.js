@@ -39,6 +39,10 @@ export default async function handler(req, res) {
   try {
     const { diseaseName, message, imageBase64, imageMime, imageFilename, unknownHerbs, nuskha } = req.body || {};
 
+    // 4) سرگرمی رپورٹ: وزیٹر نے کیا لکھا/چنا اور سائٹ نے کیا جواب دیا — مالک کو ای میل تاکہ غلط جواب درست کروائے جا سکیں
+    const log = (req.body || {}).activityLog;
+    if (log && Array.isArray(log.events)) return sendActivityLog(req, res, log);
+
     // 3) نسخہ سازی میں جس بوٹی/چیز کا مزاج سائٹ اور کتابوں میں نہ ملے — مالک کو ای میل تاکہ وہ مزاج بتا دیں
     if (Array.isArray(unknownHerbs) && unknownHerbs.length) {
       const list = unknownHerbs.map(x => String(x || '').trim().slice(0, 60)).filter(Boolean).slice(0, 20);
@@ -125,6 +129,49 @@ export default async function handler(req, res) {
     console.error('notify-disease error:', err);
     return res.status(200).json({ ok: true, emailed: false, note: String(err && err.message ? err.message : err) });
   }
+}
+
+const escHtml = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+
+async function sendActivityLog(req, res, log) {
+  const events = log.events.slice(-300).map(e => ({
+    t: Number(e && e.t) || Date.now(),
+    page: String((e && e.page) || '').slice(0, 80),
+    type: String((e && e.type) || '').slice(0, 30),
+    text: String((e && e.text) || '').slice(0, 4000)
+  })).filter(e => e.text);
+  if (!events.length) return res.status(200).json({ ok: true, emailed: false });
+  const sid = String(log.sid || '').replace(/[^A-Z0-9]/gi, '').slice(0, 10);
+  const time = t => new Date(t).toLocaleTimeString('en-GB', { timeZone: 'Asia/Karachi' });
+  const day = new Date(events[0].t).toLocaleDateString('en-GB', { timeZone: 'Asia/Karachi' });
+  const first = events.find(e => e.type === 'لکھا' || e.type === 'چنا');
+  const subject = `سرگرمی رپورٹ ${sid ? '#' + sid : ''} — ${events.length} اندراج${first ? ' — ' + first.text.slice(0, 60) : ''}`;
+  const colors = { 'لکھا': '#1f7a4d', 'چنا': '#1f7a4d', 'نتیجہ': '#8a5a00', 'AI سوال/جواب': '#6b3fa0', 'دبایا': '#777' };
+  const rows = events.map(e => `<tr style="vertical-align:top;border-bottom:1px solid #eee">
+<td style="padding:6px;white-space:nowrap;color:#777">${time(e.t)}</td>
+<td style="padding:6px;white-space:nowrap">${escHtml(e.page)}</td>
+<td style="padding:6px;white-space:nowrap;font-weight:bold;color:${colors[e.type] || '#333'}">${escHtml(e.type)}</td>
+<td style="padding:6px;white-space:pre-wrap">${escHtml(e.text)}</td></tr>`).join('');
+  const ua = String(req.headers['user-agent'] || '').slice(0, 200);
+  const html = `<div dir="rtl" style="font-family:Tahoma,Arial,sans-serif;font-size:14px">
+<p>ویب سائٹ پر ایک وزیٹر کی سرگرمی (سیشن ${escHtml(sid)}، تاریخ ${day}، پاکستانی وقت)۔ اگر کہیں جواب غلط ہے تو یہ ای میل دکھا کر درست کروائیں۔</p>
+<table style="border-collapse:collapse;width:100%">
+<tr style="background:#1f7a4d;color:#fff"><th style="padding:6px">وقت</th><th style="padding:6px">صفحہ</th><th style="padding:6px">کیا ہوا</th><th style="padding:6px">تفصیل</th></tr>
+${rows}</table>
+<p style="color:#999;font-size:12px">ڈیوائس: ${escHtml(ua)} · ${escHtml(String(log.screen || '').slice(0, 20))} · ${escHtml(String(log.lang || '').slice(0, 20))}</p></div>`;
+  const text = events.map(e => `[${time(e.t)}] ${e.page} — ${e.type}: ${e.text}`).join('\n\n');
+  const resendKey = process.env.RESEND_API_KEY, notifyEmail = process.env.NOTIFY_EMAIL;
+  if (!resendKey || !notifyEmail) {
+    console.log('سرگرمی رپورٹ (ای میل سیٹ اپ نہیں):', subject);
+    return res.status(200).json({ ok: true, emailed: false });
+  }
+  const r = await fetch('https://api.resend.com/emails', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${resendKey}` },
+    body: JSON.stringify({ from: process.env.FROM_EMAIL || 'onboarding@resend.dev', to: [notifyEmail], subject, html, text })
+  });
+  if (!r.ok) console.error('Resend activity log error:', await r.text().catch(() => ''));
+  return res.status(200).json({ ok: true, emailed: r.ok });
 }
 
 // ---------------------------------------------------------------------------
