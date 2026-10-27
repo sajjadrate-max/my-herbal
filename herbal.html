@@ -521,7 +521,7 @@ footer{position:fixed; left:0; right:0; bottom:0; z-index:55; text-align:center;
   </div>
 
   <!-- عارضی: نئی PDF کتاب سب کے لیے شامل کریں (صارف کی ہدایت پر بغیر پاس ورڈ) —
-         سب کتابیں اپ لوڈ ہو جانے کے بعد یہ حصہ، نیچے up* فنکشنز اور api/upload-book.js ہٹا دینا ہے -->
+         سب کتابیں اپ لوڈ ہو جانے کے بعد یہ حصہ، نیچے up* فنکشنز اور api/notify-disease.js کے آخر والا اپ لوڈ حصہ ہٹا دینا ہے -->
     <div id="upBox" style="background:var(--card); border:1px dashed var(--gold); border-radius:10px; padding:14px 16px; margin-bottom:16px; text-align:center;">
       <h4 style="color:var(--gold-soft); margin-bottom:6px; font-size:.95rem;">📤 نئی PDF کتاب شامل کریں</h4>
       <p style="color:var(--muted); font-size:.78rem; margin-bottom:10px;">بٹن دبائیں، PDF چنیں — کتاب اوپر والی فہرست کے آخر میں اسی ترتیب سے شامل ہو جائے گی۔ مکمل ہونے تک صفحہ بند نہ کریں۔</p>
@@ -6823,7 +6823,7 @@ async function pmLoadBuiltinData(){
 
 // ---------- عارضی: ویب سائٹ سے نئی PDF کتاب سب کے لیے شامل کرنا (بعد میں ہٹانا ہے) ----------
 // Vercel ایک درخواست میں ~4.5MB سے زیادہ نہیں لیتا، اس لیے بڑی PDF کو pdf-lib سے ≤3MB کے
-// مکمل PDF حصوں میں توڑا جاتا ہے؛ ہر حصہ /api/upload-book سے GitHub پر جاتا ہے اور آخر میں
+// مکمل PDF حصوں میں توڑا جاتا ہے؛ ہر حصہ /api/notify-disease?upload=1 سے GitHub پر جاتا ہے اور آخر میں
 // سب ایک commit میں books/ میں شامل ہو کر books/uploads.json کی فہرست کے آخر میں درج ہوتے ہیں۔
 const UP_PART_MAX = 3000000;
 const UP_PDF_LIB_SRC = 'https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js';
@@ -6842,7 +6842,7 @@ async function upPost(body){
   for(let t=0;;t++){
     let r = null, d = {};
     try{
-      r = await fetch('/api/upload-book', { method:'POST', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify(body) });
+      r = await fetch('/api/notify-disease?upload=1', { method:'POST', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify(body) });
       d = await r.json().catch(()=> ({}));
     }catch(e){ if(t >= 3) throw new Error('انٹرنیٹ کنکشن کا مسئلہ'); }
     if(r && r.ok) return d;
