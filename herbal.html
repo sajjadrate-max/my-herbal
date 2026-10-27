@@ -231,7 +231,11 @@ footer{position:fixed; left:0; right:0; bottom:0; z-index:55; text-align:center;
     <a class="btn" href="https://github.com/sajjadrate-max/my-herbal/releases/latest/download/MyHerbal.apk" rel="noopener" style="display:inline-block; text-decoration:none;">⬇️ Android ایپ (APK) ڈاؤن لوڈ کریں</a>
     <p style="font-size:.75rem; margin-top:10px; color:var(--muted);">GitHub ریپوزٹری: <a href="https://github.com/sajjadrate-max/my-herbal" target="_blank" rel="noopener" style="color:var(--gold); direction:ltr; unicode-bidi:embed;">github.com/sajjadrate-max/my-herbal</a></p>
   </div>
-  <script>try{ if(/; wv\)/.test(navigator.userAgent)) document.getElementById('apkBox').style.display = 'none'; }catch(e){}</script>
+  <script>try{
+    // ایپ کے اندر (یا انسٹال شدہ ویب ایپ میں) "ایپ ڈاؤن لوڈ کریں" والا ڈبہ نہ دکھائیں
+    if(/^android-app:/.test(document.referrer)) sessionStorage.setItem('herbalInApp', '1');
+    if(/; wv\)/.test(navigator.userAgent) || sessionStorage.getItem('herbalInApp') || matchMedia('(display-mode: standalone)').matches) document.getElementById('apkBox').style.display = 'none';
+  }catch(e){}</script>
   <div class="rule-box">
     <b>حکیم صابر:</b> جو مریض دوائی تو کھاتے ہیں مگر پرہیز نہیں کرتے، وہ اپنے معالج کی قابلیت کو خاک میں ملا دیتے ہیں۔ نماز کا اہتمام کریں، نماز میں شفاء ہے۔
   </div>

@@ -44,6 +44,30 @@ jobs:
           gradle --no-daemon assembleRelease
           cp app/build/outputs/apk/release/app-release.apk "$RUNNER_TEMP/MyHerbal.apk"
 
+      # ایپ کو ویب سائٹ کی تصدیق کے لیے اس کی دستخطی چابی کا fingerprint سائٹ پر رکھنا ضروری ہے
+      # (ورنہ ایپ کے اوپر لنک والی پٹی نظر آتی ہے) — ہر نئی ایپ کی چابی فہرست میں شامل ہوتی ہے
+      - name: Update assetlinks.json
+        run: |
+          FP=$(keytool -list -v -keystore "$KEYSTORE_PATH" -storepass "$KEYSTORE_PASSWORD" -alias myherbal | sed -n 's/.*SHA256: *//p' | head -1)
+          python3 - "$FP" <<'PY'
+          import json, os, sys
+          path = '.well-known/assetlinks.json'
+          fps = []
+          if os.path.exists(path):
+              try: fps = json.load(open(path))[0]['target']['sha256_cert_fingerprints']
+              except Exception: fps = []
+          fps = [f for f in fps if f != sys.argv[1]][-4:] + [sys.argv[1]]
+          os.makedirs('.well-known', exist_ok=True)
+          json.dump([{"relation": ["delegate_permission/common.handle_all_urls"],
+                      "target": {"namespace": "android_app", "package_name": "pk.myherbal.app",
+                                 "sha256_cert_fingerprints": fps}}], open(path, 'w'), indent=2)
+          PY
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add .well-known/assetlinks.json
+          git commit -m "Update assetlinks.json for Android app build ${{ github.run_number }}" || exit 0
+          for i in 1 2 3; do git pull --rebase -q origin main && git push -q origin HEAD:main && break; sleep 5; done
+
       - name: Publish release
         uses: softprops/action-gh-release@v2
         with:
