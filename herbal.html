@@ -542,17 +542,17 @@ footer{position:fixed; left:0; right:0; bottom:0; z-index:55; text-align:center;
     <div id="pmBookListEl" style="font-size:.85rem; color:var(--text);">
       <p style="color:var(--muted); text-align:center;">لوڈ ہو رہی ہیں...</p>
     </div>
+  <!-- عارضی: نئی PDF کتاب سب کے لیے شامل کریں (صارف کی ہدایت پر بغیر پاس ورڈ) —
+         سب کتابیں اپ لوڈ ہو جانے کے بعد یہ حصہ، نیچے up* فنکشنز اور api/upload-book.js ہٹا دینا ہے -->
+    <div id="upBox" style="background:var(--card); border:1px dashed var(--gold); border-radius:10px; padding:14px 16px; margin-top:12px; text-align:center;">
+      <h4 style="color:var(--gold-soft); margin-bottom:6px; font-size:.95rem;">📤 نئی PDF کتاب شامل کریں</h4>
+      <p style="color:var(--muted); font-size:.78rem; margin-bottom:10px;">بٹن دبائیں، PDF چنیں — کتاب اوپر والی فہرست کے آخر میں اسی ترتیب سے شامل ہو جائے گی۔ مکمل ہونے تک صفحہ بند نہ کریں۔</p>
+      <label class="btn" style="cursor:pointer; display:inline-block;">📁 PDF منتخب کریں<input type="file" id="upFileInput" accept="application/pdf,.pdf" multiple style="display:none;" onchange="upHandleFiles(this.files)"></label>
+      <div id="upStatus" style="font-size:.82rem; margin-top:10px; color:var(--muted);"></div>
+      <div id="upLog" style="font-size:.8rem; margin-top:6px;"></div>
+    </div>
   </div>
 
-  <!-- عارضی: نئی PDF کتاب سب کے لیے شامل کریں (صارف کی ہدایت پر بغیر پاس ورڈ) —
-       سب کتابیں اپ لوڈ ہو جانے کے بعد یہ حصہ، نیچے up* فنکشنز اور api/upload-book.js ہٹا دینا ہے -->
-  <div id="upBox" style="background:var(--card); border:1px dashed var(--gold); border-radius:10px; padding:14px 16px; margin-bottom:16px; text-align:center;">
-    <h4 style="color:var(--gold-soft); margin-bottom:6px; font-size:.95rem;">📤 نئی PDF کتاب شامل کریں</h4>
-    <p style="color:var(--muted); font-size:.78rem; margin-bottom:10px;">بٹن دبائیں، PDF چنیں — کتاب اوپر والی فہرست کے آخر میں اسی ترتیب سے شامل ہو جائے گی۔ مکمل ہونے تک صفحہ بند نہ کریں۔</p>
-    <label class="btn" style="cursor:pointer; display:inline-block;">📁 PDF منتخب کریں<input type="file" id="upFileInput" accept="application/pdf,.pdf" multiple style="display:none;" onchange="upHandleFiles(this.files)"></label>
-    <div id="upStatus" style="font-size:.82rem; margin-top:10px; color:var(--muted);"></div>
-    <div id="upLog" style="font-size:.8rem; margin-top:6px;"></div>
-  </div>
 
   <!-- "تلاش کریں" کا الگ باکس اب صارف کو نظر نہیں آتا — اوپر "بیماری کے مزاج" کی فہرست میں سے
        نام منتخب کرنے پر یہی سسٹم خودکار طور پر پس منظر میں چلتا ہے (PDF کتابوں میں تلاش)۔
