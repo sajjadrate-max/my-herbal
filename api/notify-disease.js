@@ -276,6 +276,10 @@ async function uploadBookHandler(req, res) {
     if (body.action === 'blob') {
       return res.status(200).json({ sha: await createBlob(body.kind, body.content) });
     }
+    if (body.action === 'ping') {
+      await upGh('/git/ref/heads/' + BRANCH);
+      return res.status(200).json({ ok: true });
+    }
     if (body.action === 'delete') {
       return res.status(200).json({ commit: await deleteBook(body.data, body.files) });
     }

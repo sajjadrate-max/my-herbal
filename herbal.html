@@ -437,6 +437,10 @@ footer{position:fixed; left:0; right:0; bottom:0; z-index:55; text-align:center;
       <label class="btn" style="cursor:pointer; display:inline-block;">📁 PDF منتخب کریں<input type="file" id="upFileInput" accept="application/pdf,.pdf" multiple style="display:none;" onchange="upHandleFiles(this.files)"></label>
       <div id="upStatus" style="font-size:.82rem; margin-top:10px; color:var(--muted);"></div>
       <div id="upLog" style="font-size:.8rem; margin-top:6px;"></div>
+      <div id="upSyncBox" style="display:none; margin-top:12px; padding:10px; border:1px solid var(--gold); border-radius:8px;">
+        <p style="color:var(--muted); font-size:.78rem; margin-bottom:8px;"><span id="upSyncCount"></span> کتابیں صرف اسی فون پر محفوظ ہیں — یہ ایپ میں اور دوسرے لوگوں کو نظر نہیں آتیں۔ نیچے والا بٹن دبائیں تو یہ اسی ترتیب سے ویب سائٹ پر سب کے لیے شامل ہو جائیں گی۔</p>
+        <button class="btn" type="button" onclick="upSyncLocal()">🌐 اس فون والی کتابیں سب کے لیے بھیجیں</button>
+      </div>
       <div id="upList" style="margin-top:10px; text-align:right;"></div>
     </div>
     <div class="big-search-wrap"><input class="search big-search" id="qmDisease" type="search" placeholder="بیماری یا علامت تلاش کریں..." autocomplete="off" oninput="qmCatalogFilter()"><div class="big-search-count" id="qmCatalogCount"></div></div>
@@ -6818,11 +6822,11 @@ async function pmLoadBuiltinData(){
   });
   // ویب سائٹ سے اپ لوڈ کی گئی کتابیں — books/uploads.json کی ترتیب سے، مستقل کتابوں کے بعد
   try{
-    const mr = await fetch('books/uploads.json', { cache:'no-store' });
+    const mr = await fetch(UP_RAW_BASE + 'uploads.json', { cache:'no-store' });
     if(mr.ok){
       const list = await mr.json();
       const datas = await Promise.all((Array.isArray(list) ? list : []).map(async it=>{
-        try{ const r = await fetch(it.data); return r.ok ? await r.json() : null; }catch(e){ return null; }
+        try{ const r = await fetch(UP_RAW_BASE + String(it.data).replace(/^books\//, '')); return r.ok ? await r.json() : null; }catch(e){ return null; }
       }));
       datas.forEach((d, i)=> upRegisterBook(d, true, list[i].data));
     }
@@ -6837,6 +6841,8 @@ async function pmLoadBuiltinData(){
 // مکمل PDF حصوں میں توڑا جاتا ہے؛ ہر حصہ /api/notify-disease?upload=1 سے GitHub پر جاتا ہے اور آخر میں
 // سب ایک commit میں books/ میں شامل ہو کر books/uploads.json کی فہرست کے آخر میں درج ہوتے ہیں۔
 const UP_PART_MAX = 3000000;
+// اپ لوڈ کی گئی کتابیں سیدھی GitHub سے کھلتی ہیں (Vercel پر نہیں جاتیں، دیکھیں .vercelignore) تاکہ ویب سائٹ کا حجم چھوٹا رہے
+const UP_RAW_BASE = 'https://raw.githubusercontent.com/sajjadrate-max/my-herbal/main/books/';
 const UP_PDF_LIB_SRC = 'https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js';
 let upBusy = false;
 function upStatus(msg, color){ const el = document.getElementById('upStatus'); if(el){ el.textContent = msg || ''; el.style.color = color || 'var(--muted)'; } }
@@ -6894,13 +6900,15 @@ async function upSplitPdf(buf, onProgress){
 function upRegisterBook(data, quiet, dataPath){
   if(!data || !Array.isArray(data.pages) || typeof data.fileName !== 'string') return false;
   if(pmIsBlockedBook(data.fileName) || pmLibrary.some(f=> f.fileName === data.fileName)) return false;
-  if(Array.isArray(data.parts) && data.parts.length) PM_BUILTIN_PDF_PARTS[data.fileName] = data.parts;
+  const upFiles = Array.isArray(data.parts) ? data.parts.map(p=> p.file) : [];
+  if(upFiles.length) PM_BUILTIN_PDF_PARTS[data.fileName] = data.parts.map(p=> ({ file: UP_RAW_BASE + encodeURI(p.file), from:p.from, to:p.to }));
   pmLibrary.push({
     fileName: data.fileName,
     title: data.title || '',
     pages: data.pages.map(p=> ({ pageNum:p.pageNum, text:p.text || '', ocr:true })),
     builtin: true,
-    upData: dataPath || ''
+    upData: dataPath || '',
+    upFiles
   });
   if(!quiet){ pmSearchBtnEl.disabled = false; pmRenderBookList(); }
   return true;
@@ -6993,6 +7001,8 @@ async function upRegisterLocal(rec){
 function upRenderList(){
   const el = document.getElementById('upList'); if(!el) return;
   const items = pmLibrary.filter(f=> f.upData || /^local_/.test(f.fileName));
+  const localN = items.filter(f=> !f.upData).length, sb = document.getElementById('upSyncBox');
+  if(sb){ sb.style.display = localN ? '' : 'none'; document.getElementById('upSyncCount').textContent = localN; }
   if(!items.length){ el.innerHTML = ''; return; }
   el.innerHTML = '<div style="color:var(--gold-soft); font-size:.85rem; margin-bottom:4px; text-align:center;">اپ لوڈ کی گئی کتابیں</div>' + items.map(f=>
     `<div style="display:flex; align-items:center; justify-content:space-between; gap:8px; padding:6px 4px; border-top:1px solid var(--border); flex-wrap:wrap;">
@@ -7009,8 +7019,7 @@ async function upDelete(fileName){
   upStatus('ڈیلیٹ ہو رہی ہے: ' + (f.title || fileName) + ' ...');
   try{
     if(f.upData){
-      const parts = PM_BUILTIN_PDF_PARTS[fileName] || [];
-      await upPost({ action:'delete', data:f.upData, files: parts.map(p=> HERBAL_PDF_BASE + p.file) });
+      await upPost({ action:'delete', data:f.upData, files: (f.upFiles || []).map(n=> 'books/' + n) });
       delete PM_BUILTIN_PDF_PARTS[fileName];
     } else {
       await herbalIdbDelete('pmFiles', fileName);
@@ -7023,6 +7032,42 @@ async function upDelete(fileName){
   }catch(e){
     upStatus('❌ ڈیلیٹ نہیں ہو سکی — ' + (e && e.message ? e.message : e), '#e0524f');
   }
+  upBusy = false;
+}
+// اس فون (براؤزر) میں محفوظ کتابیں اسی ترتیب سے سرور پر بھیجنا؛ ہر کامیاب کتاب کی فون والی کاپی ہٹ جاتی ہے
+async function upSyncLocal(){
+  if(upBusy) return;
+  upBusy = true;
+  const warn = e=>{ e.preventDefault(); e.returnValue = ''; };
+  window.addEventListener('beforeunload', warn);
+  try{
+    upStatus('سرور چیک ہو رہا ہے...');
+    await upPost({ action:'ping' });
+    const recs = (await herbalIdbGetAll('pmFiles')).filter(r=> r && r.localUpload).sort((a,b)=> a.addedAt - b.addedAt);
+    let done = 0;
+    for(let k=0;k<recs.length;k++){
+      const rec = recs[k], pre = '(' + (k+1) + '/' + recs.length + ') ' + (rec.title || rec.fileName) + ' — ';
+      try{
+        const buf = await rec.blob.arrayBuffer();
+        const slug = rec.fileName.replace(/^local_/, '').replace(/\.pdf$/i, '');
+        const pages = rec.pages || [];
+        await upToServer(rec.blob, buf, slug, rec.title || slug, pages.length, pages, s=> upStatus(pre + s));
+        await herbalIdbDelete('pmFiles', rec.fileName);
+        const i = pmLibrary.findIndex(f=> f.fileName === rec.fileName);
+        if(i >= 0){ try{ if(pmLibrary[i].pdfDoc) pmLibrary[i].pdfDoc.destroy(); }catch(e){} pmLibrary.splice(i, 1); }
+        pmRenderBookList();
+        done++;
+        upLog('✅ ' + (rec.title || rec.fileName) + ' — اب سب کے لیے', 'var(--gold-soft)');
+      }catch(e){
+        upLog('❌ ' + (rec.title || rec.fileName) + ' — ' + (e && e.message ? e.message : e), '#e0524f');
+        if(/GITHUB_TOKEN|Bad credentials|Resource not accessible/i.test(String(e && e.message))) break;
+      }
+    }
+    upStatus('مکمل ✅ — ' + done + ' کتابیں سب کے لیے شامل ہو گئیں', 'var(--gold-soft)');
+  }catch(e){
+    upStatus('❌ ' + (e && e.message ? e.message : e), '#e0524f');
+  }
+  window.removeEventListener('beforeunload', warn);
   upBusy = false;
 }
 async function upLoadLocalBooks(){
