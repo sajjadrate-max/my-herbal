@@ -434,7 +434,7 @@ footer{position:fixed; left:0; right:0; bottom:0; z-index:55; text-align:center;
     <label style="color:var(--gold-soft); font-size:.9rem;">بیماری یا علامت چنیں (اختیاری) — وہی مکمل فہرست جو "بیماری کی تلاش" میں ہے</label>
   <!-- عارضی: نئی PDF کتاب سب کے لیے شامل کریں (صارف کی ہدایت پر بغیر پاس ورڈ) —
          سب کتابیں اپ لوڈ ہو جانے کے بعد یہ حصہ، نیچے up* فنکشنز اور api/notify-disease.js کے آخر والا اپ لوڈ حصہ ہٹا دینا ہے -->
-    <div id="upBox" style="background:var(--card); border:1px dashed var(--gold); border-radius:10px; padding:14px 16px; margin:8px 0 12px; text-align:center;">
+    <div id="upSlot-naskhesaz"><div id="upBox" style="background:var(--card); border:1px dashed var(--gold); border-radius:10px; padding:14px 16px; margin:8px 0 12px; text-align:center;">
       <h4 style="color:var(--gold-soft); margin-bottom:6px; font-size:.95rem;">📤 نئی PDF کتاب شامل کریں</h4>
       <p style="color:var(--muted); font-size:.78rem; margin-bottom:10px;">بٹن دبائیں، PDF چنیں — کتاب "بیماری کی تلاش" والی کتابوں کی فہرست کے آخر میں اسی ترتیب سے شامل ہو جائے گی۔ مکمل ہونے تک صفحہ بند نہ کریں۔</p>
       <label class="btn" style="cursor:pointer; display:inline-block;">📁 PDF منتخب کریں<input type="file" id="upFileInput" accept="application/pdf,.pdf" multiple style="display:none;" onchange="upHandleFiles(this.files)"></label>
@@ -445,7 +445,7 @@ footer{position:fixed; left:0; right:0; bottom:0; z-index:55; text-align:center;
         <button class="btn" type="button" onclick="upSyncLocal()">🌐 اس فون والی کتابیں سب کے لیے بھیجیں</button>
       </div>
       <div id="upList" style="margin-top:10px; text-align:right;"></div>
-    </div>
+    </div></div>
     <div class="big-search-wrap"><input class="search big-search" id="qmDisease" type="search" placeholder="بیماری یا علامت تلاش کریں..." autocomplete="off" oninput="qmCatalogFilter()"><div class="big-search-count" id="qmCatalogCount"></div></div>
     <div id="qmPickedBox" style="display:none; align-items:center; justify-content:space-between; gap:8px; flex-wrap:wrap; border:2px solid var(--gold); border-radius:12px; padding:8px 12px; margin-bottom:8px;">
       <b id="qmPickedLabel" style="color:var(--gold);"></b>
@@ -543,6 +543,7 @@ footer{position:fixed; left:0; right:0; bottom:0; z-index:55; text-align:center;
   <div class="note" style="padding:8px 14px; font-size:.85rem; margin-bottom:10px;">لفظ لکھیں، بتا دیا جائے گا۔ <span onclick="togglePmNoteDetail()" style="cursor:pointer; color:var(--gold-soft); font-size:.8rem; user-select:none;">مزید تفصیل <span id="pmNoteDetailArrow">▾</span></span>
     <p id="pmNoteDetail" style="display:none; margin-top:6px;">لفظ لکھیں — بتایا جائے گا کہ وہ کس فائل کے کس صفحے پر موجود ہے۔ یہ تلاش مکمل طور پر آف لائن، آپ کے اپنے فون/کمپیوٹر کے اندر ہی ہوتی ہے — کوئی معلومات انٹرنیٹ پر نہیں بھیجی جاتیں۔</p>
   </div>
+  <div id="upSlot-pdfmulti"></div>
 
 
   <div style="background:var(--card); border:1px solid var(--gold); border-radius:10px; padding:16px; margin-bottom:16px;">
@@ -735,6 +736,8 @@ function showPage(id){
   if(id === 'naskhesaz' && typeof qmBuildCatalog === 'function') qmBuildCatalog();
   if(id === 'pdfmulti'){ const el = document.getElementById('pmMizajOptionsList'); if(el && el.dataset.pending){ delete el.dataset.pending; pmRenderMizajOptionsList(pmMizajOptions); } }
   if(typeof herbalEnsureBooks === 'function' && id !== 'home') herbalEnsureBooks();
+  // PDF اپ لوڈ والا ڈبہ "بیماری کی تلاش" اور "نسخہ سازی" دونوں صفحات پر — ایک ہی ڈبہ کھلے صفحے میں منتقل ہو جاتا ہے
+  { const slot = document.getElementById('upSlot-' + id), box = document.getElementById('upBox'); if(slot && box && box.parentNode !== slot) slot.appendChild(box); }
   document.querySelectorAll('.page-section').forEach(p=>p.classList.remove('active'));
   document.getElementById('page-'+id).classList.add('active');
   document.querySelectorAll('header nav a').forEach(a=>a.classList.remove('active'));
