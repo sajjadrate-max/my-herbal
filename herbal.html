@@ -520,6 +520,16 @@ footer{position:fixed; left:0; right:0; bottom:0; z-index:55; text-align:center;
     <p id="pmNoteDetail" style="display:none; margin-top:6px;">لفظ لکھیں — بتایا جائے گا کہ وہ کس فائل کے کس صفحے پر موجود ہے۔ یہ تلاش مکمل طور پر آف لائن، آپ کے اپنے فون/کمپیوٹر کے اندر ہی ہوتی ہے — کوئی معلومات انٹرنیٹ پر نہیں بھیجی جاتیں۔</p>
   </div>
 
+  <!-- عارضی: نئی PDF کتاب سب کے لیے شامل کریں (صارف کی ہدایت پر بغیر پاس ورڈ) —
+         سب کتابیں اپ لوڈ ہو جانے کے بعد یہ حصہ، نیچے up* فنکشنز اور api/upload-book.js ہٹا دینا ہے -->
+    <div id="upBox" style="background:var(--card); border:1px dashed var(--gold); border-radius:10px; padding:14px 16px; margin-bottom:16px; text-align:center;">
+      <h4 style="color:var(--gold-soft); margin-bottom:6px; font-size:.95rem;">📤 نئی PDF کتاب شامل کریں</h4>
+      <p style="color:var(--muted); font-size:.78rem; margin-bottom:10px;">بٹن دبائیں، PDF چنیں — کتاب اوپر والی فہرست کے آخر میں اسی ترتیب سے شامل ہو جائے گی۔ مکمل ہونے تک صفحہ بند نہ کریں۔</p>
+      <label class="btn" style="cursor:pointer; display:inline-block;">📁 PDF منتخب کریں<input type="file" id="upFileInput" accept="application/pdf,.pdf" multiple style="display:none;" onchange="upHandleFiles(this.files)"></label>
+      <div id="upStatus" style="font-size:.82rem; margin-top:10px; color:var(--muted);"></div>
+      <div id="upLog" style="font-size:.8rem; margin-top:6px;"></div>
+    </div>
+
   <div style="background:var(--card); border:1px solid var(--gold); border-radius:10px; padding:16px; margin-bottom:16px;">
     <h3 style="color:var(--gold-soft); margin-bottom:6px; text-align:center;">بیماری کے مزاج</h3>
     <p style="color:var(--muted); font-size:.8rem; text-align:center; margin-bottom:6px;">نیچے فہرست میں سے بیماری یا عضو کے نام پر ٹیپ کریں — یہاں خود سے لکھنے کی ضرورت نہیں</p>
@@ -541,15 +551,6 @@ footer{position:fixed; left:0; right:0; bottom:0; z-index:55; text-align:center;
     <h4 style="color:var(--gold-soft); margin-bottom:8px; text-align:center; font-size:.95rem;">📚 دستیاب کتابیں (فی الحال تلاش میں شامل)</h4>
     <div id="pmBookListEl" style="font-size:.85rem; color:var(--text);">
       <p style="color:var(--muted); text-align:center;">لوڈ ہو رہی ہیں...</p>
-    </div>
-  <!-- عارضی: نئی PDF کتاب سب کے لیے شامل کریں (صارف کی ہدایت پر بغیر پاس ورڈ) —
-         سب کتابیں اپ لوڈ ہو جانے کے بعد یہ حصہ، نیچے up* فنکشنز اور api/upload-book.js ہٹا دینا ہے -->
-    <div id="upBox" style="background:var(--card); border:1px dashed var(--gold); border-radius:10px; padding:14px 16px; margin-top:12px; text-align:center;">
-      <h4 style="color:var(--gold-soft); margin-bottom:6px; font-size:.95rem;">📤 نئی PDF کتاب شامل کریں</h4>
-      <p style="color:var(--muted); font-size:.78rem; margin-bottom:10px;">بٹن دبائیں، PDF چنیں — کتاب اوپر والی فہرست کے آخر میں اسی ترتیب سے شامل ہو جائے گی۔ مکمل ہونے تک صفحہ بند نہ کریں۔</p>
-      <label class="btn" style="cursor:pointer; display:inline-block;">📁 PDF منتخب کریں<input type="file" id="upFileInput" accept="application/pdf,.pdf" multiple style="display:none;" onchange="upHandleFiles(this.files)"></label>
-      <div id="upStatus" style="font-size:.82rem; margin-top:10px; color:var(--muted);"></div>
-      <div id="upLog" style="font-size:.8rem; margin-top:6px;"></div>
     </div>
   </div>
 
