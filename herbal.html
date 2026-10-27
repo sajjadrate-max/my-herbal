@@ -225,6 +225,13 @@ footer{position:fixed; left:0; right:0; bottom:0; z-index:55; text-align:center;
     <p style="color:var(--gold-soft); font-size:1.3rem; margin-bottom:14px;">قانون مفرد اعضاء</p>
     <p>حکیم صابر رحمۃ اللہ علیہ کے قانون کے مطابق مزاج، غذا اور علاج کا مکمل نظام</p>
   </div>
+  <div id="apkBox" style="background:var(--card); border:1px solid var(--gold); border-radius:10px; padding:14px 16px; margin:0 0 16px; text-align:center;">
+    <h4 style="color:var(--gold-soft); margin-bottom:6px; font-size:1rem;">📱 My Herbal کی Android ایپ</h4>
+    <p style="color:var(--muted); font-size:.8rem; margin-bottom:10px;">بٹن دبا کر APK ڈاؤن لوڈ کریں، پھر فائل کھول کر انسٹال کریں (فون پوچھے تو "نامعلوم ذرائع سے انسٹال" کی اجازت دیں)۔ ویب سائٹ کی ہر نئی تبدیلی ایپ میں خود آ جاتی ہے۔</p>
+    <a class="btn" href="https://github.com/sajjadrate-max/my-herbal/releases/latest/download/MyHerbal.apk" rel="noopener" style="display:inline-block; text-decoration:none;">⬇️ Android ایپ (APK) ڈاؤن لوڈ کریں</a>
+    <p style="font-size:.75rem; margin-top:10px; color:var(--muted);">GitHub ریپوزٹری: <a href="https://github.com/sajjadrate-max/my-herbal" target="_blank" rel="noopener" style="color:var(--gold); direction:ltr; unicode-bidi:embed;">github.com/sajjadrate-max/my-herbal</a></p>
+  </div>
+  <script>try{ if(/; wv\)/.test(navigator.userAgent)) document.getElementById('apkBox').style.display = 'none'; }catch(e){}</script>
   <div class="rule-box">
     <b>حکیم صابر:</b> جو مریض دوائی تو کھاتے ہیں مگر پرہیز نہیں کرتے، وہ اپنے معالج کی قابلیت کو خاک میں ملا دیتے ہیں۔ نماز کا اہتمام کریں، نماز میں شفاء ہے۔
   </div>
@@ -430,6 +437,7 @@ footer{position:fixed; left:0; right:0; bottom:0; z-index:55; text-align:center;
       <label class="btn" style="cursor:pointer; display:inline-block;">📁 PDF منتخب کریں<input type="file" id="upFileInput" accept="application/pdf,.pdf" multiple style="display:none;" onchange="upHandleFiles(this.files)"></label>
       <div id="upStatus" style="font-size:.82rem; margin-top:10px; color:var(--muted);"></div>
       <div id="upLog" style="font-size:.8rem; margin-top:6px;"></div>
+      <div id="upList" style="margin-top:10px; text-align:right;"></div>
     </div>
     <div class="big-search-wrap"><input class="search big-search" id="qmDisease" type="search" placeholder="بیماری یا علامت تلاش کریں..." autocomplete="off" oninput="qmCatalogFilter()"><div class="big-search-count" id="qmCatalogCount"></div></div>
     <div id="qmPickedBox" style="display:none; align-items:center; justify-content:space-between; gap:8px; flex-wrap:wrap; border:2px solid var(--gold); border-radius:12px; padding:8px 12px; margin-bottom:8px;">
@@ -6405,6 +6413,7 @@ async function pmDeleteFile(fileName, row){
 // فی الحال تلاش میں شامل تمام کتابوں (بلٹ اِن + خود اپ لوڈ کی گئی) کی فہرست دکھائیں —
 // تاکہ صارف خود دیکھ سکے کہ کون سی کتاب لوڈ ہوئی ہے اور کون سی نہیں (خاص طور پر نئی شامل کی گئی کتابوں کی تصدیق کے لیے مفید)
 function pmRenderBookList(){
+  if(typeof upRenderList === 'function') upRenderList();
   const el = document.getElementById('pmBookListEl');
   if(!el) return;
   if(!pmLibrary.length){
@@ -6813,7 +6822,7 @@ async function pmLoadBuiltinData(){
       const datas = await Promise.all((Array.isArray(list) ? list : []).map(async it=>{
         try{ const r = await fetch(it.data); return r.ok ? await r.json() : null; }catch(e){ return null; }
       }));
-      datas.forEach(d=> upRegisterBook(d, true));
+      datas.forEach((d, i)=> upRegisterBook(d, true, list[i].data));
     }
   }catch(e){}
   await upLoadLocalBooks();
@@ -6880,7 +6889,7 @@ async function upSplitPdf(buf, onProgress){
   }
   return parts;
 }
-function upRegisterBook(data, quiet){
+function upRegisterBook(data, quiet, dataPath){
   if(!data || !Array.isArray(data.pages) || typeof data.fileName !== 'string') return false;
   if(pmIsBlockedBook(data.fileName) || pmLibrary.some(f=> f.fileName === data.fileName)) return false;
   if(Array.isArray(data.parts) && data.parts.length) PM_BUILTIN_PDF_PARTS[data.fileName] = data.parts;
@@ -6888,7 +6897,8 @@ function upRegisterBook(data, quiet){
     fileName: data.fileName,
     title: data.title || '',
     pages: data.pages.map(p=> ({ pageNum:p.pageNum, text:p.text || '', ocr:true })),
-    builtin: true
+    builtin: true,
+    upData: dataPath || ''
   });
   if(!quiet){ pmSearchBtnEl.disabled = false; pmRenderBookList(); }
   return true;
@@ -6938,10 +6948,11 @@ async function upToServer(file, buf, slug, title, n, pages, st){
   if(jsonB64.length > 4300000) throw new Error('کتاب کا متن بہت بڑا ہے');
   st('متن محفوظ ہو رہا ہے...');
   const jr = await upPost({ action:'blob', kind:'json', content:jsonB64 });
-  files.push({ path:'books/pm-data-up-' + slug.toLowerCase() + '.json', sha:jr.sha });
+  const dataPath = 'books/pm-data-up-' + slug.toLowerCase() + '.json';
+  files.push({ path:dataPath, sha:jr.sha });
   st('ویب سائٹ میں شامل کی جا رہی ہے...');
   await upPost({ action:'commit', title, files });
-  upRegisterBook(data);
+  upRegisterBook(data, false, dataPath);
   return { n, parts:parts.length, textPages: pages.filter(p=> p.text).length };
 }
 async function upHandleFiles(list){
@@ -6975,6 +6986,42 @@ async function upRegisterLocal(rec){
     pages: (rec.pages || []).map(p=> ({ pageNum:p.pageNum, text:p.text || '', ocr:true })),
     pdfDoc
   });
+}
+// اپ لوڈ کی گئی کتابوں کی فہرست، ہر ایک کے ساتھ ڈیلیٹ کا بٹن (اصل/مستقل کتابیں یہاں نہیں آتیں)
+function upRenderList(){
+  const el = document.getElementById('upList'); if(!el) return;
+  const items = pmLibrary.filter(f=> f.upData || /^local_/.test(f.fileName));
+  if(!items.length){ el.innerHTML = ''; return; }
+  el.innerHTML = '<div style="color:var(--gold-soft); font-size:.85rem; margin-bottom:4px; text-align:center;">اپ لوڈ کی گئی کتابیں</div>' + items.map(f=>
+    `<div style="display:flex; align-items:center; justify-content:space-between; gap:8px; padding:6px 4px; border-top:1px solid var(--border); flex-wrap:wrap;">
+      <span style="flex:1; min-width:140px; font-size:.85rem;">${escapeHtmlSearch(f.title || f.fileName)} <small style="color:var(--muted);">(${f.pages.length} صفحات · ${f.upData ? 'سب کے لیے' : 'اس فون پر'})</small></span>
+      <button class="btn secondary" type="button" style="padding:4px 12px; font-size:.75rem; color:#e0524f; border-color:#e0524f;" onclick="upDelete('${escapeJsAttr(f.fileName)}')">🗑 ڈیلیٹ کریں</button>
+    </div>`).join('');
+}
+async function upDelete(fileName){
+  const idx = pmLibrary.findIndex(f=> f.fileName === fileName);
+  if(idx < 0 || upBusy) return;
+  const f = pmLibrary[idx];
+  if(!confirm('کیا "' + (f.title || fileName) + '" کو ہمیشہ کے لیے ڈیلیٹ کر دیں؟' + (f.upData ? '\n(یہ سب کے لیے ویب سائٹ سے ہٹ جائے گی)' : ''))) return;
+  upBusy = true;
+  upStatus('ڈیلیٹ ہو رہی ہے: ' + (f.title || fileName) + ' ...');
+  try{
+    if(f.upData){
+      const parts = PM_BUILTIN_PDF_PARTS[fileName] || [];
+      await upPost({ action:'delete', data:f.upData, files: parts.map(p=> HERBAL_PDF_BASE + p.file) });
+      delete PM_BUILTIN_PDF_PARTS[fileName];
+    } else {
+      await herbalIdbDelete('pmFiles', fileName);
+      try{ if(f.pdfDoc) f.pdfDoc.destroy(); }catch(e){}
+    }
+    const i2 = pmLibrary.indexOf(f); if(i2 >= 0) pmLibrary.splice(i2, 1);
+    pmSearchBtnEl.disabled = pmLibrary.length === 0;
+    pmRenderBookList();
+    upStatus('🗑 ' + (f.title || fileName) + ' ڈیلیٹ ہو گئی', 'var(--gold-soft)');
+  }catch(e){
+    upStatus('❌ ڈیلیٹ نہیں ہو سکی — ' + (e && e.message ? e.message : e), '#e0524f');
+  }
+  upBusy = false;
 }
 async function upLoadLocalBooks(){
   try{

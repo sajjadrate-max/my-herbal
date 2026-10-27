@@ -215,6 +215,54 @@ async function commitFiles(title, files) {
   }
 }
 
+// ویب سائٹ سے اپ لوڈ کی گئی کتاب ہٹانا: فہرست (uploads.json) سے اندراج، کتاب کا متن اور اس کے PDF حصے
+// صرف books/up_* اور books/pm-data-up-* فائلیں — اصل (مستقل) کتابیں اس سے کبھی ڈیلیٹ نہیں ہو سکتیں
+async function deleteBook(dataPath, pdfFiles) {
+  if (!JSON_PATH.test(String(dataPath))) throw new Error('غلط کتاب');
+  const slug = dataPath.slice('books/pm-data-up-'.length, -'.json'.length);
+  const pdfs = Array.isArray(pdfFiles) ? pdfFiles.map(String) : [];
+  if (pdfs.length > 300) throw new Error('فائلوں کی فہرست درست نہیں');
+  for (const f of pdfs) {
+    const m = PDF_PATH.test(f) && f.toLowerCase().match(/^books\/up_(.+?)(_part\d{1,3})?\.pdf$/);
+    if (!m || m[1] !== slug) throw new Error('غلط فائل: ' + f);
+  }
+  for (let attempt = 0; attempt < 4; attempt++) {
+    const ref = await upGh('/git/ref/heads/' + BRANCH);
+    const head = await upGh('/git/commits/' + ref.object.sha);
+    let manifest = [];
+    try {
+      const m = await upGh('/contents/' + MANIFEST + '?ref=' + ref.object.sha);
+      manifest = JSON.parse(Buffer.from(m.content, 'base64').toString('utf8'));
+      if (!Array.isArray(manifest)) manifest = [];
+    } catch (e) { if (e.status !== 404) throw e; }
+    const entry = manifest.find(x => x && x.data === dataPath);
+    if (!entry) throw new Error('یہ کتاب فہرست میں نہیں ملی (شاید پہلے ہی ڈیلیٹ ہو چکی ہے)');
+    const remove = [];
+    for (const f of [dataPath].concat(pdfs)) {
+      try { await upGh('/contents/' + f + '?ref=' + ref.object.sha); remove.push(f); } catch (e) { if (e.status !== 404) throw e; }
+    }
+    const tree = await upGh('/git/trees', {
+      method: 'POST',
+      body: JSON.stringify({
+        base_tree: head.tree.sha,
+        tree: remove.map(f => ({ path: f, mode: '100644', type: 'blob', sha: null })).concat([
+          { path: MANIFEST, mode: '100644', type: 'blob', content: JSON.stringify(manifest.filter(x => x !== entry), null, 1) + '\n' }
+        ])
+      })
+    });
+    const commit = await upGh('/git/commits', {
+      method: 'POST',
+      body: JSON.stringify({ message: 'Remove website-uploaded book: ' + String(entry.title || dataPath).slice(0, 120), tree: tree.sha, parents: [ref.object.sha] })
+    });
+    try {
+      await upGh('/git/refs/heads/' + BRANCH, { method: 'PATCH', body: JSON.stringify({ sha: commit.sha, force: false }) });
+      return commit.sha;
+    } catch (e) {
+      if (e.status !== 422 || attempt === 3) throw e;
+    }
+  }
+}
+
 async function uploadBookHandler(req, res) {
   if (req.method !== 'POST') {
     res.setHeader('Allow', ['POST']);
@@ -227,6 +275,9 @@ async function uploadBookHandler(req, res) {
     const body = typeof req.body === 'string' ? JSON.parse(req.body) : (req.body || {});
     if (body.action === 'blob') {
       return res.status(200).json({ sha: await createBlob(body.kind, body.content) });
+    }
+    if (body.action === 'delete') {
+      return res.status(200).json({ commit: await deleteBook(body.data, body.files) });
     }
     if (body.action === 'commit') {
       return res.status(200).json({ commit: await commitFiles(body.title, body.files) });
