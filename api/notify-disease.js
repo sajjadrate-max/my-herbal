@@ -47,19 +47,10 @@ export default async function handler(req, res) {
     if (Array.isArray(unknownHerbs) && unknownHerbs.length) {
       const list = unknownHerbs.map(x => String(x || '').trim().slice(0, 60)).filter(Boolean).slice(0, 20);
       if (!list.length) return res.status(400).json({ error: 'نام خالی ہیں۔' });
-      const resendKey0 = process.env.RESEND_API_KEY, notifyEmail0 = process.env.NOTIFY_EMAIL;
       const subject0 = `مزاج معلوم نہیں: ${list.join('، ')}`;
       const text0 = `نسخہ سازی میں ان بوٹیوں/اشیاء کا مزاج نہ سائٹ کی فہرست میں ملا نہ کتابوں (خواص المفردات، کشتہ جات وغیرہ) میں:\n\n${list.map((n, i) => (i + 1) + '۔ ' + n).join('\n')}\n\n${nuskha ? 'مکمل نسخہ جو لکھا گیا تھا:\n"' + String(nuskha).slice(0, 400) + '"\n\n' : ''}براہ کرم ہر ایک کا مزاج (تحریک نمبر 1 سے 6) بتائیں تاکہ اسے سائٹ میں شامل کر دیا جائے اور اگلی بار یہ مسئلہ نہ آئے۔`;
-      if (!resendKey0 || !notifyEmail0) {
-        console.log('نامعلوم مزاج (ای میل سیٹ اپ نہیں):', list.join('، '));
-        return res.status(200).json({ ok: true, emailed: false });
-      }
-      const rr = await fetch('https://api.resend.com/emails', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${resendKey0}` },
-        body: JSON.stringify({ from: process.env.FROM_EMAIL || 'onboarding@resend.dev', to: [notifyEmail0], subject: subject0, text: text0 })
-      });
-      return res.status(200).json({ ok: rr.ok, emailed: rr.ok });
+      const sent0 = await sendOwnerEmail({ subject: subject0, text: text0 });
+      return res.status(200).json({ ok: true, emailed: sent0 });
     }
 
     const hasDiseaseName = typeof diseaseName === 'string' && diseaseName.trim();
@@ -81,54 +72,51 @@ export default async function handler(req, res) {
       text = `ایک مریض نے یہ بیماری/علامت لکھی جو فہرست میں موجود نہیں تھی:\n\n"${diseaseName.trim()}"\n\nبراہ کرم دیکھیں کہ اسے سائٹ کی بیماریوں کی فہرست میں شامل کرنا ہے یا نہیں۔`;
     }
 
-    const resendKey = process.env.RESEND_API_KEY;
-    const notifyEmail = process.env.NOTIFY_EMAIL;
-    const fromEmail = process.env.FROM_EMAIL || 'onboarding@resend.dev';
-
-    if (!resendKey || !notifyEmail) {
-      // ای میل سیٹ اپ ابھی مکمل نہیں — سائٹ کو نہیں روکنا، صرف لاگ کر دیں
-      console.log('نوٹ ہوا (ای میل سیٹ اپ نہیں ہے):', hasMessage ? message : diseaseName, hasImage ? '(+ تصویر)' : '');
-      return res.status(200).json({ ok: true, emailed: false, note: 'RESEND_API_KEY یا NOTIFY_EMAIL سیٹ نہیں ہے — صرف سرور لاگ میں محفوظ ہوا۔' });
-    }
-
-    const emailPayload = {
-      from: fromEmail,
-      to: [notifyEmail],
-      subject,
-      text
-    };
-
+    let attachments;
     if (hasImage) {
       // Resend base64 اٹیچمنٹ قبول کرتا ہے — بغیر ڈیٹا یو آر ائی پریفکس کے خالص base64 ہونا چاہیے
       const cleanBase64 = imageBase64.indexOf(',') !== -1 ? imageBase64.split(',').pop() : imageBase64;
       const ext = (imageMime && imageMime.split('/')[1]) ? imageMime.split('/')[1] : 'jpg';
-      emailPayload.attachments = [{
-        filename: imageFilename || `screenshot.${ext}`,
-        content: cleanBase64
-      }];
+      attachments = [{ filename: imageFilename || `screenshot.${ext}`, content: cleanBase64 }];
     }
-
-    const emailRes = await fetch('https://api.resend.com/emails', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${resendKey}`
-      },
-      body: JSON.stringify(emailPayload)
-    });
-
-    if (!emailRes.ok) {
-      const errBody = await emailRes.text().catch(() => '');
-      console.error('Resend email error:', errBody);
-      return res.status(200).json({ ok: true, emailed: false, note: 'ای میل بھیجنے میں خرابی، لیکن نوٹ ہو گیا۔' });
-    }
-
-    return res.status(200).json({ ok: true, emailed: true });
+    const sent = await sendOwnerEmail({ subject, text, attachments });
+    return res.status(200).json({ ok: true, emailed: sent });
 
   } catch (err) {
     console.error('notify-disease error:', err);
     return res.status(200).json({ ok: true, emailed: false, note: String(err && err.message ? err.message : err) });
   }
+}
+
+// مالک کو ای میل: Resend سیٹ ہو تو اس سے، ورنہ (یا ناکام ہو تو) FormSubmit سے — جس کے لیے کوئی چابی نہیں چاہیے
+// (FormSubmit پہلی بار مالک کے Gmail پر تصدیقی ای میل بھیجتا ہے؛ اسے ایک بار Activate کرنا ہوتا ہے)
+const OWNER_EMAIL = process.env.FORMSUBMIT_EMAIL || 'h7927022@gmail.com';
+async function sendOwnerEmail({ subject, text, html, attachments }) {
+  const resendKey = process.env.RESEND_API_KEY, notifyEmail = process.env.NOTIFY_EMAIL;
+  if (resendKey && notifyEmail) {
+    try {
+      const payload = { from: process.env.FROM_EMAIL || 'onboarding@resend.dev', to: [notifyEmail], subject, text };
+      if (html) payload.html = html;
+      if (attachments) payload.attachments = attachments;
+      const r = await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${resendKey}` },
+        body: JSON.stringify(payload)
+      });
+      if (r.ok) return true;
+      console.error('Resend error:', await r.text().catch(() => ''));
+    } catch (e) { console.error('Resend error:', e); }
+  }
+  try {
+    const r = await fetch('https://formsubmit.co/ajax/' + encodeURIComponent(OWNER_EMAIL), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Accept: 'application/json', Origin: 'https://myherbalpk.com', Referer: 'https://myherbalpk.com/' },
+      body: JSON.stringify({ _subject: String(subject).slice(0, 200), _template: 'box', _captcha: 'false', 'تفصیل': String(text).slice(0, 30000) })
+    });
+    const d = await r.json().catch(() => ({}));
+    if (!r.ok || String(d.success) === 'false') console.error('FormSubmit:', r.status, d.message || '');
+    return r.ok && String(d.success) !== 'false';
+  } catch (e) { console.error('FormSubmit error:', e); return false; }
 }
 
 const escHtml = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -160,18 +148,8 @@ async function sendActivityLog(req, res, log) {
 ${rows}</table>
 <p style="color:#999;font-size:12px">ڈیوائس: ${escHtml(ua)} · ${escHtml(String(log.screen || '').slice(0, 20))} · ${escHtml(String(log.lang || '').slice(0, 20))}</p></div>`;
   const text = events.map(e => `[${time(e.t)}] ${e.page} — ${e.type}: ${e.text}`).join('\n\n');
-  const resendKey = process.env.RESEND_API_KEY, notifyEmail = process.env.NOTIFY_EMAIL;
-  if (!resendKey || !notifyEmail) {
-    console.log('سرگرمی رپورٹ (ای میل سیٹ اپ نہیں):', subject);
-    return res.status(200).json({ ok: true, emailed: false });
-  }
-  const r = await fetch('https://api.resend.com/emails', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${resendKey}` },
-    body: JSON.stringify({ from: process.env.FROM_EMAIL || 'onboarding@resend.dev', to: [notifyEmail], subject, html, text })
-  });
-  if (!r.ok) console.error('Resend activity log error:', await r.text().catch(() => ''));
-  return res.status(200).json({ ok: true, emailed: r.ok });
+  const emailed = await sendOwnerEmail({ subject, html, text });
+  return res.status(200).json({ ok: true, emailed });
 }
 
 // ---------------------------------------------------------------------------
