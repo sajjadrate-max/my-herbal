@@ -1,0 +1,14 @@
+[
+  {
+    "relation": [
+      "delegate_permission/common.handle_all_urls"
+    ],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "pk.myherbal.app",
+      "sha256_cert_fingerprints": [
+        "F2:BE:7E:E7:EC:B0:93:94:D2:8C:00:42:4C:CD:08:E9:4C:0C:06:1A:1D:BC:62:0F:54:2D:0A:F4:44:5B:0D:F2"
+      ]
+    }
+  }
+]
