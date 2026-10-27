@@ -422,6 +422,15 @@ footer{position:fixed; left:0; right:0; bottom:0; z-index:55; text-align:center;
     <h3 style="color:var(--gold); text-align:center; margin-bottom:12px;">📜 قانون مفرد اعضاء کے مطابق نسخہ بنائیں</h3>
 
     <label style="color:var(--gold-soft); font-size:.9rem;">بیماری یا علامت چنیں (اختیاری) — وہی مکمل فہرست جو "بیماری کی تلاش" میں ہے</label>
+  <!-- عارضی: نئی PDF کتاب سب کے لیے شامل کریں (صارف کی ہدایت پر بغیر پاس ورڈ) —
+         سب کتابیں اپ لوڈ ہو جانے کے بعد یہ حصہ، نیچے up* فنکشنز اور api/notify-disease.js کے آخر والا اپ لوڈ حصہ ہٹا دینا ہے -->
+    <div id="upBox" style="background:var(--card); border:1px dashed var(--gold); border-radius:10px; padding:14px 16px; margin:8px 0 12px; text-align:center;">
+      <h4 style="color:var(--gold-soft); margin-bottom:6px; font-size:.95rem;">📤 نئی PDF کتاب شامل کریں</h4>
+      <p style="color:var(--muted); font-size:.78rem; margin-bottom:10px;">بٹن دبائیں، PDF چنیں — کتاب "بیماری کی تلاش" والی کتابوں کی فہرست کے آخر میں اسی ترتیب سے شامل ہو جائے گی۔ مکمل ہونے تک صفحہ بند نہ کریں۔</p>
+      <label class="btn" style="cursor:pointer; display:inline-block;">📁 PDF منتخب کریں<input type="file" id="upFileInput" accept="application/pdf,.pdf" multiple style="display:none;" onchange="upHandleFiles(this.files)"></label>
+      <div id="upStatus" style="font-size:.82rem; margin-top:10px; color:var(--muted);"></div>
+      <div id="upLog" style="font-size:.8rem; margin-top:6px;"></div>
+    </div>
     <div class="big-search-wrap"><input class="search big-search" id="qmDisease" type="search" placeholder="بیماری یا علامت تلاش کریں..." autocomplete="off" oninput="qmCatalogFilter()"><div class="big-search-count" id="qmCatalogCount"></div></div>
     <div id="qmPickedBox" style="display:none; align-items:center; justify-content:space-between; gap:8px; flex-wrap:wrap; border:2px solid var(--gold); border-radius:12px; padding:8px 12px; margin-bottom:8px;">
       <b id="qmPickedLabel" style="color:var(--gold);"></b>
@@ -520,15 +529,6 @@ footer{position:fixed; left:0; right:0; bottom:0; z-index:55; text-align:center;
     <p id="pmNoteDetail" style="display:none; margin-top:6px;">لفظ لکھیں — بتایا جائے گا کہ وہ کس فائل کے کس صفحے پر موجود ہے۔ یہ تلاش مکمل طور پر آف لائن، آپ کے اپنے فون/کمپیوٹر کے اندر ہی ہوتی ہے — کوئی معلومات انٹرنیٹ پر نہیں بھیجی جاتیں۔</p>
   </div>
 
-  <!-- عارضی: نئی PDF کتاب سب کے لیے شامل کریں (صارف کی ہدایت پر بغیر پاس ورڈ) —
-         سب کتابیں اپ لوڈ ہو جانے کے بعد یہ حصہ، نیچے up* فنکشنز اور api/notify-disease.js کے آخر والا اپ لوڈ حصہ ہٹا دینا ہے -->
-    <div id="upBox" style="background:var(--card); border:1px dashed var(--gold); border-radius:10px; padding:14px 16px; margin-bottom:16px; text-align:center;">
-      <h4 style="color:var(--gold-soft); margin-bottom:6px; font-size:.95rem;">📤 نئی PDF کتاب شامل کریں</h4>
-      <p style="color:var(--muted); font-size:.78rem; margin-bottom:10px;">بٹن دبائیں، PDF چنیں — کتاب اوپر والی فہرست کے آخر میں اسی ترتیب سے شامل ہو جائے گی۔ مکمل ہونے تک صفحہ بند نہ کریں۔</p>
-      <label class="btn" style="cursor:pointer; display:inline-block;">📁 PDF منتخب کریں<input type="file" id="upFileInput" accept="application/pdf,.pdf" multiple style="display:none;" onchange="upHandleFiles(this.files)"></label>
-      <div id="upStatus" style="font-size:.82rem; margin-top:10px; color:var(--muted);"></div>
-      <div id="upLog" style="font-size:.8rem; margin-top:6px;"></div>
-    </div>
 
   <div style="background:var(--card); border:1px solid var(--gold); border-radius:10px; padding:16px; margin-bottom:16px;">
     <h3 style="color:var(--gold-soft); margin-bottom:6px; text-align:center;">بیماری کے مزاج</h3>
@@ -6949,6 +6949,7 @@ async function upHandleFiles(list){
   const input = document.getElementById('upFileInput');
   if(!files.length || upBusy) return;
   upBusy = true; if(input) input.disabled = true;
+  try{ await herbalEnsureBooks(); }catch(e){}
   const warn = e=>{ e.preventDefault(); e.returnValue = ''; };
   window.addEventListener('beforeunload', warn);
   for(let k=0;k<files.length;k++){
