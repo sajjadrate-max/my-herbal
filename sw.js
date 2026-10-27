@@ -1,7 +1,7 @@
 // sw.js — My Herbal | قانونِ مفرد اعضاء
 // مقصد: سائٹ کو آف لائن اور ایپ کی طرح انسٹال کے قابل بنانا، اور دوبارہ کھولنے پر فوراً کھلنا
 
-const CACHE_NAME = 'my-herbal-cache-v68';
+const CACHE_NAME = 'my-herbal-cache-v69';
 const ASSETS_TO_CACHE = [
   '/',
   '/herbal.html',
@@ -50,6 +50,9 @@ self.addEventListener('fetch', (event) => {
   }
 
   if (event.request.method !== 'GET') return;
+
+  // Google AdSense کی درخواستیں سیدھی نیٹ ورک پر جائیں (کیش نہ ہوں)
+  if (/(^|\.)(googlesyndication|doubleclick|googleadservices|adtrafficquality)\.|google\.com$/.test(url.hostname)) return;
 
   // ویب سائٹ سے اپ لوڈ کی گئی کتابوں کی فہرست ہمیشہ تازہ (نیٹ ورک نہ ہو تو محفوظ ورژن)
   if (url.pathname.endsWith('/books/uploads.json')) {
