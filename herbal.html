@@ -206,7 +206,7 @@ footer{position:fixed; left:0; right:0; bottom:0; z-index:55; text-align:center;
 
 <header>
   <nav>
-    <a onclick="try{history.replaceState(null,'',location.pathname+location.search)}catch(e){} location.reload()" id="nav-home" class="active"><span class="ni">🏠</span>ہوم — مزاج کی تشخیص</a>
+    <a onclick="try{sessionStorage.removeItem('herbalPage'); history.replaceState(null,'',location.pathname+location.search)}catch(e){} location.reload()" id="nav-home" class="active"><span class="ni">🏠</span>ہوم — مزاج کی تشخیص</a>
     <a onclick="showPage('pdfmulti')" id="nav-pdfmulti"><span class="ni">🔍</span>بیماری کی تلاش و مزاج</a>
     <a onclick="showPage('nuskhe')" id="nav-nuskhe"><span class="ni">📜</span>نسخہ جات — مزاج وار</a>
     <a onclick="showPage('naskhesaz')" id="nav-naskhesaz"><span class="ni">🌿</span>نسخہ سازی — جڑی بوٹیاں</a>
@@ -734,12 +734,14 @@ function showPage(id){
   const navEl = document.getElementById('nav-'+id);
   if(navEl) navEl.classList.add('active');
   window.scrollTo(0,0);
-  // کھلا صفحہ لنک میں یاد رکھیں — Refresh پر اسی صفحے پر رہیں
-  try{ history.replaceState(null, '', id === 'home' ? location.pathname + location.search : '#' + id); }catch(e){}
+  // کھلا صفحہ یاد رکھیں (لنک میں #… لکھے بغیر) — Refresh پر اسی صفحے پر رہیں
+  try{ sessionStorage.setItem('herbalPage', id); }catch(e){}
+  try{ if(location.hash) history.replaceState(null, '', location.pathname + location.search); }catch(e){}
 }
 // Refresh / دوبارہ کھولنے پر وہی صفحہ کھولیں جو پہلے کھلا تھا
 document.addEventListener('DOMContentLoaded', ()=>{
-  const id = (location.hash || '').slice(1);
+  let id = (location.hash || '').slice(1);
+  if(!id){ try{ id = sessionStorage.getItem('herbalPage') || ''; }catch(e){} }
   if(id && id !== 'home' && /^[a-z]+$/.test(id) && document.getElementById('page-' + id)){
     if(id === 'kami' && typeof qmDeficiencyInit === 'function') qmDeficiencyInit();
     showPage(id);
