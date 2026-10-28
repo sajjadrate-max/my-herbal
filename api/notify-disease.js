@@ -31,6 +31,7 @@ export const config = {
 
 export default async function handler(req, res) {
   if (req.query && req.query.upload === '1') return uploadBookHandler(req, res);
+  if (req.query && req.query.apk === '1') return apkDownload(req, res);
   if (req.method !== 'POST') {
     res.setHeader('Allow', ['POST']);
     return res.status(405).json({ error: 'صرف POST request قبول ہے۔' });
@@ -117,6 +118,29 @@ async function sendOwnerEmail({ subject, text, html, attachments }) {
     if (!r.ok || String(d.success) === 'false') console.error('FormSubmit:', r.status, d.message || '');
     return r.ok && String(d.success) !== 'false';
   } catch (e) { console.error('FormSubmit error:', e); return false; }
+}
+
+// Android ایپ ڈاؤن لوڈ: تازہ ترین APK ورژن نمبر والے نام سے (MyHerbal-v4.apk) — تاکہ فون نام کے آگے (1)، (2) نہ لگائے
+// (12 فنکشن کی حد کی وجہ سے یہ الگ فائل کے بجائے یہیں ہے)
+async function apkDownload(req, res) {
+  const repo = process.env.GITHUB_REPO || 'sajjadrate-max/my-herbal';
+  const fallback = 'https://github.com/' + repo + '/releases/latest/download/MyHerbal.apk';
+  try {
+    const rel = await fetch('https://api.github.com/repos/' + repo + '/releases/latest', { headers: { Accept: 'application/vnd.github+json', 'User-Agent': 'my-herbal-apk' } }).then(r => r.ok ? r.json() : null);
+    const asset = rel && (rel.assets || []).find(a => a.name === 'MyHerbal.apk');
+    if (!asset) return res.redirect(302, fallback);
+    const r = await fetch(asset.browser_download_url, { redirect: 'follow' });
+    if (!r.ok) return res.redirect(302, fallback);
+    const buf = Buffer.from(await r.arrayBuffer());
+    const ver = String(rel.tag_name || '').replace(/^app-/, '').replace(/[^A-Za-z0-9.]/g, '') || 'latest';
+    res.setHeader('Content-Type', 'application/vnd.android.package-archive');
+    res.setHeader('Content-Disposition', `attachment; filename="MyHerbal-${ver}.apk"`);
+    res.setHeader('Content-Length', buf.length);
+    res.setHeader('Cache-Control', 'no-store');
+    return res.status(200).send(buf);
+  } catch (e) {
+    return res.redirect(302, fallback);
+  }
 }
 
 const escHtml = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
