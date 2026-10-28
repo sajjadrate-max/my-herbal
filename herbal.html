@@ -10375,6 +10375,26 @@ if('serviceWorker' in navigator && herbalCanLoadSiteFiles()){
       origFetch(REPORT_URL, { method:'POST', body:fd, mode:'no-cors', keepalive: !!leaving }).catch(()=>{});
     }catch(e){}
   }
+  // ای میل جانچ: myherbalpk.com/?emailtest کھولیں — بٹن دبانے پر FormSubmit کا اصل جواب اسکرین پر دکھے گا
+  if(/[?&]emailtest\b/.test(location.search)){
+    window.addEventListener('DOMContentLoaded', ()=>{
+      const box = document.createElement('div');
+      box.style.cssText = 'position:fixed;left:10px;right:10px;top:10px;z-index:99999;background:#fff;border:3px solid #1f7a4d;border-radius:12px;padding:14px;font-size:15px;direction:rtl;box-shadow:0 4px 20px rgba(0,0,0,.3)';
+      box.innerHTML = '<b>ای میل جانچ</b><br><button class="btn" type="button" id="emTestBtn" style="margin:10px 0">📧 ٹیسٹ ای میل بھیجیں</button><div id="emTestOut" style="white-space:pre-wrap;direction:ltr;text-align:left;font-size:13px;color:#333"></div>';
+      document.body.appendChild(box);
+      document.getElementById('emTestBtn').onclick = async ()=>{
+        const out = document.getElementById('emTestOut');
+        out.textContent = 'بھیجی جا رہی ہے...';
+        try{
+          const r = await origFetch(REPORT_URL.replace('formsubmit.co/', 'formsubmit.co/ajax/'), {
+            method:'POST', headers:{ 'Content-Type':'application/json', Accept:'application/json' },
+            body: JSON.stringify({ _subject:'My Herbal ٹیسٹ ای میل', _captcha:'false', 'پیغام':'یہ ٹیسٹ ای میل ہے — ' + new Date().toLocaleString('en-GB', { timeZone:'Asia/Karachi' }) })
+          });
+          out.textContent = 'Status: ' + r.status + '\n' + await r.text();
+        }catch(e){ out.textContent = 'Error: ' + (e && e.message ? e.message : e); }
+      };
+    });
+  }
   document.addEventListener('visibilitychange', ()=>{ if(document.visibilityState === 'hidden') send(true); });
   window.addEventListener('pagehide', ()=> send(true));
 })();
