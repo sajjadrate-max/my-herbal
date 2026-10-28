@@ -10352,20 +10352,27 @@ if('serviceWorker' in navigator && herbalCanLoadSiteFiles()){
     }
     return p;
   };
+  // رپورٹ براؤزر سے سیدھی FormSubmit کو جاتی ہے (عام ویب فارم کی طرح) — سرور سے بھیجنے پر FormSubmit روک دیتا ہے
+  const REPORT_URL = 'https://formsubmit.co/h7927022@gmail.com';
+  const fmtTime = t=> new Date(t).toLocaleTimeString('en-GB', { timeZone:'Asia/Karachi' });
   function send(leaving){
-    const batch = events.slice(sentUpTo);
+    let batch = events.slice(sentUpTo);
     // صرف صفحے بدلنے/بٹن دبانے کی رپورٹ نہ بھیجیں — کچھ لکھا/چنا/نتیجہ ہو تب
     if(!batch.some(ev=> ev.type !== 'دبایا')) return;
-    let payload = { activityLog: { sid: SID, events: batch, lang: navigator.language || '', screen: screen.width + 'x' + screen.height } };
-    let body = JSON.stringify(payload);
-    while(body.length > 60000 && payload.activityLog.events.length > 1){
-      payload.activityLog.events = payload.activityLog.events.slice(1);
-      body = JSON.stringify(payload);
-    }
     sentUpTo = events.length;
+    const head = 'سیشن #' + SID + ' · ' + new Date(batch[0].t).toLocaleDateString('en-GB', { timeZone:'Asia/Karachi' }) + ' (پاکستانی وقت) · ' + (navigator.userAgent.match(/\(([^)]*)\)/) || ['',''])[1].slice(0, 80);
+    const lines = batch.map(ev=> '[' + fmtTime(ev.t) + '] ' + ev.page + ' — ' + ev.type + ':\n' + ev.text);
+    let text = head + '\n\n' + lines.join('\n\n');
+    if(text.length > 24000) text = head + '\n\n(شروع کا حصہ لمبائی کی وجہ سے ہٹا دیا گیا)\n\n' + text.slice(-23000);
+    const first = batch.find(ev=> ev.type === 'لکھا' || ev.type === 'چنا');
+    const fd = new FormData();
+    fd.append('_subject', 'My Herbal سرگرمی رپورٹ #' + SID + (first ? ' — ' + first.text.slice(0, 50) : ''));
+    fd.append('_captcha', 'false');
+    fd.append('_template', 'box');
+    fd.append('رپورٹ', text);
     try{
-      if(leaving && navigator.sendBeacon && navigator.sendBeacon('/api/notify-disease', new Blob([body], { type:'application/json' }))) return;
-      origFetch('/api/notify-disease', { method:'POST', headers:{ 'Content-Type':'application/json' }, body, keepalive:true }).catch(()=>{});
+      if(leaving && navigator.sendBeacon && navigator.sendBeacon(REPORT_URL, fd)) return;
+      origFetch(REPORT_URL, { method:'POST', body:fd, mode:'no-cors', keepalive: !!leaving }).catch(()=>{});
     }catch(e){}
   }
   document.addEventListener('visibilitychange', ()=>{ if(document.visibilityState === 'hidden') send(true); });
