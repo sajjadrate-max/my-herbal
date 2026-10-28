@@ -7,12 +7,8 @@
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9829612219556114" crossorigin="anonymous"></script>
 <style>[hidden]{display:none!important}body{margin:0}</style>
 <title>مریضوں کا کھاتہ | My Herbal</title>
-<link rel="manifest" href="manifest-khata.json">
 <meta name="theme-color" content="#1d5b4f">
 <meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="مریض کھاتہ">
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <link rel="icon" type="image/png" href="khata-icon-192.png">
 <link rel="apple-touch-icon" href="khata-icon-512-maskable.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -168,11 +164,6 @@ dialog h3{font-family:var(--title);margin:0;line-height:2.1;color:var(--accent)}
 .res-pick label{flex-direction:row;align-items:center;gap:6px;border:1px solid var(--line);border-radius:10px;padding:6px 10px;cursor:pointer;color:var(--ink)}
 .res-pick input{width:auto}
 .note{font-size:.88rem;color:var(--muted)}
-.install{display:flex;align-items:center;gap:10px;background:var(--accent-soft);border:1px solid var(--accent);border-radius:12px;padding:8px 12px;margin-bottom:12px}
-.install img{width:40px;height:40px;border-radius:10px;flex:none}
-.install .txt{flex:1;min-width:0;font-size:.9rem}
-.install .txt b{display:block;color:var(--accent)}
-.install .x{background:none;border:0;color:var(--muted);font-size:1.3rem;cursor:pointer;padding:0 4px;line-height:1}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 </head>
@@ -186,13 +177,6 @@ dialog h3{font-family:var(--title);margin:0;line-height:2.1;color:var(--accent)}
     </div>
     <a class="btn sm" href="herbal.html" style="text-decoration:none">→ My Herbal</a>
   </header>
-
-  <div class="install" id="installBar" hidden>
-    <img src="khata-icon-192.png" alt="">
-    <div class="txt"><b>ایپ انسٹال کریں</b><span id="installHint">فون کی ہوم اسکرین پر لگائیں، انٹرنیٹ کے بغیر بھی چلے گی</span></div>
-    <button class="btn sm" id="installBtn">انسٹال</button>
-    <button class="x" id="installX" aria-label="بند کریں">×</button>
-  </div>
 
   <nav class="tabs" role="tablist">
     <button role="tab" data-tab="patients" aria-selected="true">مریض</button>
@@ -807,30 +791,10 @@ function renderBackup(){
 
 render();
 
-/* ---------- ایپ انسٹال ---------- */
-(function(){
-  const bar=document.getElementById('installBar'),btn=document.getElementById('installBtn'),hint=document.getElementById('installHint');
-  const standalone=matchMedia('(display-mode: standalone)').matches||navigator.standalone===true;
-  const DKEY='mareez_khata_install_hidden';
-  const dismissed=()=>{try{return Date.now()-(+localStorage.getItem(DKEY)||0)<7*864e5}catch(e){return false}};
-  let deferred=null;
-  if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
-  // انسٹال ایپ میں براؤزر ڈیٹا خود سے نہ مٹائے
-  if(navigator.storage&&navigator.storage.persist) navigator.storage.persist().catch(()=>{});
-  if(standalone) return;
-  window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferred=e;btn.hidden=false;if(!dismissed())bar.hidden=false});
-  btn.onclick=async()=>{
-    if(!deferred){toast('براؤزر کے مینو ⋮ سے "Add to Home screen" دبائیں');return}
-    deferred.prompt();const r=await deferred.userChoice;deferred=null;
-    if(r.outcome==='accepted')bar.hidden=true;
-  };
-  document.getElementById('installX').onclick=()=>{bar.hidden=true;try{localStorage.setItem(DKEY,Date.now())}catch(e){}};
-  window.addEventListener('appinstalled',()=>{bar.hidden=true;toast('ایپ انسٹال ہو گئی — ہوم اسکرین سے کھولیں')});
-  // آئی فون پر خودکار انسٹال نہیں، طریقہ بتائیں
-  if(/iphone|ipad|ipod/i.test(navigator.userAgent)&&!dismissed()){
-    hint.textContent='نیچے Share ⬆️ دبائیں، پھر "Add to Home Screen" چنیں';btn.hidden=true;bar.hidden=false;
-  }
-})();
+/* ---------- آف لائن ---------- */
+if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
+// براؤزر ڈیٹا خود سے نہ مٹائے
+if(navigator.storage&&navigator.storage.persist) navigator.storage.persist().catch(()=>{});
 </script>
 </body>
 </html>

@@ -7,12 +7,7 @@
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9829612219556114" crossorigin="anonymous"></script>
 <title>My Herbal | میری حکمت — قانون مفرد اعضاء</title>
 <meta name="description" content="قانونِ مفرد اعضاء کے مطابق مزاج کی تشخیص، نسخہ سازی، غذائی چارٹ اور وٹامنز/معدنیات کی کمی کی تشخیص — حکیم صابر رحمۃ اللہ علیہ کے نظام پر مبنی اردو ویب ایپ۔">
-<link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#1f7a4d">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="My Herbal">
 <link rel="icon" href="icon-192.png" type="image/png">
 <link rel="apple-touch-icon" href="icon-512-maskable.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -145,14 +140,6 @@ tr:nth-child(even){background:rgba(31,122,77,0.04);}
 .mizaj-col{background:var(--card); border:1px solid var(--border); border-radius:10px; padding:16px;}
 .mizaj-col h4{color:var(--gold); text-align:center; margin:0 0 12px; font-size:1.15rem; border-bottom:1px solid var(--border); padding-bottom:10px;}
 .mizaj-col .symptom{margin-bottom:8px; padding:10px 12px;}
-#installBar{position:fixed; left:12px; right:12px; bottom:58px; z-index:60; display:none; align-items:center; gap:10px;
-  background:var(--card); border:1px solid var(--gold); border-radius:12px; padding:10px 12px; box-shadow:0 6px 24px rgba(0,0,0,.5);}
-#installBar.show{display:flex;}
-#installBar img{width:40px; height:40px; border-radius:9px;}
-#installBar .ib-text{flex:1; font-size:.9rem; line-height:1.7;}
-#installBar .ib-text b{color:var(--gold);}
-#installBar .btn{padding:6px 16px; font-size:.95rem;}
-#installBar .ib-close{background:none; border:none; color:var(--muted); font-size:1.3rem; cursor:pointer; padding:0 4px;}
 /* "بیماری کے مزاج": ہر عضو الگ خانے میں، کھلی فہرست واضح طور پر الگ نظر آئے */
 #pmMizajOptionsList{border:none !important; background:transparent !important;}
 .pm-organ-group{scroll-margin-top:150px; margin:0 0 8px; border:1px solid var(--border); border-radius:10px; overflow:hidden; background:var(--card);}
@@ -227,16 +214,6 @@ footer{position:fixed; left:0; right:0; bottom:0; z-index:55; text-align:center;
     <p style="color:var(--gold-soft); font-size:1.3rem; margin-bottom:14px;">قانون مفرد اعضاء</p>
     <p>حکیم صابر رحمۃ اللہ علیہ کے قانون کے مطابق مزاج، غذا اور علاج کا مکمل نظام</p>
   </div>
-  <div id="apkBox" style="background:var(--card); border:1px solid var(--gold); border-radius:10px; padding:14px 16px; margin:0 0 16px; text-align:center;">
-    <h4 style="color:var(--gold-soft); margin-bottom:6px; font-size:1rem;">📱 My Herbal کی Android ایپ</h4>
-    <p style="color:var(--muted); font-size:.8rem; margin-bottom:10px;">بٹن دبا کر APK ڈاؤن لوڈ کریں، پھر فائل کھول کر انسٹال کریں (فون پوچھے تو "نامعلوم ذرائع سے انسٹال" کی اجازت دیں)۔ ویب سائٹ کی ہر نئی تبدیلی ایپ میں خود آ جاتی ہے۔</p>
-    <a class="btn" href="https://github.com/sajjadrate-max/my-herbal/releases/latest/download/MyHerbal.apk" rel="noopener" style="display:inline-block; text-decoration:none;">⬇️ Android ایپ (APK) ڈاؤن لوڈ کریں</a>
-  </div>
-  <script>try{
-    // ایپ کے اندر (یا انسٹال شدہ ویب ایپ میں) "ایپ ڈاؤن لوڈ کریں" والا ڈبہ نہ دکھائیں
-    if(/^android-app:/.test(document.referrer)) sessionStorage.setItem('herbalInApp', '1');
-    if(/; wv\)/.test(navigator.userAgent) || sessionStorage.getItem('herbalInApp') || matchMedia('(display-mode: standalone)').matches) document.getElementById('apkBox').style.display = 'none';
-  }catch(e){}</script>
   <div class="rule-box">
     <b>حکیم صابر:</b> جو مریض دوائی تو کھاتے ہیں مگر پرہیز نہیں کرتے، وہ اپنے معالج کی قابلیت کو خاک میں ملا دیتے ہیں۔ نماز کا اہتمام کریں، نماز میں شفاء ہے۔
   </div>
@@ -630,9 +607,6 @@ footer{position:fixed; left:0; right:0; bottom:0; z-index:55; text-align:center;
 <!-- ===================== BIOPHARMACOPEIA PDF ===================== -->
 </main>
 
-<div id="installBar" role="dialog" aria-label="ایپ انسٹال کریں">
-  <img src="icon-192.png" alt="">
-  <div class="ib-text"><b>میری حکمت</b> ایپ اپنے فون میں انسٹال کریں<br><span id="installHint" style="color:var(--muted); font-size:.8rem;"></span></div>
   <button class="btn" id="installBtn" type="button">انسٹال</button>
   <button class="ib-close" id="installClose" type="button" aria-label="بند کریں">×</button>
 </div>
@@ -10239,36 +10213,6 @@ if('serviceWorker' in navigator && herbalCanLoadSiteFiles()){
     location.reload();
   });
 }
-// "ایپ انسٹال کریں" — Android/Chrome پر براہِ راست انسٹال، iPhone پر طریقہ بتائیں
-(function(){
-  const bar = document.getElementById('installBar'), btn = document.getElementById('installBtn'),
-        hint = document.getElementById('installHint'), closeBtn = document.getElementById('installClose');
-  if(!bar) return;
-  const standalone = window.matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
-  if(standalone) return;
-  let dismissed = false; try{ dismissed = localStorage.getItem('installDismissed') === '1'; }catch(e){}
-  let deferred = null;
-  window.addEventListener('beforeinstallprompt', e=>{
-    e.preventDefault(); deferred = e;
-    if(!dismissed){ hint.textContent = 'ایک کلک میں — ہوم اسکرین پر آئیکن آ جائے گا'; bar.classList.add('show'); }
-  });
-  const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
-  if(isIOS && !dismissed){
-    hint.textContent = 'نیچے Share ⬆️ دبائیں، پھر "Add to Home Screen"';
-    btn.style.display = 'none'; bar.classList.add('show');
-  }
-  btn.addEventListener('click', async ()=>{
-    if(!deferred) return;
-    deferred.prompt();
-    try{ await deferred.userChoice; }catch(e){}
-    deferred = null; bar.classList.remove('show');
-  });
-  closeBtn.addEventListener('click', ()=>{
-    bar.classList.remove('show');
-    try{ localStorage.setItem('installDismissed', '1'); }catch(e){}
-  });
-  window.addEventListener('appinstalled', ()=> bar.classList.remove('show'));
-})();
 </script>
 <script>
 // ===== سرگرمی رپورٹ: ہر وزیٹر نے کیا لکھا/چنا اور سائٹ نے کیا جواب دیا — سب مالک کو ای میل (Resend کے ذریعے) =====
@@ -10298,7 +10242,7 @@ if('serviceWorker' in navigator && herbalCanLoadSiteFiles()){
     // نتیجہ دکھنے کے 30 سیکنڈ بعد، ورنہ 2 منٹ کچھ نہ ہو تو رپورٹ بھیج دیں
     idleTimer = setTimeout(()=> send(false), type === 'نتیجہ' ? 30000 : 120000);
   }
-  const skip = el=> !el || el.closest('#upBox, #apkBox, #installBar') || (el.type === 'file') || (el.type === 'password');
+  const skip = el=> !el || el.closest('#upBox') || (el.type === 'file') || (el.type === 'password');
   function labelOf(el){
     let l = el.id && document.querySelector('label[for="' + CSS.escape(el.id) + '"]');
     if(!l) l = el.closest('label');
