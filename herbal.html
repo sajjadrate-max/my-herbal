@@ -10293,7 +10293,8 @@ if('serviceWorker' in navigator && herbalCanLoadSiteFiles()){
     events.push({ t: Date.now(), page: pageName(), type, text });
     if(events.length > 500){ events.splice(0, 100); sentUpTo = Math.max(0, sentUpTo - 100); }
     clearTimeout(idleTimer);
-    idleTimer = setTimeout(()=> send(false), 120000); // 2 منٹ کچھ نہ ہو تو بھیج دیں
+    // نتیجہ دکھنے کے 30 سیکنڈ بعد، ورنہ 2 منٹ کچھ نہ ہو تو رپورٹ بھیج دیں
+    idleTimer = setTimeout(()=> send(false), type === 'نتیجہ' ? 30000 : 120000);
   }
   const skip = el=> !el || el.closest('#upBox, #apkBox, #installBar') || (el.type === 'file') || (el.type === 'password');
   function labelOf(el){
@@ -10365,14 +10366,17 @@ if('serviceWorker' in navigator && herbalCanLoadSiteFiles()){
     let text = head + '\n\n' + lines.join('\n\n');
     if(text.length > 24000) text = head + '\n\n(شروع کا حصہ لمبائی کی وجہ سے ہٹا دیا گیا)\n\n' + text.slice(-23000);
     const first = batch.find(ev=> ev.type === 'لکھا' || ev.type === 'چنا');
-    const fd = new FormData();
-    fd.append('_subject', 'My Herbal سرگرمی رپورٹ #' + SID + (first ? ' — ' + first.text.slice(0, 50) : ''));
-    fd.append('_captcha', 'false');
-    fd.append('_template', 'box');
-    fd.append('رپورٹ', text);
+    const subject = 'My Herbal سرگرمی رپورٹ #' + SID + (first ? ' — ' + first.text.slice(0, 50) : '');
+    const AJAX = REPORT_URL.replace('formsubmit.co/', 'formsubmit.co/ajax/');
     try{
-      if(leaving && navigator.sendBeacon && navigator.sendBeacon(REPORT_URL, fd)) return;
-      origFetch(REPORT_URL, { method:'POST', body:fd, mode:'no-cors', keepalive: !!leaving }).catch(()=>{});
+      if(leaving && navigator.sendBeacon){
+        const fd = new FormData();
+        fd.append('_subject', subject); fd.append('_captcha', 'false'); fd.append('_template', 'box'); fd.append('رپورٹ', text);
+        if(navigator.sendBeacon(AJAX, fd)) return;
+      }
+      // وہی راستہ جس سے ٹیسٹ ای میل کامیابی سے پہنچی
+      origFetch(AJAX, { method:'POST', headers:{ 'Content-Type':'application/json', Accept:'application/json' },
+        body: JSON.stringify({ _subject: subject, _captcha:'false', _template:'box', 'رپورٹ': text }) }).catch(()=>{});
     }catch(e){}
   }
   // ای میل جانچ: myherbalpk.com/?emailtest کھولیں — بٹن دبانے پر FormSubmit کا اصل جواب اسکرین پر دکھے گا
