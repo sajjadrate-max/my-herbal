@@ -10279,6 +10279,8 @@ if('serviceWorker' in navigator && herbalCanLoadSiteFiles()){
   let sentUpTo = 0, idleTimer = null;
   const RESULT_IDS = ['mizajResult','diseaseApiResultBox','deficiencyResult','kamiSearchResult','nuskhaResult','qmResult','wajahResult','wajahSearchResult','itemInfoResult','pmResults','pmMizajResults','hzResults'];
   const clean = (s, n)=> String(s == null ? '' : s).replace(/\s+/g, ' ').trim().slice(0, n || 600);
+  // نتیجے میں سطریں ویسی ہی رہیں جیسی سائٹ پر نظر آتی ہیں
+  const cleanLines = (s, n)=> String(s == null ? '' : s).replace(/[ \t\u00a0]+/g, ' ').replace(/ *\n */g, '\n').replace(/\n{2,}/g, '\n').trim().slice(0, n || 600);
   function pageName(){
     const sec = document.querySelector('.page-section.active');
     const t = sec && sec.querySelector('.section-title');
@@ -10286,7 +10288,7 @@ if('serviceWorker' in navigator && herbalCanLoadSiteFiles()){
     return clean(t ? t.textContent : sec.id.replace('page-',''), 60);
   }
   function add(type, text, n){
-    text = clean(text, n);
+    text = type === 'نتیجہ' ? cleanLines(text, n) : clean(text, n);
     if(!text) return;
     const last = events[events.length - 1];
     if(last && last.type === type && last.text === text) return;
@@ -10308,7 +10310,9 @@ if('serviceWorker' in navigator && herbalCanLoadSiteFiles()){
     const el = e.target;
     if(skip(el)) return;
     if(el.type === 'checkbox' || el.type === 'radio'){
-      add('چنا', (el.checked ? '✔ ' : '✘ ') + labelOf(el));
+      // فہرست کے نمبر اور "دوسرے نام" ہٹا کر صرف اصل نام
+      const name = labelOf(el).split('دوسرے نام')[0].replace(/^\s*\d+\s*|\s*\d+\s*$/g, '').trim();
+      add('چنا', (el.checked ? '✔ ' : '✘ ') + name);
     } else if(el.tagName === 'SELECT'){
       add('چنا', labelOf(el) + ': ' + (el.selectedOptions[0] ? el.selectedOptions[0].textContent : el.value));
     } else if(el.value){
@@ -10331,28 +10335,14 @@ if('serviceWorker' in navigator && herbalCanLoadSiteFiles()){
     new MutationObserver(()=>{
       clearTimeout(timer);
       timer = setTimeout(()=>{
-        const txt = clean(el.innerText, 4000);
-        if(txt && txt !== seen[id] && el.offsetParent !== null){ seen[id] = txt; add('نتیجہ', txt, 4000); }
+        const txt = cleanLines(el.innerText, 4000);
+        // ابھی لوڈ ہو رہا (⏳) نتیجہ نہیں — مکمل ہونے پر دوبارہ آئے گا
+        if(txt && !/⏳/.test(txt) && txt !== seen[id] && el.offsetParent !== null){ seen[id] = txt; add('نتیجہ', txt, 4000); }
       }, 1500);
     }).observe(el, { childList:true, subtree:true, characterData:true });
   }
   window.addEventListener('DOMContentLoaded', ()=> RESULT_IDS.forEach(watch));
-  // AI والے سوال/جواب (سرور API) — جو بھیجا اور جو جواب آیا
-  const origFetch = window.fetch;
-  window.fetch = function(input, init){
-    const url = typeof input === 'string' ? input : (input && input.url) || '';
-    const p = origFetch.apply(this, arguments);
-    if(/\/api\//.test(url) && !/notify-disease/.test(url)){
-      const name = url.replace(/^.*\/api\//, '').replace(/\?.*$/, '');
-      let q = init && typeof init.body === 'string' ? init.body : '';
-      try{ q = JSON.stringify(JSON.parse(q)); }catch(e){}
-      p.then(r=> r.clone().text()).then(t=>{
-        let a = t; try{ a = JSON.stringify(JSON.parse(t)); }catch(e){}
-        add('AI سوال/جواب', name + ' — بھیجا: ' + clean(q, 800) + ' ⟶ جواب: ' + clean(a, 2500), 3500);
-      }).catch(()=>{});
-    }
-    return p;
-  };
+  const origFetch = window.fetch.bind(window);
   // رپورٹ براؤزر سے سیدھی FormSubmit کو جاتی ہے (عام ویب فارم کی طرح) — سرور سے بھیجنے پر FormSubmit روک دیتا ہے
   const REPORT_URL = 'https://formsubmit.co/h7927022@gmail.com';
   const fmtTime = t=> new Date(t).toLocaleTimeString('en-GB', { timeZone:'Asia/Karachi' });
@@ -10360,23 +10350,32 @@ if('serviceWorker' in navigator && herbalCanLoadSiteFiles()){
     let batch = events.slice(sentUpTo);
     // صرف صفحے بدلنے/بٹن دبانے کی رپورٹ نہ بھیجیں — کچھ لکھا/چنا/نتیجہ ہو تب
     if(!batch.some(ev=> ev.type !== 'دبایا')) return;
+    if(!batch.length) return;
     sentUpTo = events.length;
     const head = 'سیشن #' + SID + ' · ' + new Date(batch[0].t).toLocaleDateString('en-GB', { timeZone:'Asia/Karachi' }) + ' (پاکستانی وقت) · ' + (navigator.userAgent.match(/\(([^)]*)\)/) || ['',''])[1].slice(0, 80);
-    const lines = batch.map(ev=> '[' + fmtTime(ev.t) + '] ' + ev.page + ' — ' + ev.type + ':\n' + ev.text);
-    let text = head + '\n\n' + lines.join('\n\n');
-    if(text.length > 24000) text = head + '\n\n(شروع کا حصہ لمبائی کی وجہ سے ہٹا دیا گیا)\n\n' + text.slice(-23000);
+    // ای میل میں ہر قدم الگ خانے میں: عنوان = نمبر · وقت · صفحہ · کیا ہوا
+    const fields = { 'معلومات': head };
+    let total = head.length;
+    for(let i = batch.length - 1; i >= 0 && total < 24000; i--){
+      const ev = batch[i];
+      fields[(i+1) + ' · ' + fmtTime(ev.t) + ' · ' + ev.page + ' · ' + ev.type] = ev.text;
+      total += ev.text.length + 60;
+    }
+    const ordered = { 'معلومات': head };
+    Object.keys(fields).filter(k=> k !== 'معلومات').sort((a, b)=> parseInt(a) - parseInt(b)).forEach(k=> ordered[k] = fields[k]);
     const first = batch.find(ev=> ev.type === 'لکھا' || ev.type === 'چنا');
     const subject = 'My Herbal سرگرمی رپورٹ #' + SID + (first ? ' — ' + first.text.slice(0, 50) : '');
     const AJAX = REPORT_URL.replace('formsubmit.co/', 'formsubmit.co/ajax/');
     try{
       if(leaving && navigator.sendBeacon){
         const fd = new FormData();
-        fd.append('_subject', subject); fd.append('_captcha', 'false'); fd.append('_template', 'box'); fd.append('رپورٹ', text);
+        fd.append('_subject', subject); fd.append('_captcha', 'false'); fd.append('_template', 'box');
+        Object.keys(ordered).forEach(k=> fd.append(k, ordered[k]));
         if(navigator.sendBeacon(AJAX, fd)) return;
       }
       // وہی راستہ جس سے ٹیسٹ ای میل کامیابی سے پہنچی
       origFetch(AJAX, { method:'POST', headers:{ 'Content-Type':'application/json', Accept:'application/json' },
-        body: JSON.stringify({ _subject: subject, _captcha:'false', _template:'box', 'رپورٹ': text }) }).catch(()=>{});
+        body: JSON.stringify(Object.assign({ _subject: subject, _captcha:'false', _template:'box' }, ordered)) }).catch(()=>{});
     }catch(e){}
   }
   // ای میل جانچ: myherbalpk.com/?emailtest کھولیں — بٹن دبانے پر FormSubmit کا اصل جواب اسکرین پر دکھے گا
