@@ -214,6 +214,16 @@ footer{position:fixed; left:0; right:0; bottom:0; z-index:55; text-align:center;
     <p style="color:var(--gold-soft); font-size:1.3rem; margin-bottom:14px;">قانون مفرد اعضاء</p>
     <p>حکیم صابر رحمۃ اللہ علیہ کے قانون کے مطابق مزاج، غذا اور علاج کا مکمل نظام</p>
   </div>
+  <div id="apkBox" style="background:var(--card); border:1px solid var(--gold); border-radius:10px; padding:14px 16px; margin:0 0 16px; text-align:center;">
+    <h4 style="color:var(--gold-soft); margin-bottom:6px; font-size:1rem;">📱 My Herbal کی Android ایپ</h4>
+    <p style="color:var(--muted); font-size:.8rem; margin-bottom:10px;">بٹن دبا کر APK ڈاؤن لوڈ کریں، پھر فائل کھول کر انسٹال کریں (فون پوچھے تو "نامعلوم ذرائع سے انسٹال" کی اجازت دیں)۔ ویب سائٹ کی ہر نئی تبدیلی ایپ میں خود آ جاتی ہے۔</p>
+    <a class="btn" href="https://github.com/sajjadrate-max/my-herbal/releases/latest/download/MyHerbal.apk" rel="noopener" style="display:inline-block; text-decoration:none;">⬇️ Android ایپ (APK) ڈاؤن لوڈ کریں</a>
+  </div>
+  <script>try{
+    // ایپ کے اندر (یا انسٹال شدہ ویب ایپ میں) "ایپ ڈاؤن لوڈ کریں" والا ڈبہ نہ دکھائیں
+    if(/^android-app:/.test(document.referrer)) sessionStorage.setItem('herbalInApp', '1');
+    if(/; wv\)/.test(navigator.userAgent) || sessionStorage.getItem('herbalInApp') || matchMedia('(display-mode: standalone)').matches) document.getElementById('apkBox').style.display = 'none';
+  }catch(e){}</script>
   <div class="rule-box">
     <b>حکیم صابر:</b> جو مریض دوائی تو کھاتے ہیں مگر پرہیز نہیں کرتے، وہ اپنے معالج کی قابلیت کو خاک میں ملا دیتے ہیں۔ نماز کا اہتمام کریں، نماز میں شفاء ہے۔
   </div>
@@ -10242,7 +10252,7 @@ if('serviceWorker' in navigator && herbalCanLoadSiteFiles()){
     // نتیجہ دکھنے کے 30 سیکنڈ بعد، ورنہ 2 منٹ کچھ نہ ہو تو رپورٹ بھیج دیں
     idleTimer = setTimeout(()=> send(false), type === 'نتیجہ' ? 30000 : 120000);
   }
-  const skip = el=> !el || el.closest('#upBox') || (el.type === 'file') || (el.type === 'password');
+  const skip = el=> !el || el.closest('#upBox, #apkBox') || (el.type === 'file') || (el.type === 'password');
   function labelOf(el){
     let l = el.id && document.querySelector('label[for="' + CSS.escape(el.id) + '"]');
     if(!l) l = el.closest('label');
