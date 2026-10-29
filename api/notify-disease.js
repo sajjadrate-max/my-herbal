@@ -166,7 +166,17 @@ async function ilajSave(req, res) {
       const lines = Buffer.from(f.content, 'base64').toString('utf8').split('\n');
       let i = lines.findIndex(l => l.trim() === '## ' + name);
       let next;
-      if (i < 0) {
+      if (typeof b.special === 'boolean') {
+        // ⭐ اسپیشل / عام: "اسپیشل" والے حصے میں "* نام" کی لائن
+        let h = lines.findIndex(l => /^=+\s*اسپیشل\s*=+$/.test(l.trim()));
+        if (h < 0) { const g = lines.findIndex(l => /^=+/.test(l.trim())); h = g < 0 ? lines.length : g; lines.splice(h, 0, '==================== اسپیشل ====================', ''); }
+        let e = h + 1;
+        while (e < lines.length && !/^=+/.test(lines[e].trim())) e++;
+        const sec = lines.slice(h + 1, e).filter(l => l.trim() !== '* ' + name);
+        while (sec.length && !sec[sec.length - 1].trim()) sec.pop();
+        if (b.special) sec.push('* ' + name);
+        next = lines.slice(0, h + 1).concat(sec, [''], lines.slice(e));
+      } else if (i < 0) {
         // نیا نسخہ/بیماری: فائل کے آخر میں "نئے نسخے" کے حصے میں
         if (!b.create || !blocks.length) return res.status(400).json({ error: 'یہ نام ilaj.txt میں نہیں ملا' });
         while (lines.length && !lines[lines.length - 1].trim()) lines.pop();
