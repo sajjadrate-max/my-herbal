@@ -8110,6 +8110,15 @@ async function ilajBuildCatalog(){
   const data = await ilajLoad();
   const tag = n=> ILAJ_SEE[n] ? `<div class="pm-def-tag">↩ ${escapeHtmlSearch(ILAJ_SEE[n])} میں سب فارمولے${data[ILAJ_SEE[n]] ? ' (' + data[ILAJ_SEE[n]].length + ')' : ''}</div>`
     : data[n] ? `<div class="pm-def-tag">✔ علاج درج ہے (${data[n].length} ${data[n].length > 1 ? 'فارمولے' : 'نسخہ'})</div>` : '';
+  // اعضاء والی فہرست اس صفحے پر نہیں — سائٹ کی جن بیماریوں میں علاج لکھا ہے وہ اپنے پہلے حرف کے حصے میں
+  const pointed = new Set(Object.values(ILAJ_SEE)), inBook = new Set([].concat(...ILAJ_BOOK.map(g=> g.names)));
+  pmMizajOptions.forEach(n=>{
+    if(!data[n] || pointed.has(n) || inBook.has(n)) return;
+    const L = n[0] === 'آ' ? 'ا' : n[0];
+    let g = ILAJ_BOOK.find(x=> x.group === L);
+    if(!g){ g = { group: L, names: [] }; ILAJ_BOOK.push(g); }
+    g.names.push(n); inBook.add(n);
+  });
   const bookCount = ILAJ_BOOK.reduce((s, g)=> s + g.names.length, 0);
   const book = ILAJ_BOOK.filter(g=> g.names.length).map(g=> `<details class="pm-organ-group" data-organ="${escapeHtmlSearch(g.group)}">
       <summary><span>${escapeHtmlSearch(g.group)}<span class="pm-picked"></span></span><span class="pm-organ-count">${g.names.length} نسخے</span></summary>
@@ -8137,8 +8146,7 @@ async function ilajBuildCatalog(){
   el.innerHTML = `<div style="text-align:center; margin:4px 0 12px;"><button type="button" class="btn" onclick="ilajNew()">➕ نیا نسخہ / نئی بیماری شامل کریں</button></div>`
     + emergency
     + (book ? `<h3 style="color:var(--gold); text-align:center; margin:10px 0 4px;">📘 حکیم سجاد احمد بھٹی کے نسخے</h3><div class="pm-total">کل ${bookCount} — حروفِ تہجی کی ترتیب سے</div>${book}` : '')
-    + `<h3 style="color:var(--gold); text-align:center; margin:18px 0 4px;">🩺 اعضاء کے مطابق بیماریاں</h3>`
-    + pmCatalogHtml(pmMizajOptions, { extra: tag });
+
   pmCatalogWire(el);
   if(!el.dataset.wired){ el.dataset.wired = '1'; el.addEventListener('click', e=>{ const r = e.target.closest('.pm-mizaj-option'); if(r) ilajShow(r.dataset.val); }); }
 }
