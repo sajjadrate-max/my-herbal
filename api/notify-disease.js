@@ -32,6 +32,7 @@ export const config = {
 export default async function handler(req, res) {
   if (req.query && req.query.upload === '1') return uploadBookHandler(req, res);
   if (req.query && req.query.apk === '1') return apkDownload(req, res);
+  if (req.query && req.query.ilaj === '1') return ilajSave(req, res);
   if (req.method !== 'POST') {
     res.setHeader('Allow', ['POST']);
     return res.status(405).json({ error: 'صرف POST request قبول ہے۔' });
@@ -140,6 +141,43 @@ async function apkDownload(req, res) {
     return res.status(200).send(buf);
   } catch (e) {
     return res.redirect(302, fallback);
+  }
+}
+
+// "بیماریاں اور علاج": مالک ویب سائٹ کے خانے میں جو مزاج/علاج لکھیں وہ ilaj.txt (GitHub) میں اسی بیماری کے نیچے محفوظ
+// صرف مالک (خفیہ لنک والا براؤزر) — key ساتھ آتی ہے؛ GITHUB_TOKEN صرف Vercel میں
+const ILAJ_FILE = 'ilaj.txt';
+const ILAJ_KEY = process.env.ILAJ_KEY || 'owner-Bhatti786';
+async function ilajSave(req, res) {
+  if (req.method !== 'POST') return res.status(405).json({ error: 'صرف POST' });
+  if (!process.env.GITHUB_TOKEN) return res.status(500).json({ error: 'سرور پر GITHUB_TOKEN سیٹ نہیں' });
+  try {
+    const b = typeof req.body === 'string' ? JSON.parse(req.body) : (req.body || {});
+    if (b.key !== ILAJ_KEY) return res.status(403).json({ error: 'اجازت نہیں' });
+    const name = String(b.name || '').trim();
+    if (!name || name.length > 120 || /[\r\n]/.test(name)) return res.status(400).json({ error: 'غلط نام' });
+    const clean = t => String(t || '').replace(/\r/g, '').split('\n').map(l => l.replace(/^\s*#+/, '').trimEnd()).join('\n').trim().slice(0, 4000);
+    const blocks = (Array.isArray(b.blocks) ? b.blocks : []).slice(0, 12).map(x => ({ mizaj: clean(x && x.mizaj).replace(/\n/g, ' ').slice(0, 120), text: clean(x && x.text) })).filter(x => x.mizaj || x.text);
+    const body = blocks.length
+      ? blocks.map(x => 'مزاج: ' + x.mizaj + '\n' + x.text.split('\n').map((l, i) => (i === 0 ? 'علاج: ' + l : l)).join('\n')).join('\n')
+      : 'مزاج:\nعلاج:';
+    for (let attempt = 0; attempt < 4; attempt++) {
+      const f = await upGh('/contents/' + ILAJ_FILE + '?ref=' + BRANCH);
+      const lines = Buffer.from(f.content, 'base64').toString('utf8').split('\n');
+      const i = lines.findIndex(l => l.trim() === '## ' + name);
+      if (i < 0) return res.status(400).json({ error: 'یہ بیماری ilaj.txt میں نہیں ملی' });
+      let j = i + 1;
+      while (j < lines.length && !/^(##\s|=+|#\s*-+)/.test(lines[j].trim())) j++;
+      const next = lines.slice(0, i + 1).concat(body.split('\n'), [''], lines.slice(j));
+      try {
+        await upGh('/contents/' + ILAJ_FILE, { method: 'PUT', body: JSON.stringify({
+          message: 'علاج درج: ' + name, branch: BRANCH, sha: f.sha,
+          content: Buffer.from(next.join('\n'), 'utf8').toString('base64') }) });
+        return res.status(200).json({ ok: true });
+      } catch (e) { if ((e.status !== 409 && e.status !== 422) || attempt === 3) throw e; }
+    }
+  } catch (e) {
+    return res.status(e.status && e.status < 500 ? 400 : 500).json({ error: e.message || 'نامعلوم خرابی' });
   }
 }
 
