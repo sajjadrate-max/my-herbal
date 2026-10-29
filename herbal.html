@@ -7958,7 +7958,8 @@ function ilajLoad(){
     });
   return ILAJ_LOADING;
 }
-function ilajIsOwner(){ try{ return localStorage.getItem('herbalOwnerMode') === '1'; }catch(e){ return false; } }
+// لکھنے کا ڈبہ ہر ایک کے لیے (صارف کی ہدایت پر) — مالک تک محدود کرنا ہو تو یہاں herbalOwnerMode والی شرط واپس لگائیں
+function ilajIsOwner(){ return true; }
 // مالک کے لیے لکھنے کا خانہ: ہر مزاج کے لیے "مزاج" اور "علاج" — "+ ایک اور مزاج" سے مزید
 function ilajEditorHtml(blocks){
   const row = b=> `<div class="ilaj-ed-row" style="border:1px solid var(--border); border-radius:10px; padding:10px; margin-bottom:10px; background:var(--card);">
