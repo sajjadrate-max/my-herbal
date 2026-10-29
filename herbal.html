@@ -8111,10 +8111,8 @@ async function ilajBuildCatalog(){
   const tag = n=> ILAJ_SEE[n] ? `<div class="pm-def-tag">↩ ${escapeHtmlSearch(ILAJ_SEE[n])} میں سب فارمولے${data[ILAJ_SEE[n]] ? ' (' + data[ILAJ_SEE[n]].length + ')' : ''}</div>`
     : data[n] ? `<div class="pm-def-tag">✔ علاج درج ہے (${data[n].length} ${data[n].length > 1 ? 'فارمولے' : 'نسخہ'})</div>` : '';
   const bookCount = ILAJ_BOOK.reduce((s, g)=> s + g.names.length, 0);
-  // پٹی کے اندر چھوٹے حروف میں: اس حصے میں کن کن بیماریوں کا علاج ہے
-  const names = list=> `<span style="display:block; font-size:.68rem; line-height:1.7; color:inherit; opacity:.75; font-weight:normal; margin-top:2px;">${list.map(n=> escapeHtmlSearch(n.replace(/\s*\([^)]{1,2}\)$/, ''))).join('، ')}</span>`;
   const book = ILAJ_BOOK.filter(g=> g.names.length).map(g=> `<details class="pm-organ-group" data-organ="${escapeHtmlSearch(g.group)}">
-      <summary><span>${escapeHtmlSearch(g.group)}<span class="pm-picked"></span>${names(g.names)}</span><span class="pm-organ-count">${g.names.length} نسخے</span></summary>
+      <summary><span>${escapeHtmlSearch(g.group)}<span class="pm-picked"></span></span><span class="pm-organ-count">${g.names.length} نسخے</span></summary>
       <div class="pm-organ-items">${g.names.map((n, i)=> `<div class="pm-mizaj-option" data-val="${escapeHtmlSearch(n)}"><span class="pm-num">${i+1}</span>${escapeHtmlSearch(n.replace(/\s*\([^)]{1,2}\)$/, ''))}${tag(n)}</div>`).join('')}</div>
     </details>`).join('');
   // 🚨 ایمرجنسی: کتاب کے ایمرجنسی/فوری نسخے + سائٹ کی وہ بیماریاں جو ایمرجنسی ہیں (میڈیکل صفحے والی نشان دہی)
@@ -8133,8 +8131,8 @@ async function ilajBuildCatalog(){
   const emergency = (emBook.length || emSite.length) ? `<div style="border:2px solid #e0524f; border-radius:12px; padding:8px 8px 2px; margin:6px 0 14px;">
       <h3 style="color:#e0524f; text-align:center; margin:4px 0;">🚨 ایمرجنسی بیماریاں اور علاج</h3>
       <p style="text-align:center; font-size:.8rem; color:#e0524f; margin-bottom:6px;">ایمرجنسی میں فوراً ہسپتال / ڈاکٹر سے رجوع کریں — یہ نسخے ساتھ میں مدد کے لیے ہیں</p>
-      ${emBook.length ? `<details class="pm-organ-group" data-organ="ایمرجنسی نسخے"><summary><span>📘 کتاب کے ایمرجنسی نسخے<span class="pm-picked"></span>${names(emBook)}</span><span class="pm-organ-count">${emBook.length}</span></summary><div class="pm-organ-items">${emBook.map(row).join('')}</div></details>` : ''}
-      ${emSite.length ? `<details class="pm-organ-group" data-organ="ایمرجنسی بیماریاں"><summary><span>🩺 ایمرجنسی بیماریاں<span class="pm-picked"></span>${names(emSite)}</span><span class="pm-organ-count">${emSite.length}</span></summary><div class="pm-organ-items">${emSite.map(row).join('')}</div></details>` : ''}
+      ${emBook.length ? `<details class="pm-organ-group" data-organ="ایمرجنسی نسخے"><summary><span>📘 کتاب کے ایمرجنسی نسخے<span class="pm-picked"></span></span><span class="pm-organ-count">${emBook.length}</span></summary><div class="pm-organ-items">${emBook.map(row).join('')}</div></details>` : ''}
+      ${emSite.length ? `<details class="pm-organ-group" data-organ="ایمرجنسی بیماریاں"><summary><span>🩺 ایمرجنسی بیماریاں<span class="pm-picked"></span></span><span class="pm-organ-count">${emSite.length}</span></summary><div class="pm-organ-items">${emSite.map(row).join('')}</div></details>` : ''}
     </div>` : '';
   el.innerHTML = `<div style="text-align:center; margin:4px 0 12px;"><button type="button" class="btn" onclick="ilajNew()">➕ نیا نسخہ / نئی بیماری شامل کریں</button></div>`
     + emergency
