@@ -8115,7 +8115,27 @@ async function ilajBuildCatalog(){
       <summary><span>${escapeHtmlSearch(g.group)}<span class="pm-picked"></span></span><span class="pm-organ-count">${g.names.length} نسخے</span></summary>
       <div class="pm-organ-items">${g.names.map((n, i)=> `<div class="pm-mizaj-option" data-val="${escapeHtmlSearch(n)}"><span class="pm-num">${i+1}</span>${escapeHtmlSearch(n)}${tag(n)}</div>`).join('')}</div>
     </details>`).join('');
+  // 🚨 ایمرجنسی: کتاب کے ایمرجنسی/فوری نسخے + سائٹ کی وہ بیماریاں جو ایمرجنسی ہیں (میڈیکل صفحے والی نشان دہی)
+  const EMG = /ایمرجنسی|فوری|فوراً|فورا|دورہ|زہر|سانپ|کاٹ|جنون/;
+  const emBook = [], emSite = [];
+  ILAJ_BOOK.forEach(g=> g.names.forEach(n=>{
+    const t = ILAJ_SEE[n] || n;
+    const hit = EMG.test(n) || (data[t] || []).some(b=> /^📌[^\n]*ایمرجنسی/.test(b.text || ''));
+    if(hit && !emBook.includes(n)) emBook.push(n);
+  }));
+  pmMizajOptions.forEach(n=>{
+    const m = typeof wajahMedsFor === 'function' ? wajahMedsFor(n) : null;
+    if((m && m.e) || /ایمرجنسی/.test(n) || (data[n] || []).some(b=> /^📌[^\n]*ایمرجنسی/.test(b.text || ''))) emSite.push(n);
+  });
+  const row = (n, i)=> `<div class="pm-mizaj-option" data-val="${escapeHtmlSearch(n)}"><span class="pm-num">${i+1}</span>${escapeHtmlSearch(n)}${tag(n)}</div>`;
+  const emergency = (emBook.length || emSite.length) ? `<div style="border:2px solid #e0524f; border-radius:12px; padding:8px 8px 2px; margin:6px 0 14px;">
+      <h3 style="color:#e0524f; text-align:center; margin:4px 0;">🚨 ایمرجنسی بیماریاں اور علاج</h3>
+      <p style="text-align:center; font-size:.8rem; color:#e0524f; margin-bottom:6px;">ایمرجنسی میں فوراً ہسپتال / ڈاکٹر سے رجوع کریں — یہ نسخے ساتھ میں مدد کے لیے ہیں</p>
+      ${emBook.length ? `<details class="pm-organ-group" data-organ="ایمرجنسی نسخے"><summary><span>📘 کتاب کے ایمرجنسی نسخے<span class="pm-picked"></span></span><span class="pm-organ-count">${emBook.length}</span></summary><div class="pm-organ-items">${emBook.map(row).join('')}</div></details>` : ''}
+      ${emSite.length ? `<details class="pm-organ-group" data-organ="ایمرجنسی بیماریاں"><summary><span>🩺 ایمرجنسی بیماریاں<span class="pm-picked"></span></span><span class="pm-organ-count">${emSite.length}</span></summary><div class="pm-organ-items">${emSite.map(row).join('')}</div></details>` : ''}
+    </div>` : '';
   el.innerHTML = `<div style="text-align:center; margin:4px 0 12px;"><button type="button" class="btn" onclick="ilajNew()">➕ نیا نسخہ / نئی بیماری شامل کریں</button></div>`
+    + emergency
     + (book ? `<h3 style="color:var(--gold); text-align:center; margin:10px 0 4px;">📘 حکیم سجاد احمد بھٹی کے نسخے</h3><div class="pm-total">کل ${bookCount} — حروفِ تہجی کی ترتیب سے</div>${book}` : '')
     + `<h3 style="color:var(--gold); text-align:center; margin:18px 0 4px;">🩺 اعضاء کے مطابق بیماریاں</h3>`
     + pmCatalogHtml(pmMizajOptions, { extra: tag });
