@@ -7930,12 +7930,22 @@ function wajahFilterList(){
 // ===== "بیماریاں اور علاج": وہی مکمل فہرست؛ ہر بیماری کے مزاج اور ہر مزاج کا علاج مالک خود ilaj.txt (GitHub) میں لکھتے ہیں =====
 // فائل کی ترتیب: "## بیماری کا نام" پھر "مزاج: …" اور "علاج: …" (کئی مزاج ہوں تو دوبارہ)؛ # سے شروع لائنیں نوٹ ہیں
 let ILAJ_DATA = null, ILAJ_LOADING = null;
+// کتاب ("کتاب: ا" وغیرہ) اور "نئے نسخے" کے حصے: [{group, names[]}] — فائل کی ترتیب سے؛ ILAJ_NAMES = فائل کے تمام نام
+let ILAJ_BOOK = [], ILAJ_NAMES = new Set();
 function ilajParse(txt){
   const out = {};
-  let cur = null, block = null;
+  let cur = null, block = null, grp = null;
+  ILAJ_BOOK = []; ILAJ_NAMES = new Set();
   String(txt || '').split(/\r?\n/).forEach(raw=>{
     const line = raw.trim();
-    if(line.startsWith('## ')){ cur = (out[line.slice(3).trim()] = out[line.slice(3).trim()] || []); block = null; return; }
+    const gm = line.match(/^=+\s*(.*?)\s*=+$/);
+    if(gm){ grp = /^(کتاب:|نئے نسخے)/.test(gm[1]) ? { group: gm[1].replace(/^کتاب:\s*/, ''), names: [] } : null; if(grp) ILAJ_BOOK.push(grp); cur = null; return; }
+    if(line.startsWith('## ')){
+      const nm = line.slice(3).trim();
+      ILAJ_NAMES.add(nm);
+      if(grp && !grp.names.includes(nm)) grp.names.push(nm);
+      cur = (out[nm] = out[nm] || []); block = null; return;
+    }
     if(!cur || !line || line.startsWith('#') || /^=+/.test(line)) return;
     let m = line.match(/^مزاج\s*[:：]\s*(.*)$/);
     if(m){ block = { mizaj: m[1].trim(), text: '' }; cur.push(block); return; }
@@ -7994,7 +8004,7 @@ async function ilajEdSave(){
   st.style.color = 'var(--muted)'; st.textContent = '⏳ محفوظ ہو رہا ہے...';
   let ok = false, err = '';
   try{
-    const r = await fetch('/api/notify-disease?ilaj=1', { method:'POST', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify({ key: HERBAL_OWNER_KEY, name, blocks }) });
+    const r = await fetch('/api/notify-disease?ilaj=1', { method:'POST', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify({ key: HERBAL_OWNER_KEY, name, blocks, create: ed.dataset.create === '1' }) });
     const d = await r.json().catch(()=> ({}));
     ok = r.ok && d.ok; err = d.error || ('خرابی ' + r.status);
   }catch(e){ err = 'انٹرنیٹ کا مسئلہ'; }
@@ -8004,6 +8014,13 @@ async function ilajEdSave(){
   if(ok){ delete loc[name]; }
   else { loc[name] = blocks; }
   try{ localStorage.setItem('ilajLocal', JSON.stringify(loc)); }catch(e){}
+  if(ed.dataset.create === '1' && blocks.length && !ILAJ_NAMES.has(name)){
+    ILAJ_NAMES.add(name);
+    let g = ILAJ_BOOK.find(x=> x.group === 'نئے نسخے');
+    if(!g){ g = { group:'نئے نسخے', names:[] }; ILAJ_BOOK.push(g); }
+    g.names.push(name);
+    const cat = document.getElementById('ilajCatalog'); if(cat){ delete cat.dataset.ready; cat.innerHTML = ''; ilajBuildCatalog(); }
+  }
   ilajRefreshTag(name);
   await ilajShow(name, true);
   const st2 = document.getElementById('ilajEdStatus');
@@ -8033,20 +8050,41 @@ async function ilajShow(n, keepScroll){
     + (organ ? `<p style="font-size:.85rem;">عضو: <b>${escapeHtmlSearch(organ)}</b></p>` : '') + `</div>`;
   if(blocks.length){
     html += blocks.map((b, i)=> `<div class="mujarrab-card">
-      <h4 style="color:var(--gold); margin-bottom:6px;">${blocks.length > 1 ? (i + 1) + '۔ ' : ''}مزاج: ${escapeHtmlSearch(b.mizaj || '—')}</h4>
-      <div style="white-space:pre-wrap; line-height:2;"><b style="color:var(--gold-soft);">علاج:</b> ${escapeHtmlSearch(b.text || '—')}</div>
+      <h4 style="color:var(--gold); margin-bottom:6px;">${blocks.length > 1 ? (i + 1) + '۔ ' : ''}${b.mizaj ? 'مزاج: ' + escapeHtmlSearch(b.mizaj) : 'نسخہ'}</h4>
+      <div style="white-space:pre-wrap; line-height:2;"><b style="color:var(--gold-soft);">علاج:</b> ${ilajTextHtml(b.text || '—')}</div>
     </div>`).join('');
   } else if(!ilajIsOwner()){
     html += `<div class="mujarrab-card"><p style="color:var(--muted); text-align:center;">اس بیماری کا مزاج اور علاج ابھی درج نہیں کیا گیا۔</p></div>`;
   }
-  // مالک کے لیے اسی جگہ لکھنے کا ڈبہ
+  const rel = ilajRelatedBook(n);
+  if(rel.length) html += `<div class="mujarrab-card"><h4 style="color:var(--gold); margin-bottom:6px;">📘 کتاب (حکیم سجاد احمد بھٹی) میں اس سے متعلق نسخے</h4>
+    <div style="display:flex; flex-wrap:wrap; gap:6px;">${rel.map(r=> `<button type="button" class="btn secondary" style="padding:4px 12px; font-size:.82rem; border-radius:14px;" onclick="ilajShow('${escapeJsAttr(r)}')">${escapeHtmlSearch(r)}</button>`).join('')}</div></div>`;
+  // لکھنے کا ڈبہ
   if(ilajIsOwner()) html += ilajEditorHtml(blocks);
   html += `<p style="text-align:center; color:#e0524f; font-size:.82rem; margin-top:6px;">⚠ دوا استعمال کرنے سے پہلے معالج سے مشورہ کریں۔</p>`;
   out.innerHTML = html;
-  const ed = document.getElementById('ilajEditor'); if(ed) ed.dataset.name = n;
+  const ed = document.getElementById('ilajEditor'); if(ed){ ed.dataset.name = n; if(!ILAJ_NAMES.has(n)) ed.dataset.create = '1'; }
   if(keepScroll) return;
   const hdr = document.querySelector('header');
   window.scrollTo({top: out.getBoundingClientRect().top + window.scrollY - (hdr && getComputedStyle(hdr).position === 'sticky' ? hdr.offsetHeight : 0) - 8, behavior:'smooth'});
+}
+// متن: "⚠ احتیاط" والی لائن سرخ
+function ilajTextHtml(t){
+  return String(t).split('\n').map(l=> /^⚠/.test(l) ? `<span style="color:#e0524f; font-weight:700;">${escapeHtmlSearch(l)}</span>` : escapeHtmlSearch(l)).join('\n');
+}
+// سائٹ کی بیماری ← کتاب کے متعلقہ عنوان (نام یا دوسرا نام عنوان میں موجود ہو)
+function ilajRelatedBook(n){
+  if(ILAJ_NAMES && !pmMizajOptions.includes(n)) return [];
+  const k = s=> String(s).replace(/[\s\u200c]/g, '').replace(/ه/g, 'ہ').replace(/ي/g, 'ی');
+  const terms = [n].concat(pmMizajOtherNames(n)).map(k).filter(t=> t.length >= 3);
+  const out = [];
+  ILAJ_BOOK.forEach(g=> g.names.forEach(b=>{ const kb = k(b); if(terms.some(t=> kb.includes(t)) && !out.includes(b)) out.push(b); }));
+  return out.slice(0, 12);
+}
+function ilajNew(){
+  const n = (prompt('نئے نسخے یا بیماری کا نام لکھیں:') || '').trim().replace(/^[#=\s]+/, '');
+  if(!n) return;
+  ilajShow(n);
 }
 function ilajBack(){
   const out = document.getElementById('ilajResult');
@@ -8059,9 +8097,18 @@ async function ilajBuildCatalog(){
   if(!el || el.dataset.ready || !pmMizajOptions.length) return;
   el.dataset.ready = '1';
   const data = await ilajLoad();
-  el.innerHTML = pmCatalogHtml(pmMizajOptions, { extra:(n)=> data[n] ? `<div class="pm-def-tag">✔ علاج درج ہے (${data[n].length} مزاج)</div>` : '' });
+  const tag = n=> data[n] ? `<div class="pm-def-tag">✔ علاج درج ہے (${data[n].length} ${data[n].some(b=> b.mizaj) ? 'مزاج' : 'نسخہ'})</div>` : '';
+  const bookCount = ILAJ_BOOK.reduce((s, g)=> s + g.names.length, 0);
+  const book = ILAJ_BOOK.filter(g=> g.names.length).map(g=> `<details class="pm-organ-group" data-organ="${escapeHtmlSearch(g.group)}">
+      <summary><span>${escapeHtmlSearch(g.group)}<span class="pm-picked"></span></span><span class="pm-organ-count">${g.names.length} نسخے</span></summary>
+      <div class="pm-organ-items">${g.names.map((n, i)=> `<div class="pm-mizaj-option" data-val="${escapeHtmlSearch(n)}"><span class="pm-num">${i+1}</span>${escapeHtmlSearch(n)}${tag(n)}</div>`).join('')}</div>
+    </details>`).join('');
+  el.innerHTML = `<div style="text-align:center; margin:4px 0 12px;"><button type="button" class="btn" onclick="ilajNew()">➕ نیا نسخہ / نئی بیماری شامل کریں</button></div>`
+    + (book ? `<h3 style="color:var(--gold); text-align:center; margin:10px 0 4px;">📘 حکیم سجاد احمد بھٹی کے نسخے</h3><div class="pm-total">کل ${bookCount} — حروفِ تہجی کی ترتیب سے</div>${book}` : '')
+    + `<h3 style="color:var(--gold); text-align:center; margin:18px 0 4px;">🩺 اعضاء کے مطابق بیماریاں</h3>`
+    + pmCatalogHtml(pmMizajOptions, { extra: tag });
   pmCatalogWire(el);
-  el.addEventListener('click', e=>{ const r = e.target.closest('.pm-mizaj-option'); if(r) ilajShow(r.dataset.val); });
+  if(!el.dataset.wired){ el.dataset.wired = '1'; el.addEventListener('click', e=>{ const r = e.target.closest('.pm-mizaj-option'); if(r) ilajShow(r.dataset.val); }); }
 }
 function ilajFilterList(){
   const el = document.getElementById('ilajCatalog'), f = document.getElementById('ilajListFilter');

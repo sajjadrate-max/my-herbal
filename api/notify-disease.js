@@ -155,7 +155,7 @@ async function ilajSave(req, res) {
     const b = typeof req.body === 'string' ? JSON.parse(req.body) : (req.body || {});
     if (b.key !== ILAJ_KEY) return res.status(403).json({ error: 'اجازت نہیں' });
     const name = String(b.name || '').trim();
-    if (!name || name.length > 120 || /[\r\n]/.test(name)) return res.status(400).json({ error: 'غلط نام' });
+    if (!name || name.length > 120 || /[\r\n]/.test(name) || /^[#=]/.test(name)) return res.status(400).json({ error: 'غلط نام' });
     const clean = t => String(t || '').replace(/\r/g, '').split('\n').map(l => l.replace(/^\s*#+/, '').trimEnd()).join('\n').trim().slice(0, 4000);
     const blocks = (Array.isArray(b.blocks) ? b.blocks : []).slice(0, 12).map(x => ({ mizaj: clean(x && x.mizaj).replace(/\n/g, ' ').slice(0, 120), text: clean(x && x.text) })).filter(x => x.mizaj || x.text);
     const body = blocks.length
@@ -164,11 +164,19 @@ async function ilajSave(req, res) {
     for (let attempt = 0; attempt < 4; attempt++) {
       const f = await upGh('/contents/' + ILAJ_FILE + '?ref=' + BRANCH);
       const lines = Buffer.from(f.content, 'base64').toString('utf8').split('\n');
-      const i = lines.findIndex(l => l.trim() === '## ' + name);
-      if (i < 0) return res.status(400).json({ error: 'یہ بیماری ilaj.txt میں نہیں ملی' });
-      let j = i + 1;
-      while (j < lines.length && !/^(##\s|=+|#\s*-+)/.test(lines[j].trim())) j++;
-      const next = lines.slice(0, i + 1).concat(body.split('\n'), [''], lines.slice(j));
+      let i = lines.findIndex(l => l.trim() === '## ' + name);
+      let next;
+      if (i < 0) {
+        // نیا نسخہ/بیماری: فائل کے آخر میں "نئے نسخے" کے حصے میں
+        if (!b.create || !blocks.length) return res.status(400).json({ error: 'یہ نام ilaj.txt میں نہیں ملا' });
+        while (lines.length && !lines[lines.length - 1].trim()) lines.pop();
+        const hdr = lines.some(l => /^=+\s*نئے نسخے\s*=+$/.test(l.trim())) ? [] : ['', '==================== نئے نسخے ===================='];
+        next = lines.concat(hdr, ['', '## ' + name], body.split('\n'), ['']);
+      } else {
+        let j = i + 1;
+        while (j < lines.length && !/^(##\s|=+|#\s*-+)/.test(lines[j].trim())) j++;
+        next = lines.slice(0, i + 1).concat(body.split('\n'), [''], lines.slice(j));
+      }
       try {
         await upGh('/contents/' + ILAJ_FILE, { method: 'PUT', body: JSON.stringify({
           message: 'علاج درج: ' + name, branch: BRANCH, sha: f.sha,
