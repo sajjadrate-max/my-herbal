@@ -7931,11 +7931,11 @@ function wajahFilterList(){
 // فائل کی ترتیب: "## بیماری کا نام" پھر "مزاج: …" اور "علاج: …" (کئی مزاج ہوں تو دوبارہ)؛ # سے شروع لائنیں نوٹ ہیں
 let ILAJ_DATA = null, ILAJ_LOADING = null;
 // کتاب ("کتاب: ا" وغیرہ) اور "نئے نسخے" کے حصے: [{group, names[]}] — فائل کی ترتیب سے؛ ILAJ_NAMES = فائل کے تمام نام
-let ILAJ_BOOK = [], ILAJ_NAMES = new Set();
+let ILAJ_BOOK = [], ILAJ_NAMES = new Set(), ILAJ_SEE = {};
 function ilajParse(txt){
   const out = {};
-  let cur = null, block = null, grp = null;
-  ILAJ_BOOK = []; ILAJ_NAMES = new Set();
+  let cur = null, block = null, grp = null, curName = '';
+  ILAJ_BOOK = []; ILAJ_NAMES = new Set(); ILAJ_SEE = {};
   String(txt || '').split(/\r?\n/).forEach(raw=>{
     const line = raw.trim();
     const gm = line.match(/^=+\s*(.*?)\s*=+$/);
@@ -7944,9 +7944,12 @@ function ilajParse(txt){
       const nm = line.slice(3).trim();
       ILAJ_NAMES.add(nm);
       if(grp && !grp.names.includes(nm)) grp.names.push(nm);
-      cur = (out[nm] = out[nm] || []); block = null; return;
+      curName = nm; cur = (out[nm] = out[nm] || []); block = null; return;
     }
     if(!cur || !line || line.startsWith('#') || /^=+/.test(line)) return;
+    // "دیکھیں: نام" — کتاب کی فہرست میں اشارہ، فارمولے اس نام کے ڈبے میں ہیں
+    const see = line.match(/^دیکھیں\s*[:：]\s*(.+)$/);
+    if(see){ ILAJ_SEE[curName] = see[1].trim(); return; }
     let m = line.match(/^مزاج\s*[:：]\s*(.*)$/);
     if(m){ block = { mizaj: m[1].trim(), text: '' }; cur.push(block); return; }
     m = line.match(/^علاج\s*[:：]\s*(.*)$/);
@@ -8040,6 +8043,7 @@ async function ilajShow(n, keepScroll){
   const out = document.getElementById('ilajResult');
   if(!out) return;
   const data = await ilajLoad();
+  if(ILAJ_SEE[n]) n = ILAJ_SEE[n];
   const d = diseaseList.find(x=> pmMizajMembers(n).includes(x.name));
   const organ = d ? d.organ : (PM_SYMPTOM_ORGAN[n] || '');
   const other = pmMizajOtherNames(n);
@@ -8049,10 +8053,17 @@ async function ilajShow(n, keepScroll){
     + (other.length ? `<p style="font-size:.8rem; color:var(--muted);">دوسرے نام: ${other.map(escapeHtmlSearch).join('، ')}</p>` : '')
     + (organ ? `<p style="font-size:.85rem;">عضو: <b>${escapeHtmlSearch(organ)}</b></p>` : '') + `</div>`;
   if(blocks.length){
-    html += blocks.map((b, i)=> `<div class="mujarrab-card">
-      <h4 style="color:var(--gold); margin-bottom:6px;">${blocks.length > 1 ? (i + 1) + '۔ ' : ''}${b.mizaj ? 'مزاج: ' + escapeHtmlSearch(b.mizaj) : 'نسخہ'}</h4>
-      <div style="white-space:pre-wrap; line-height:2;"><b style="color:var(--gold-soft);">علاج:</b> ${ilajTextHtml(b.text || '—')}</div>
-    </div>`).join('');
+    // ایک ہی بیماری کے کئی فارمولے: "📌 عنوان" والی پہلی لائن خانے کا عنوان بنتی ہے
+    html += blocks.map((b, i)=>{
+      let text = b.text || '—', label = '';
+      const m = text.match(/^📌\s*(.*)(\n|$)/);
+      if(m){ label = m[1].trim(); text = text.slice(m[0].length) || '—'; }
+      const title = [label ? escapeHtmlSearch(label) : '', b.mizaj ? 'مزاج: ' + escapeHtmlSearch(b.mizaj) : ''].filter(Boolean).join(' — ') || 'نسخہ';
+      return `<div class="mujarrab-card">
+      <h4 style="color:var(--gold); margin-bottom:6px;">${blocks.length > 1 ? (i + 1) + '۔ ' : ''}${title}</h4>
+      <div style="white-space:pre-wrap; line-height:2;"><b style="color:var(--gold-soft);">علاج:</b> ${ilajTextHtml(text)}</div>
+    </div>`;
+    }).join('');
   } else if(!ilajIsOwner()){
     html += `<div class="mujarrab-card"><p style="color:var(--muted); text-align:center;">اس بیماری کا مزاج اور علاج ابھی درج نہیں کیا گیا۔</p></div>`;
   }
@@ -8097,7 +8108,8 @@ async function ilajBuildCatalog(){
   if(!el || el.dataset.ready || !pmMizajOptions.length) return;
   el.dataset.ready = '1';
   const data = await ilajLoad();
-  const tag = n=> data[n] ? `<div class="pm-def-tag">✔ علاج درج ہے (${data[n].length} ${data[n].some(b=> b.mizaj) ? 'مزاج' : 'نسخہ'})</div>` : '';
+  const tag = n=> ILAJ_SEE[n] ? `<div class="pm-def-tag">↩ ${escapeHtmlSearch(ILAJ_SEE[n])} میں سب فارمولے${data[ILAJ_SEE[n]] ? ' (' + data[ILAJ_SEE[n]].length + ')' : ''}</div>`
+    : data[n] ? `<div class="pm-def-tag">✔ علاج درج ہے (${data[n].length} ${data[n].length > 1 ? 'فارمولے' : 'نسخہ'})</div>` : '';
   const bookCount = ILAJ_BOOK.reduce((s, g)=> s + g.names.length, 0);
   const book = ILAJ_BOOK.filter(g=> g.names.length).map(g=> `<details class="pm-organ-group" data-organ="${escapeHtmlSearch(g.group)}">
       <summary><span>${escapeHtmlSearch(g.group)}<span class="pm-picked"></span></span><span class="pm-organ-count">${g.names.length} نسخے</span></summary>
