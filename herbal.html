@@ -202,6 +202,7 @@ footer{position:fixed; left:0; right:0; bottom:0; z-index:55; text-align:center;
     <a onclick="showPage('ghiza')" id="nav-ghiza"><span class="ni">🥗</span>غذائی چارٹ — مزاج وار</a>
     <a onclick="showPage('kami')" id="nav-kami"><span class="ni">🩺</span>وٹامن و معدنیات کی کمی</a>
     <a onclick="showPage('wajah')" id="nav-wajah"><span class="ni">💊</span>میڈیکل کے مطابق ادویات</a>
+    <a onclick="showPage('ilaj')" id="nav-ilaj"><span class="ni">📋</span>بیماریاں اور علاج</a>
   </nav>
 </header>
 
@@ -381,6 +382,14 @@ footer{position:fixed; left:0; right:0; bottom:0; z-index:55; text-align:center;
 </section>
 
 <!-- ===================== DISEASE CAUSE-TYPE FINDER (DOCTOR'S CLASSIFICATION) ===================== -->
+<section class="page-section" id="page-ilaj">
+  <h2 class="section-title">📋 بیماریاں اور علاج</h2>
+  <div class="note">تمام بیماریاں اور علامات اعضاء کی ترتیب سے — کسی بھی نام پر ٹیپ کریں، اس کا علاج (قانون مفرد اعضاء کے مطابق دوا اور غذا) اور مکمل تفصیل سامنے آ جائے گی۔</div>
+  <div id="ilajResult" style="margin:10px 0;"></div>
+  <div class="big-search-wrap"><input class="search big-search" id="ilajListFilter" type="search" placeholder="بیماری یا علامت تلاش کریں..." oninput="ilajFilterList()"><div class="big-search-count" id="ilajListFilterCount"></div></div>
+  <div id="ilajCatalog" style="margin-top:8px;"></div>
+</section>
+
 <section class="page-section" id="page-wajah">
   <h2 class="section-title">🩺 میڈیکل کے مطابق</h2>
   <div class="note">ہر بیماری کمی کی وجہ سے نہیں ہوتی۔ ڈاکٹر پہلے بیماری کی اصل وجہ معلوم کرتے ہیں — انفیکشن، سوزش، خود مدافعتی، رکاوٹ، عضو کی خرابی، رسولی، چوٹ، موروثی، طرزِ زندگی، ذہنی یا کمی — کمی ان میں سے صرف ایک قسم ہے، اور اس کا علاج تب ہی کیا جاتا ہے جب ٹیسٹ میں کمی ثابت ہو جائے۔ جدید طب کا اصول ہے: "پہلے وجہ معلوم کرو، پھر علاج کرو"۔ <b>یہ صفحہ صرف معلومات کے لیے ہے، تشخیص یا علاج کا متبادل نہیں — صحیح تشخیص اور دوا کے لیے ہمیشہ ڈاکٹر سے رجوع کریں۔</b></div>
@@ -720,6 +729,7 @@ function showPage(id){
   // بھاری فہرستیں صرف اپنا صفحہ کھلنے پر بنائیں
   if(id === 'kami'){ const el = document.getElementById('deficiencySymptomList'); if(el && el.dataset.pending){ delete el.dataset.pending; herbalBuildKamiCatalog(el); } }
   if(id === 'wajah' && typeof wajahBuildCatalog === 'function') wajahBuildCatalog();
+  if(id === 'ilaj' && typeof ilajBuildCatalog === 'function') ilajBuildCatalog();
   if(id === 'naskhesaz' && typeof qmBuildCatalog === 'function') qmBuildCatalog();
   if(id === 'pdfmulti'){ const el = document.getElementById('pmMizajOptionsList'); if(el && el.dataset.pending){ delete el.dataset.pending; pmRenderMizajOptionsList(pmMizajOptions); } }
   if(typeof herbalEnsureBooks === 'function' && id !== 'home') herbalEnsureBooks();
@@ -7917,6 +7927,120 @@ function wajahFilterList(){
   const el = document.getElementById('wajahCatalog'), f = document.getElementById('wajahListFilter');
   if(el && f) pmCatalogFilter(el, f.value, document.getElementById('wajahListFilterCount'));
 }
+// ===== "بیماریاں اور علاج": وہی مکمل فہرست؛ نام پر ٹیپ → قانون مفرد اعضاء کے مطابق دوا (نسخہ جات سے) + غذا + مکمل تفصیل =====
+// علاج کی تحریکیں وہی اصول جو Home کی تشخیص میں (پرانا مریض، موسم کے مطابق)
+const ILAJ_WINTER = {1:[3,4], 2:[4,5], 3:[5,6], 4:[5,6,1], 5:[1,2], 6:[2,3]};
+const ILAJ_SUMMER = {1:[3,4], 2:[5,4], 3:[6,5], 4:[1,6], 5:[1,2], 6:[1,2]};
+const ILAJ_CAT = {1:'اعصابی عضلاتی', 2:'عضلاتی اعصابی', 3:'عضلاتی غدی', 4:'غدی عضلاتی', 5:'غدی اعصابی', 6:'اعصابی غدی'};
+function ilajTreatNumbers(t){
+  const m = new Date().getMonth() + 1;
+  return ((m >= 9 || m <= 2) ? ILAJ_WINTER : ILAJ_SUMMER)[t] || [];
+}
+// علاج والی تحریکوں کی تمام دوائیں (AI انہی میں سے چنتا ہے) + جن کے فوائد میں یہ بیماری خود لکھی ہو
+function ilajMedicines(n, t){
+  const terms = [n].concat(pmMizajOtherNames(n)).map(x=> String(x).replace(/\s*\([^)]*\)\s*/g, ' ').trim()).filter(x=> x.length >= 2);
+  const cats = ilajTreatNumbers(t).map(x=> ILAJ_CAT[x]);
+  // صرف بچوں والی دوائیں اس عمومی فہرست میں نہیں
+  const pool = nuskheData.filter(x=> cats.includes(getNuskhaCategory(x)) && !x.maritalOnly && !/صرف بچوں|اطفال/.test((x.name || '') + ' ' + (x.dose || doseLookup(x.name))));
+  const direct = pool.map(x=> ({ x, s: terms.filter(tm=> (x.benefit || '').indexOf(tm) !== -1 || x.name.indexOf(tm) !== -1).length }))
+    .filter(o=> o.s > 0).sort((a, b)=> b.s - a.s).map(o=> o.x);
+  return { pool, direct: direct.slice(0, 4) };
+}
+function ilajBenefitShort(b){
+  const lines = String(b || '').split('\n').map(s=> s.trim()).filter(s=> s && !/فوائد|⭐/.test(s));
+  return lines.slice(0, 4).join('، ');
+}
+function ilajShow(n){
+  const out = document.getElementById('ilajResult');
+  if(!out) return;
+  const ts = qmTendenciesFor(n);
+  const d = diseaseList.find(x=> pmMizajMembers(n).includes(x.name));
+  const organ = d ? d.organ : (PM_SYMPTOM_ORGAN[n] || '');
+  const other = pmMizajOtherNames(n);
+  const back = `<div style="text-align:center; margin:8px 0;"><button class="btn" type="button" onclick="ilajBack()" style="border-radius:20px; padding:8px 22px;">⬅ واپس فہرست پر جائیں</button></div>`;
+  let html = back + `<div class="mujarrab-card" style="border-right-width:6px;"><h4 style="color:var(--gold); font-size:1.2rem; margin-bottom:4px;">${escapeHtmlSearch(n)}</h4>`
+    + (other.length ? `<p style="font-size:.8rem; color:var(--muted);">دوسرے نام: ${other.map(escapeHtmlSearch).join('، ')}</p>` : '')
+    + (organ ? `<p style="font-size:.85rem;">عضو: <b>${escapeHtmlSearch(organ)}</b></p>` : '')
+    + (ts.length ? `<p style="font-size:.85rem;">مرض کی تحریک: <b>${ts.map(t=> 'نمبر ' + t + ' — ' + QM_T[t].name + ' (' + QM_T[t].kaifiyat + ')').join('، ')}</b></p>` : '')
+    + `</div>`;
+  if(!ts.length){
+    html += `<div class="mujarrab-card"><p style="font-size:.9rem;">یہ ایک علامت ہے — اس کی تحریک مریض کے باقی حالات سے طے ہوتی ہے، اس لیے دوا Home پر "مزاج کی تشخیص" سے معلوم کریں۔ نیچے اس کی عام تفصیل دیکھیں۔</p></div>`;
+  }
+  const isWinter = (()=>{ const m = new Date().getMonth() + 1; return m >= 9 || m <= 2; })();
+  ts.forEach(t=>{
+    const nums = ilajTreatNumbers(t);
+    const foods = [...new Set([].concat(...nums.map(x=> QM_T[x].d1)))];
+    html += `<div class="mujarrab-card">
+      <h4 style="color:var(--gold); margin-bottom:6px;">💊 علاج${ts.length > 1 ? ' — جب تحریک نمبر ' + t + ' ہو' : ''}</h4>
+      <p style="font-size:.82rem; color:var(--muted); margin-bottom:6px;">${isWinter ? 'سردیوں' : 'گرمیوں'} کا موسم — نمبر ${t} تحریک کا علاج نمبر ${nums.join('، ')} (${nums.map(x=> ILAJ_CAT[x]).join('، ')}) کی دواؤں سے۔</p>
+      <div class="ilaj-meds" data-t="${t}"><p style="color:var(--muted);">⏳ اس بیماری کے لیے بہترین دوا تلاش کی جا رہی ہے...</p></div>
+      <p style="margin-top:8px;"><b>🥗 غذا:</b> ${foods.map(escapeHtmlSearch).join('، ')}</p>
+      <p style="font-size:.8rem; color:var(--muted);">انوپان: ${nums.map(x=> escapeHtmlSearch(QM_T[x].anupan)).join(' / ')}</p>
+    </div>`;
+  });
+  html += `<p style="text-align:center; color:#e0524f; font-size:.82rem; margin-top:6px;">⚠ یہ ویب سائٹ ہے، ڈاکٹر یا حکیم نہیں — صرف معلومات کے لیے۔ دوا استعمال کرنے سے پہلے معالج سے مشورہ کریں۔</p>`;
+  out.innerHTML = html + '<div class="dd-wrap"></div>';
+  out.querySelectorAll('.ilaj-meds').forEach(box=> ilajFillMeds(n, +box.dataset.t, box));
+  herbalDiseaseDetail(n, out.querySelector('.dd-wrap'));
+  const hdr = document.querySelector('header');
+  window.scrollTo({top: out.getBoundingClientRect().top + window.scrollY - (hdr && getComputedStyle(hdr).position === 'sticky' ? hdr.offsetHeight : 0) - 8, behavior:'smooth'});
+}
+function ilajMedHtml(x, reason){
+  return `<div style="border-top:1px solid var(--border); padding:8px 0;">
+    <b style="color:var(--gold-soft); font-size:1.02rem;">${escapeHtmlSearch(x.name)}</b> <small style="color:var(--muted);">(${escapeHtmlSearch(x.mizaj || '')})</small>
+    <p style="margin:2px 0;"><b>طریقہ استعمال:</b> ${escapeHtmlSearch(x.dose || doseLookup(x.name))}</p>
+    ${reason ? `<p style="margin:2px 0;"><b>وجہ:</b> ${escapeHtmlSearch(reason)}</p>` : (ilajBenefitShort(x.benefit) ? `<p style="margin:2px 0; font-size:.85rem; color:var(--muted);">فوائد: ${escapeHtmlSearch(ilajBenefitShort(x.benefit))}</p>` : '')}
+  </div>`;
+}
+// دوا: AI (وہی جو Home پر) علاج والی تحریکوں کی دواؤں میں سے اس بیماری کے لیے چنتا ہے؛ جواب اسی فون میں محفوظ
+async function ilajFillMeds(n, t, box){
+  const m = ilajMedicines(n, t);
+  const key = 'ilaj1:' + t + ':' + n;
+  let sel = null;
+  try{ sel = JSON.parse(localStorage.getItem(key) || 'null'); }catch(e){}
+  if(!sel && qmAiLive()){
+    try{
+      const r = await fetch('/api/select-nuskha', { method:'POST', headers:{ 'Content-Type':'application/json' },
+        body: JSON.stringify({ mizaj: QM_T[t].name, patientNumber: t, symptoms: [], diseases: [n].concat(pmMizajOtherNames(n)).slice(0, 4),
+          candidates: m.pool.map(x=> ({ name:x.name, mizaj:x.mizaj, benefit:x.benefit, dose:x.dose || doseLookup(x.name) })),
+          foods: [], month: new Date().getMonth() + 1, hasDiseaseOrSymptom: true }) });
+      const d = r.ok ? await r.json() : null;
+      const picks = d && Array.isArray(d.selections) ? d.selections.filter(s=> s && m.pool.some(x=> x.name === s.name)) : [];
+      if(picks.length){ sel = picks.slice(0, 3); try{ localStorage.setItem(key, JSON.stringify(sel)); }catch(e){} }
+    }catch(e){}
+  }
+  if(!box.isConnected) return;
+  const known = sel ? sel.filter(s=> m.pool.some(x=> x.name === s.name)) : [];
+  if(known.length){
+    box.innerHTML = known.map(s=> ilajMedHtml(m.pool.find(x=> x.name === s.name), s.reason)).join('');
+  } else if(m.direct.length){
+    box.innerHTML = '<p style="font-size:.8rem; color:var(--muted);">نسخہ جات میں اس بیماری کے لیے درج دوائیں:</p>' + m.direct.map(x=> ilajMedHtml(x)).join('');
+  } else {
+    box.innerHTML = `<p style="font-size:.85rem; color:#c9821b;">دوا ابھی نہیں چنی جا سکی (انٹرنیٹ/سرور) — <a href="#" style="color:var(--gold);">دوبارہ کوشش کریں</a>۔ نیچے "مکمل تفصیل" میں بھی دوائیں دیکھیں۔</p>`;
+    const a = box.querySelector('a'); if(a) a.onclick = e=>{ e.preventDefault(); box.innerHTML = '<p style="color:var(--muted);">⏳ ...</p>'; ilajFillMeds(n, t, box); };
+  }
+}
+function ilajBack(){
+  const out = document.getElementById('ilajResult');
+  if(out) out.innerHTML = '';
+  const target = document.querySelector('#ilajCatalog details[open]') || document.getElementById('ilajCatalog');
+  if(target) window.scrollTo({top: target.getBoundingClientRect().top + window.scrollY - 90, behavior:'smooth'});
+}
+function ilajBuildCatalog(){
+  const el = document.getElementById('ilajCatalog');
+  if(!el || el.dataset.ready || !pmMizajOptions.length) return;
+  el.dataset.ready = '1';
+  el.innerHTML = pmCatalogHtml(pmMizajOptions, { extra:(n)=>{
+    const ts = qmTendenciesFor(n);
+    return ts.length ? `<div class="pm-def-tag">تحریک: ${ts.map(t=> QM_T[t].name).join('، ')}</div>` : '';
+  }});
+  pmCatalogWire(el);
+  el.addEventListener('click', e=>{ const r = e.target.closest('.pm-mizaj-option'); if(r) ilajShow(r.dataset.val); });
+}
+function ilajFilterList(){
+  const el = document.getElementById('ilajCatalog'), f = document.getElementById('ilajListFilter');
+  if(el && f) pmCatalogFilter(el, f.value, document.getElementById('ilajListFilterCount'));
+}
 // ===== بیماری کی مکمل تفصیل — ہر طب کے مطابق (قانون مفرد اعضاء، یونانی، ایلوپیتھک، میڈیکل، ہومیو، بائیوکیمک، آیوروید) =====
 // کتابوں کا جو متن سائٹ کے پاس ہے اس میں سے اقتباسات (حوالے کے ساتھ) + AI کی ترتیب دی ہوئی تفصیل؛ ایک بار بنے تو اسی فون میں محفوظ
 const DD_CACHE_KEY = 'ddet1:';
@@ -10231,7 +10355,7 @@ if('serviceWorker' in navigator && herbalCanLoadSiteFiles()){
   const SID = Math.random().toString(36).slice(2, 8).toUpperCase();
   const events = [];
   let sentUpTo = 0, idleTimer = null;
-  const RESULT_IDS = ['mizajResult','diseaseApiResultBox','deficiencyResult','kamiSearchResult','nuskhaResult','qmResult','wajahResult','wajahSearchResult','itemInfoResult','pmResults','pmMizajResults','hzResults'];
+  const RESULT_IDS = ['mizajResult','diseaseApiResultBox','deficiencyResult','kamiSearchResult','nuskhaResult','qmResult','wajahResult','wajahSearchResult','ilajResult','itemInfoResult','pmResults','pmMizajResults','hzResults'];
   const clean = (s, n)=> String(s == null ? '' : s).replace(/\s+/g, ' ').trim().slice(0, n || 600);
   // نتیجے میں سطریں ویسی ہی رہیں جیسی سائٹ پر نظر آتی ہیں
   const cleanLines = (s, n)=> String(s == null ? '' : s).replace(/[ \t\u00a0]+/g, ' ').replace(/ *\n */g, '\n').replace(/\n{2,}/g, '\n').trim().slice(0, n || 600);
