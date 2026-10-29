@@ -7963,9 +7963,9 @@ function ilajIsOwner(){ try{ return localStorage.getItem('herbalOwnerMode') === 
 function ilajEditorHtml(blocks){
   const row = b=> `<div class="ilaj-ed-row" style="border:1px solid var(--border); border-radius:10px; padding:10px; margin-bottom:10px; background:var(--card);">
       <label style="font-size:.85rem; color:var(--gold-soft);">مزاج</label>
-      <input class="search ilaj-ed-mizaj" style="margin:4px 0 8px;" placeholder="مثلاً: عضلاتی اعصابی" value="${escapeHtmlSearch(b.mizaj || '')}">
+      <input class="search ilaj-ed-mizaj" style="display:block; width:100%; box-sizing:border-box; margin:4px 0 8px;" placeholder="مثلاً: عضلاتی اعصابی" value="${escapeHtmlSearch(b.mizaj || '')}">
       <label style="font-size:.85rem; color:var(--gold-soft);">علاج / فارمولا</label>
-      <textarea class="search ilaj-ed-text" rows="5" style="margin-top:4px; min-height:110px; font-family:inherit;" placeholder="اس مزاج کا علاج، دوا، خوراک، پرہیز...">${escapeHtmlSearch(b.text || '')}</textarea>
+      <label style="display:block;"></label><textarea class="search ilaj-ed-text" rows="6" style="display:block; width:100%; box-sizing:border-box; margin-top:4px; min-height:140px; font-family:inherit; line-height:2;" placeholder="اس مزاج کا علاج، دوا، خوراک، پرہیز...">${escapeHtmlSearch(b.text || '')}</textarea>
       <div style="text-align:left;"><button type="button" class="btn secondary" style="padding:3px 12px; font-size:.75rem; color:#e0524f; border-color:#e0524f;" onclick="this.closest('.ilaj-ed-row').remove()">🗑 یہ مزاج ہٹائیں</button></div>
     </div>`;
   return `<div class="mujarrab-card" id="ilajEditor" style="border:2px dashed var(--gold);">
@@ -8035,11 +8035,12 @@ async function ilajShow(n, keepScroll){
       <h4 style="color:var(--gold); margin-bottom:6px;">${blocks.length > 1 ? (i + 1) + '۔ ' : ''}مزاج: ${escapeHtmlSearch(b.mizaj || '—')}</h4>
       <div style="white-space:pre-wrap; line-height:2;"><b style="color:var(--gold-soft);">علاج:</b> ${escapeHtmlSearch(b.text || '—')}</div>
     </div>`).join('');
-  } else {
+  } else if(!ilajIsOwner()){
     html += `<div class="mujarrab-card"><p style="color:var(--muted); text-align:center;">اس بیماری کا مزاج اور علاج ابھی درج نہیں کیا گیا۔</p></div>`;
   }
-  html += `<p style="text-align:center; color:#e0524f; font-size:.82rem; margin-top:6px;">⚠ دوا استعمال کرنے سے پہلے معالج سے مشورہ کریں۔</p>`;
+  // مالک کے لیے اسی جگہ لکھنے کا ڈبہ
   if(ilajIsOwner()) html += ilajEditorHtml(blocks);
+  html += `<p style="text-align:center; color:#e0524f; font-size:.82rem; margin-top:6px;">⚠ دوا استعمال کرنے سے پہلے معالج سے مشورہ کریں۔</p>`;
   out.innerHTML = html;
   const ed = document.getElementById('ilajEditor'); if(ed) ed.dataset.name = n;
   if(keepScroll) return;
