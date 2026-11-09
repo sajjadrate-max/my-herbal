@@ -7039,7 +7039,7 @@ async function upRegisterLocal(rec){
     upSize: rec.blob && rec.blob.size || 0
   });
 }
-// اپ لوڈ کی گئی کتابوں کی فہرست، ہر ایک کے ساتھ ڈیلیٹ کا بٹن (اصل/مستقل کتابیں یہاں نہیں آتیں)
+// اپ لوڈ کی گئی کتابوں کی فہرست (ڈیلیٹ کا بٹن صارف کی ہدایت پر ہٹا دیا گیا)
 function upRenderList(){
   const el = document.getElementById('upList'); if(!el) return;
   const items = pmLibrary.filter(f=> f.upData || /^local_/.test(f.fileName));
@@ -7049,32 +7049,7 @@ function upRenderList(){
   el.innerHTML = '<div style="color:var(--gold-soft); font-size:.85rem; margin-bottom:4px; text-align:center;">اپ لوڈ کی گئی کتابیں</div>' + items.map(f=>
     `<div style="display:flex; align-items:center; justify-content:space-between; gap:8px; padding:6px 4px; border-top:1px solid var(--border); flex-wrap:wrap;">
       <span style="flex:1; min-width:140px; font-size:.85rem;">${escapeHtmlSearch(f.title || f.fileName)} <small style="color:var(--muted);">(${f.pages.length} صفحات · ${f.upData ? 'سب کے لیے' : 'اس فون پر'})</small></span>
-      <button class="btn secondary" type="button" style="padding:4px 12px; font-size:.75rem; color:#e0524f; border-color:#e0524f;" onclick="upDelete('${escapeJsAttr(f.fileName)}')">🗑 ڈیلیٹ کریں</button>
     </div>`).join('');
-}
-async function upDelete(fileName){
-  const idx = pmLibrary.findIndex(f=> f.fileName === fileName);
-  if(idx < 0 || upBusy) return;
-  const f = pmLibrary[idx];
-  if(!confirm('کیا "' + (f.title || fileName) + '" کو ہمیشہ کے لیے ڈیلیٹ کر دیں؟' + (f.upData ? '\n(یہ سب کے لیے ویب سائٹ سے ہٹ جائے گی)' : ''))) return;
-  upBusy = true;
-  upStatus('ڈیلیٹ ہو رہی ہے: ' + (f.title || fileName) + ' ...');
-  try{
-    if(f.upData){
-      await upPost({ action:'delete', data:f.upData, files: (f.upFiles || []).map(n=> 'books/' + n) });
-      delete PM_BUILTIN_PDF_PARTS[fileName];
-    } else {
-      await herbalIdbDelete('pmFiles', fileName);
-      try{ if(f.pdfDoc) f.pdfDoc.destroy(); }catch(e){}
-    }
-    const i2 = pmLibrary.indexOf(f); if(i2 >= 0) pmLibrary.splice(i2, 1);
-    pmSearchBtnEl.disabled = pmLibrary.length === 0;
-    pmRenderBookList();
-    upStatus('🗑 ' + (f.title || fileName) + ' ڈیلیٹ ہو گئی', 'var(--gold-soft)');
-  }catch(e){
-    upStatus('❌ ڈیلیٹ نہیں ہو سکی — ' + (e && e.message ? e.message : e), '#e0524f');
-  }
-  upBusy = false;
 }
 // اس فون (براؤزر) میں محفوظ کتابیں اسی ترتیب سے سرور پر بھیجنا؛ ہر کامیاب کتاب کی فون والی کاپی ہٹ جاتی ہے
 async function upSyncLocal(){
