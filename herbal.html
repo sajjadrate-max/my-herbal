@@ -6795,7 +6795,16 @@ function herbalCanLoadSiteFiles(){
 async function pmLoadBuiltinData(){
   if(!herbalCanLoadSiteFiles()){ try{ pmRenderBookList(); }catch(e){} return; }
   // ریپو میں موجود ہر pm-data-*.json خود بخود (مستقل فہرست کے ساتھ ملا کر) — کوئی کتاب خود سے نہیں ہٹتی
-  const fileList = await pmDiscoverBuiltinDataFiles();
+  // مستقل فہرست فوراً لوڈ کریں؛ GitHub سے خودکار فہرست پس منظر میں (اس کے انتظار میں فہرست نہ رکے)
+  const fileList = PM_BUILTIN_DATA_FILES.filter(n=> !pmIsBlockedBook(n));
+  pmDiscoverBuiltinDataFiles().then(all=>{
+    const extra = (all || []).filter(n=> !fileList.includes(n));
+    if(extra.length) Promise.all(extra.map(u=> fetch(u).then(r=> r.ok ? r.json() : null).catch(()=> null))).then(ds=>{
+      let added = false;
+      ds.forEach((d, i)=>{ if(d && Array.isArray(d.pages) && !pmLibrary.some(f=> f.fileName === (d.fileName || extra[i]))){ pmLibrary.push({ fileName: d.fileName || extra[i], title: d.title || '', pages: d.pages.map(p=> ({ pageNum:p.pageNum, text:p.text || '', ocr:true })), builtin: true }); added = true; } });
+      if(added) pmRenderBookList();
+    });
+  }).catch(()=>{});
   const seenSig = new Set();
   const results = await Promise.all(fileList.map(async url=>{
     try{
@@ -6823,6 +6832,11 @@ async function pmLoadBuiltinData(){
       builtin: true
     });
   });
+  pmSearchBtnEl.disabled = pmLibrary.length === 0;
+  pmRenderBookList();
+  // اس فون میں محفوظ کتابیں فوراً (PDF کھولنے پر ہی پڑھی جاتی ہیں)
+  await upLoadLocalBooks();
+  pmRenderBookList();
   // ویب سائٹ سے اپ لوڈ کی گئی کتابیں — books/uploads.json کی ترتیب سے، مستقل کتابوں کے بعد
   try{
     const mr = await fetch(UP_RAW_BASE + 'uploads.json', { cache:'no-store' });
@@ -6834,7 +6848,6 @@ async function pmLoadBuiltinData(){
       datas.forEach((d, i)=> upRegisterBook(d, true, list[i].data));
     }
   }catch(e){}
-  await upLoadLocalBooks();
   pmSearchBtnEl.disabled = pmLibrary.length === 0;
   pmRenderBookList();
 }
@@ -6911,7 +6924,8 @@ function upRegisterBook(data, quiet, dataPath){
     pages: data.pages.map(p=> ({ pageNum:p.pageNum, text:p.text || '', ocr:true })),
     builtin: true,
     upData: dataPath || '',
-    upFiles
+    upFiles,
+    upSize: data.size || 0
   });
   if(!quiet){ pmSearchBtnEl.disabled = false; pmRenderBookList(); }
   return true;
@@ -6956,7 +6970,7 @@ async function upToServer(file, buf, slug, title, n, pages, st){
     partList.push({ file:path.slice(6), from:parts[i].from, to:parts[i].to });
     parts[i].bytes = null;
   }
-  const data = { fileName:'up_' + slug + '.pdf', title, uploadedAt:Date.now(), parts:partList, pages };
+  const data = { fileName:'up_' + slug + '.pdf', title, size:file.size || buf.byteLength, uploadedAt:Date.now(), parts:partList, pages };
   const jsonB64 = upB64(new TextEncoder().encode(JSON.stringify(data)));
   if(jsonB64.length > 4300000) throw new Error('کتاب کا متن بہت بڑا ہے');
   st('متن محفوظ ہو رہا ہے...');
@@ -6968,6 +6982,13 @@ async function upToServer(file, buf, slug, title, n, pages, st){
   upRegisterBook(data, false, dataPath);
   return { n, parts:parts.length, textPages: pages.filter(p=> p.text).length };
 }
+// پہلے سے موجود کتاب: وہی نام (فون کے لگائے "(1)" وغیرہ کے بغیر) اور — جہاں معلوم ہو — وہی سائز
+function upTitleOf(name){ return String(name).replace(/\.pdf$/i, '').replace(/\s*\(\d+\)\s*$/, '').replace(/_+/g, ' ').replace(/\s+/g, ' ').trim(); }
+function upFindDuplicate(file, seenNow){
+  const t = upTitleOf(file.name), size = file.size;
+  if(seenNow.some(f=> upTitleOf(f.name) === t && f.size === size)) return { title: t };
+  return pmLibrary.find(f=> (f.upData || /^local_/.test(f.fileName)) && upTitleOf(f.title || '') === t && (!f.upSize || f.upSize === size)) || null;
+}
 async function upHandleFiles(list){
   const files = Array.from(list || []).filter(f=> f.type === 'application/pdf' || /\.pdf$/i.test(f.name));
   const input = document.getElementById('upFileInput');
@@ -6976,8 +6997,15 @@ async function upHandleFiles(list){
   try{ await herbalEnsureBooks(); }catch(e){}
   const warn = e=>{ e.preventDefault(); e.returnValue = ''; };
   window.addEventListener('beforeunload', warn);
+  const seenNow = [];
   for(let k=0;k<files.length;k++){
     const pre = '(' + (k+1) + '/' + files.length + ') ' + files[k].name + ' — ';
+    const dup = upFindDuplicate(files[k], seenNow);
+    if(dup){
+      upLog('⏭ ' + files[k].name + ' — پہلے سے اپلوڈ ہے' + (dup.title ? ' (' + dup.title + ')' : '') + '، دوبارہ نہیں کی', 'var(--muted)');
+      continue;
+    }
+    seenNow.push(files[k]);
     try{
       const r = await upOne(files[k], s=> upStatus(pre + s));
       upLog('✅ ' + files[k].name + ' فہرست میں شامل ہو گئی (' + r.n + ' صفحات)' + (r.local ? ' — اس فون پر' : ' — سب کے لیے'), 'var(--gold-soft)');
@@ -6989,15 +7017,26 @@ async function upHandleFiles(list){
   upBusy = false; if(input){ input.disabled = false; input.value = ''; }
   upStatus('مکمل ✅', 'var(--gold-soft)');
 }
+// فون میں محفوظ PDF: پوری فائل اسی وقت پڑھی جاتی ہے جب کوئی صفحہ کھولا جائے (ویب سائٹ کھلتے ہی نہیں)
+function upLazyPdfDoc(blob, numPages){
+  let real = null;
+  const load = ()=> real || (real = blob.arrayBuffer().then(b=> pdfjsLib.getDocument({ data: new Uint8Array(b) }).promise));
+  return {
+    lazy: true,
+    numPages: numPages || 0,
+    getPage: n=> load().then(d=> d.getPage(n)),
+    destroy: ()=>{ if(real) real.then(d=> d.destroy()).catch(()=>{}); }
+  };
+}
 async function upRegisterLocal(rec){
   if(!rec || pmLibrary.some(f=> f.fileName === rec.fileName)) return;
-  let pdfDoc = null;
-  try{ pdfDoc = await pdfjsLib.getDocument({ data: new Uint8Array(await rec.blob.arrayBuffer()) }).promise; }catch(e){}
+  const pdfDoc = upLazyPdfDoc(rec.blob, (rec.pages || []).length);
   pmLibrary.push({
     fileName: rec.fileName,
     title: rec.title || '',
     pages: (rec.pages || []).map(p=> ({ pageNum:p.pageNum, text:p.text || '', ocr:true })),
-    pdfDoc
+    pdfDoc,
+    upSize: rec.blob && rec.blob.size || 0
   });
 }
 // اپ لوڈ کی گئی کتابوں کی فہرست، ہر ایک کے ساتھ ڈیلیٹ کا بٹن (اصل/مستقل کتابیں یہاں نہیں آتیں)
@@ -10073,7 +10112,8 @@ function herbalEnsureBooks(){
 }
 window.addEventListener('load', ()=>{
   const go = ()=> herbalEnsureBooks();
-  if('requestIdleCallback' in window) requestIdleCallback(go, {timeout:4000}); else setTimeout(go, 2500);
+  // کتابیں ویب سائٹ کھلتے ہی لوڈ ہونا شروع (فہرست فوراً تیار ملے)
+  setTimeout(go, 200);
 });
 function hzRenderBookList(){
   const el = document.getElementById('hzBookListEl');
