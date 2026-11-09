@@ -154,6 +154,23 @@ async function ilajSave(req, res) {
   try {
     const b = typeof req.body === 'string' ? JSON.parse(req.body) : (req.body || {});
     if (b.key !== ILAJ_KEY) return res.status(403).json({ error: 'اجازت نہیں' });
+    // عارضی: کتاب کس صفحے پر دکھے (kitab-jagah.json) — بیماری کی تلاش / نسخہ سازی / میڈیکل
+    if (b.jagah) {
+      const fn = String(b.jagah.fileName || '').slice(0, 200), sec = String(b.jagah.sec || '');
+      if (!fn || !['pdfmulti', 'naskhesaz', 'wajah'].includes(sec)) return res.status(400).json({ error: 'غلط' });
+      for (let attempt = 0; attempt < 4; attempt++) {
+        let map = {}, sha;
+        try { const f = await upGh('/contents/kitab-jagah.json?ref=' + BRANCH); sha = f.sha; map = JSON.parse(Buffer.from(f.content, 'base64').toString('utf8')) || {}; }
+        catch (e) { if (e.status !== 404) throw e; }
+        map[fn] = sec;
+        try {
+          await upGh('/contents/kitab-jagah.json', { method: 'PUT', body: JSON.stringify(Object.assign({
+            message: 'کتاب کی جگہ: ' + fn + ' → ' + sec, branch: BRANCH,
+            content: Buffer.from(JSON.stringify(map, null, 1) + '\n', 'utf8').toString('base64') }, sha ? { sha } : {})) });
+          return res.status(200).json({ ok: true });
+        } catch (e) { if ((e.status !== 409 && e.status !== 422) || attempt === 3) throw e; }
+      }
+    }
     const name = String(b.name || '').trim();
     if (!name || name.length > 120 || /[\r\n]/.test(name) || /^[#=]/.test(name)) return res.status(400).json({ error: 'غلط نام' });
     const clean = t => String(t || '').replace(/\r/g, '').split('\n').map(l => l.replace(/^\s*#+/, '').trimEnd()).join('\n').trim().slice(0, 4000);

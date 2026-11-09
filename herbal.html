@@ -395,6 +395,10 @@ footer{position:fixed; left:0; right:0; bottom:0; z-index:55; text-align:center;
   <div class="note">ہر بیماری کمی کی وجہ سے نہیں ہوتی۔ ڈاکٹر پہلے بیماری کی اصل وجہ معلوم کرتے ہیں — انفیکشن، سوزش، خود مدافعتی، رکاوٹ، عضو کی خرابی، رسولی، چوٹ، موروثی، طرزِ زندگی، ذہنی یا کمی — کمی ان میں سے صرف ایک قسم ہے، اور اس کا علاج تب ہی کیا جاتا ہے جب ٹیسٹ میں کمی ثابت ہو جائے۔ جدید طب کا اصول ہے: "پہلے وجہ معلوم کرو، پھر علاج کرو"۔ <b>یہ صفحہ صرف معلومات کے لیے ہے، تشخیص یا علاج کا متبادل نہیں — صحیح تشخیص اور دوا کے لیے ہمیشہ ڈاکٹر سے رجوع کریں۔</b></div>
 
   <div id="wajahDiseaseChips" style="display:none;"></div>
+  <div class="result-card" id="wajahBooksBox" style="display:none; margin-top:16px;">
+    <h3 style="color:var(--gold); text-align:center; margin-bottom:8px;">📚 کتابیں</h3>
+    <div id="wajahBookListEl" style="font-size:.85rem; color:var(--text);"></div>
+  </div>
   <h3 style="color:var(--gold); margin-top:24px; text-align:center;">تمام بیماریاں اور علامات — کسی پر بھی ٹیپ کریں</h3>
   <p style="color:var(--muted); font-size:.85rem; text-align:center;">بیماری کی میڈیکل قسم اور عام طور پر دی جانے والی ادویات کے نام دیکھیں</p>
   <div id="wajahResult" style="margin:10px 0;"></div>
@@ -716,6 +720,7 @@ function showPage(id){
   if(id === 'kami'){ const el = document.getElementById('deficiencySymptomList'); if(el && el.dataset.pending){ delete el.dataset.pending; herbalBuildKamiCatalog(el); } }
   if(id === 'wajah' && typeof wajahBuildCatalog === 'function') wajahBuildCatalog();
   if(id === 'ilaj' && typeof ilajBuildCatalog === 'function') ilajBuildCatalog();
+  if(id === 'wajah' && typeof wajahRenderBookList === 'function') wajahRenderBookList();
   if(id === 'naskhesaz' && typeof qmBuildCatalog === 'function') qmBuildCatalog();
   if(id === 'pdfmulti'){ const el = document.getElementById('pmMizajOptionsList'); if(el && el.dataset.pending){ delete el.dataset.pending; pmRenderMizajOptionsList(pmMizajOptions); } }
   if(typeof herbalEnsureBooks === 'function' && id !== 'home') herbalEnsureBooks();
@@ -6409,11 +6414,12 @@ function pmRenderBookList(){
   if(typeof upRenderList === 'function') upRenderList();
   const el = document.getElementById('pmBookListEl');
   if(!el) return;
-  if(!pmLibrary.length){
+  const lib = herbalBooksFor('pdfmulti');
+  if(!lib.length){
     el.innerHTML = '<p style="color:var(--muted); text-align:center;">ابھی کوئی کتاب لوڈ نہیں ہوئی۔</p>';
     return;
   }
-  const rows = pmLibrary.map((f, idx)=>{
+  const rows = lib.map((f, idx)=>{
     const totalPages = f.pages.length;
     const textPages = f.pages.filter(p=> p.text && p.text.trim()).length;
     const sys = pmGetFileSystem(f.fileName);
@@ -6427,11 +6433,11 @@ function pmRenderBookList(){
     return `<div style="display:flex; align-items:center; justify-content:space-between; gap:8px; padding:8px 10px; border-bottom:1px solid var(--border); flex-wrap:wrap;">
       <span style="flex:1; min-width:160px;"><b style="color:var(--gold); margin-left:6px;">${idx+1}۔</b> ${f.title ? escapeHtmlSearch(f.title) + ' <small style="color:var(--muted);">(' + escapeHtmlSearch(f.fileName) + ')</small>' : escapeHtmlSearch(f.fileName)}</span>
       <span style="color:var(--muted); font-size:.78rem;">${kind} · ${textPages}/${totalPages} صفحات میں متن · ${escapeHtmlSearch(sys)}</span>
-      ${openBtnHtml}
+      ${openBtnHtml}${herbalMoveSelect(f)}
     </div>`;
   }).join('');
-  const totalAll = pmLibrary.reduce((s,f)=> s+f.pages.length, 0);
-  el.innerHTML = rows + `<p style="color:var(--muted); font-size:.78rem; text-align:center; margin-top:8px;">کل ${pmLibrary.length} کتابیں، ${totalAll} صفحات</p>`;
+  const totalAll = lib.reduce((s,f)=> s+f.pages.length, 0);
+  el.innerHTML = rows + `<p style="color:var(--muted); font-size:.78rem; text-align:center; margin-top:8px;">کل ${lib.length} کتابیں، ${totalAll} صفحات</p>`;
 }
 function pmSetRowStatus(row, text, color){
   const s = row.querySelector('.pm-status');
@@ -8766,7 +8772,7 @@ function pmRunSearchBase(customTerms){
   const runTerms = (termList)=> termList.forEach(term=>{
     const queryData = pmBuildSearchable(term);
     if(!queryData.searchable) return;
-    pmLibrary.forEach(fileEntry=>{
+    herbalBooksFor('pdfmulti').forEach(fileEntry=>{
       fileEntry.pages.forEach(p=>{
         const key = fileEntry.fileName + '|' + p.pageNum;
         if(seenPageKeys.has(key)) return;
@@ -8799,7 +8805,7 @@ function pmRunSearchBase(customTerms){
       if(!words.length) return;
       const need = Math.min(2, words.length);
       const qds = words.map(w=> pmBuildSearchable(w)).filter(q=> q.searchable);
-      pmLibrary.forEach(fileEntry=> fileEntry.pages.forEach(p=>{
+      herbalBooksFor('pdfmulti').forEach(fileEntry=> fileEntry.pages.forEach(p=>{
         const key = fileEntry.fileName + '|' + p.pageNum;
         if(seenPageKeys.has(key) || !p.text) return;
         const hits = qds.filter(q=> pmFindMatch(p.text, q, pmCachedSearchable(p, 'text')));
@@ -8842,7 +8848,7 @@ function pmRunSearchBase(customTerms){
       if(last && m.pageNum - last.end.pageNum <= 1) last.end = m;
       else runs.push({ start:m, end:m });
     });
-    const entry = pmLibrary.find(f=> f.fileName === fileName) || {};
+    const entry = herbalFindBook(fileName) || {};
     const bookTitle = entry.title || fileName.replace(/\.pdf$/i,'').replace(/_/g,' ');
     const canOpen = pmCanOpenFile(fileName);
     const card = document.createElement('div');
@@ -8869,7 +8875,7 @@ function pmRunSearchBase(customTerms){
 // اس لیے صارف خود PDF دیکھ کر صحیح متن یہاں لکھ سکتا ہے — یہ ہمیشہ کے لیے محفوظ ہو جائے گا
 // اور اگلی بار سے تلاش میں درست نتیجہ آئے گا۔
 function pmOpenTextEditor(fileName, pageNum){
-  const entry = pmLibrary.find(f=> f.fileName === fileName);
+  const entry = herbalFindBook(fileName);
   if(!entry){ alert('یہ فائل نہیں ملی۔'); return; }
   const page = entry.pages.find(p=> p.pageNum === pageNum);
   if(!page){ alert('یہ صفحہ نہیں ملا۔'); return; }
@@ -9180,14 +9186,14 @@ async function pmAiMarkPage(canvas, st, v){
 }
 
 function pmCanOpenFile(fileName){
-  const entry = pmLibrary.find(f=> f.fileName === fileName);
+  const entry = herbalFindBook(fileName);
   return !!(entry && (entry.pdfDoc || entry.builtin));
 }
 function escapeJsAttr(s){
   return String(s).replace(/\\/g,'\\\\').replace(/'/g,"\\'");
 }
 async function pmOpenPdfAtPage(fileName, pageNum, queryText){
-  const entry = pmLibrary.find(f=> f.fileName === fileName);
+  const entry = herbalFindBook(fileName);
   if(!entry){ return; }
   window.pmPendingAiQuestion = (typeof qmAiLive === 'function' && qmAiLive() && pmAiState.question) ? pmAiState.question : '';
   await herbalOpenLibraryPdf(entry, pageNum, queryText, null);
@@ -9690,7 +9696,7 @@ async function pmAutoParts(fileName){
 }
 // اصل PDF نہ ہو تو اسی صفحے کا متن (جو تلاش کے لیے موجود ہے) صاف پڑھنے کے انداز میں دکھائیں — آگے/پیچھے کے بٹن کے ساتھ
 function pmOpenTextViewer(fileName, pageNum, queryText){
-  const entry = pmLibrary.find(f=> f.fileName === fileName);
+  const entry = herbalFindBook(fileName);
   if(!entry || !entry.pages.length) return;
   const pages = entry.pages.filter(p=> p.text && p.text.trim());
   if(!pages.length){ alert('اس کتاب کا متن موجود نہیں۔'); return; }
@@ -9780,7 +9786,7 @@ async function herbalOpenLibraryPdf(entry, pageNum, queryText, btnSelector){
   }
 }
 async function pmOpenFullPdf(fileName){
-  const entry = pmLibrary.find(f=> f.fileName === fileName);
+  const entry = herbalFindBook(fileName);
   const sel = `button[onclick="pmOpenFullPdf('${fileName.replace(/'/g,"\\'")}')"]`;
   await herbalOpenLibraryPdf(entry, 1, '', sel);
 }
@@ -10066,7 +10072,7 @@ async function hzLoadBuiltinData(){
 }
 let herbalBooksPromise = null;
 function herbalEnsureBooks(){
-  if(!herbalBooksPromise) herbalBooksPromise = Promise.all([pmLoadBuiltinData(), hzLoadBuiltinData()]).catch(()=>{});
+  if(!herbalBooksPromise) herbalBooksPromise = Promise.all([pmLoadBuiltinData(), hzLoadBuiltinData()]).catch(()=>{}).then(()=>{ try{ herbalRenderAllBookLists(); }catch(e){} });
   return herbalBooksPromise;
 }
 window.addEventListener('load', ()=>{
@@ -10077,12 +10083,78 @@ window.addEventListener('load', ()=>{
 function hzRenderBookList(){
   const el = document.getElementById('hzBookListEl');
   if(!el) return;
-  if(!hzLibrary.length){ el.innerHTML = '<p style="color:var(--muted); text-align:center;">ابھی کوئی کتاب لوڈ نہیں ہوئی۔</p>'; return; }
-  el.innerHTML = hzLibrary.map((f, idx)=> `<div style="display:flex; align-items:center; justify-content:space-between; gap:8px; padding:8px 10px; border-bottom:1px solid var(--border); flex-wrap:wrap;">
+  const lib = herbalBooksFor('naskhesaz');
+  if(!lib.length){ el.innerHTML = '<p style="color:var(--muted); text-align:center;">ابھی کوئی کتاب لوڈ نہیں ہوئی۔</p>'; return; }
+  el.innerHTML = lib.map((f, idx)=> `<div style="display:flex; align-items:center; justify-content:space-between; gap:8px; padding:8px 10px; border-bottom:1px solid var(--border); flex-wrap:wrap;">
       <span style="flex:1; min-width:160px;"><b style="color:var(--gold); margin-left:6px;">${idx+1}۔</b> ${escapeHtmlSearch(f.title || f.fileName)}</span>
       <span style="color:var(--muted); font-size:.78rem;">${f.pages.length} صفحات · ${escapeHtmlSearch(pmGetFileSystem(f.fileName))}</span>
-      <button class="btn secondary" style="padding:4px 12px; font-size:.75rem;" onclick="hzOpenPdfAtPage('${escapeJsAttr(f.fileName)}', 1, '')">📖 کھولیں</button>
-    </div>`).join('') + `<p style="color:var(--muted); font-size:.78rem; text-align:center; margin-top:8px;">کل ${hzLibrary.length} کتابیں</p>`;
+      <button class="btn secondary" style="padding:4px 12px; font-size:.75rem;" onclick="hzOpenPdfAtPage('${escapeJsAttr(f.fileName)}', 1, '')">📖 کھولیں</button>${herbalMoveSelect(f)}
+    </div>`).join('') + `<p style="color:var(--muted); font-size:.78rem; text-align:center; margin-top:8px;">کل ${lib.length} کتابیں</p>`;
+}
+// ===== عارضی: کتاب کو کسی بھی صفحے (بیماری کی تلاش / نسخہ سازی / میڈیکل) میں منتقل کرنا — سب ترتیب ہو جائے تو یہ حصہ ہٹا دینا ہے =====
+// جگہ: kitab-jagah.json (GitHub، سب کے لیے) + اس فون کی تبدیلیاں (localStorage) — کتاب اسی صفحے کی فہرست اور تلاش میں آتی ہے
+const HERBAL_SECTIONS = { pdfmulti:'🔍 بیماری کی تلاش', naskhesaz:'🌿 نسخہ سازی', wajah:'💊 میڈیکل' };
+let HERBAL_BOOK_SEC = {};
+try{ HERBAL_BOOK_SEC = JSON.parse(localStorage.getItem('herbalBookSecLocal') || '{}') || {}; }catch(e){}
+fetch('kitab-jagah.json', { cache:'no-store' }).then(r=> r.ok ? r.json() : {}).then(d=>{
+  let loc = {}; try{ loc = JSON.parse(localStorage.getItem('herbalBookSecLocal') || '{}') || {}; }catch(e){}
+  HERBAL_BOOK_SEC = Object.assign({}, d || {}, loc);
+  herbalRenderAllBookLists();
+}).catch(()=>{});
+function herbalFindBook(fileName){
+  return (typeof pmLibrary !== 'undefined' && pmLibrary.find(f=> f.fileName === fileName))
+    || (typeof hzLibrary !== 'undefined' && hzLibrary.find(f=> f.fileName === fileName)) || null;
+}
+function herbalBookSection(f){
+  const s = HERBAL_BOOK_SEC[f.fileName];
+  if(HERBAL_SECTIONS[s]) return s;
+  return (typeof hzLibrary !== 'undefined' && hzLibrary.includes(f)) ? 'naskhesaz' : 'pdfmulti';
+}
+function herbalBooksFor(sec){
+  const seen = new Set(), out = [];
+  [].concat(typeof pmLibrary !== 'undefined' ? pmLibrary : [], typeof hzLibrary !== 'undefined' ? hzLibrary : []).forEach(f=>{
+    if(seen.has(f.fileName)) return; seen.add(f.fileName);
+    if(herbalBookSection(f) === sec) out.push(f);
+  });
+  return out;
+}
+function herbalMoveSelect(f){
+  const cur = herbalBookSection(f);
+  return `<label style="font-size:.72rem; color:var(--muted); display:inline-flex; align-items:center; gap:4px;">📦 منتقل:
+    <select onchange="herbalMoveBook('${escapeJsAttr(f.fileName)}', this.value)" style="font-size:.75rem; padding:2px 4px; border-radius:8px; border:1px solid var(--border);">
+      ${Object.keys(HERBAL_SECTIONS).map(k=> `<option value="${k}"${k === cur ? ' selected' : ''}>${HERBAL_SECTIONS[k]}</option>`).join('')}
+    </select></label>`;
+}
+function herbalRenderAllBookLists(){
+  try{ pmRenderBookList(); }catch(e){}
+  try{ hzRenderBookList(); }catch(e){}
+  try{ wajahRenderBookList(); }catch(e){}
+}
+function wajahRenderBookList(){
+  const el = document.getElementById('wajahBookListEl');
+  if(!el) return;
+  const lib = herbalBooksFor('wajah');
+  const box = document.getElementById('wajahBooksBox'); if(box) box.style.display = lib.length ? '' : 'none';
+  el.innerHTML = lib.map((f, idx)=> `<div style="display:flex; align-items:center; justify-content:space-between; gap:8px; padding:8px 10px; border-bottom:1px solid var(--border); flex-wrap:wrap;">
+      <span style="flex:1; min-width:160px;"><b style="color:var(--gold); margin-left:6px;">${idx+1}۔</b> ${escapeHtmlSearch(f.title || f.fileName)}</span>
+      <span style="color:var(--muted); font-size:.78rem;">${f.pages.length} صفحات</span>
+      <button class="btn secondary" style="padding:4px 12px; font-size:.75rem;" onclick="herbalOpenLibraryPdf(herbalFindBook('${escapeJsAttr(f.fileName)}'), 1, '', null)">📖 کھولیں</button>${herbalMoveSelect(f)}
+    </div>`).join('') + `<p style="color:var(--muted); font-size:.78rem; text-align:center; margin-top:8px;">کل ${lib.length} کتابیں</p>`;
+}
+async function herbalMoveBook(fileName, sec){
+  if(!HERBAL_SECTIONS[sec]) return;
+  HERBAL_BOOK_SEC[fileName] = sec;
+  let ok = false;
+  try{
+    const r = await fetch('/api/notify-disease?ilaj=1', { method:'POST', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify({ key: HERBAL_OWNER_KEY, jagah: { fileName, sec } }) });
+    const d = await r.json().catch(()=> ({})); ok = r.ok && d.ok;
+  }catch(e){}
+  let loc = {}; try{ loc = JSON.parse(localStorage.getItem('herbalBookSecLocal') || '{}') || {}; }catch(e){}
+  if(ok) delete loc[fileName]; else loc[fileName] = sec;
+  try{ localStorage.setItem('herbalBookSecLocal', JSON.stringify(loc)); }catch(e){}
+  herbalRenderAllBookLists();
+  const f = herbalFindBook(fileName);
+  alert('"' + ((f && f.title) || fileName) + '" اب ' + HERBAL_SECTIONS[sec] + ' میں ہے' + (ok ? '' : ' (صرف اس فون پر — سب کے لیے نہیں)'));
 }
 function hzNormalizeChar(ch){
   const code = ch.codePointAt(0);
@@ -10236,7 +10308,7 @@ function hzFindAllMatches(queryData){
   const titleMatches = [];
   const textMatches = [];
   const looseMatches = [];
-  hzLibrary.forEach(fileEntry=>{
+  herbalBooksFor('naskhesaz').forEach(fileEntry=>{
     fileEntry.pages.forEach(p=>{
       if(p.title){
         const m = hzFindMatch(p.title, queryData);
@@ -10410,11 +10482,11 @@ function hzOpenBest(manual){
   if(manual) alert('"' + q + '" کتابوں میں نہیں ملا — نام دوسرے طریقے سے لکھ کر دیکھیں۔');
 }
 function hzCanOpenFile(fileName){
-  const entry = hzLibrary.find(f=> f.fileName === fileName);
+  const entry = herbalFindBook(fileName);
   return !!(entry && (entry.pdfDoc || entry.builtin));
 }
 function hzOpenTextEditor(fileName, pageNum){
-  const entry = hzLibrary.find(f=> f.fileName === fileName);
+  const entry = herbalFindBook(fileName);
   if(!entry){ alert('یہ فائل نہیں ملی۔'); return; }
   const page = entry.pages.find(p=> p.pageNum === pageNum);
   if(!page){ alert('یہ صفحہ نہیں ملا۔'); return; }
@@ -10456,7 +10528,7 @@ function hzOpenTextEditor(fileName, pageNum){
   }
 }
 async function hzOpenPdfAtPage(fileName, pageNum, queryText){
-  const entry = hzLibrary.find(f=> f.fileName === fileName);
+  const entry = herbalFindBook(fileName);
   if(!entry){ return; }
   await herbalOpenLibraryPdf(entry, pageNum, queryText, null);
 }
