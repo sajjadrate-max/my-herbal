@@ -1,48 +1,82 @@
 // sw.js — My Herbal | قانونِ مفرد اعضاء
-// مقصد: سائٹ کو آف لائن اور ایپ کی طرح انسٹال کے قابل بنانا، اور دوبارہ کھولنے پر فوراً کھلنا
+// مقصد: ویب سائٹ انٹرنیٹ کے بغیر بھی پوری کھلے اور چلے؛ صرف AI کے جواب (/api/) کے لیے انٹرنیٹ چاہیے
 
-const CACHE_NAME = 'my-herbal-cache-v95';
+const CACHE_NAME = 'my-herbal-cache-v96';
+// کتابوں کا متن، PDF، لائبریریاں اور فونٹ الگ کیش میں — نئی ریلیز پر یہ نہیں مٹتا (ورنہ ہر اپ ڈیٹ کے بعد آف لائن کتابیں غائب)
+const DATA_CACHE = 'my-herbal-data-v1';
 const ASSETS_TO_CACHE = [
   '/',
   '/herbal.html',
   '/icon-192.png',
   '/icon-512-maskable.png'
 ];
+// پہلی بار انٹرنیٹ پر کھلتے ہی یہ سب فون میں محفوظ — تاکہ بعد میں آف لائن سب کچھ چلے
+const DATA_TO_CACHE = [
+  '/pm-data-ilaj-ul-amraz.json',
+  '/pm-data-cholesterol-urdu.json',
+  '/pm-data-asaan-ilaj.json',
+  '/pm-data-gharelu-nuskhe-1.json',
+  '/pm-data-mamoolat-matab.json',
+  '/pm-data-qanoon-mufrad-aza-dama.json',
+  '/pm-data-amraz-e-gurda-masana.json',
+  '/pm-data-mufrad-aza-mizaj-chart.json',
+  '/pm-data-mujarrabat-sehranasheen.json',
+  '/pm-data-mujarrabat-zikai.json',
+  '/pm-data-aurat-shadi-se-zachgi.json',
+  '/hz-data-khawas-ul-mufradat-adalati.json',
+  '/hz-data-khawas-ul-mufradat-ghudi.json',
+  '/hz-data-khawas-ul-mufradat-asabi.json',
+  '/hz-data-kushta-jaat.json',
+  '/ilaj.txt',
+  '/kitab-jagah.json',
+  'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js',
+  'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js',
+  'https://fonts.googleapis.com/css2?family=Noto+Nastaliq+Urdu:wght@400;700&family=Amiri:wght@400;700&family=Poppins:wght@400;600;700&display=swap'
+];
+const OFFLINE_MSG = '📶 انٹرنیٹ بند ہے — اس جواب کے لیے انٹرنیٹ آن کریں۔';
 
-// انسٹال: بنیادی فائلیں کیش کریں
+// انسٹال: بنیادی فائلیں اور کتابوں کا ڈیٹا کیش کریں (ایک فائل نہ ملے تو باقی پھر بھی)
 self.addEventListener('install', (event) => {
-  event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(ASSETS_TO_CACHE).catch(() => {
-        // اگر کوئی فائل نہ ملے تو باقی فائلیں پھر بھی کیش ہو جائیں
-      });
-    })
-  );
+  event.waitUntil(Promise.all([
+    caches.open(CACHE_NAME).then((cache) => Promise.allSettled(ASSETS_TO_CACHE.map((u) => cache.add(u)))),
+    caches.open(DATA_CACHE).then((cache) => Promise.allSettled(DATA_TO_CACHE.map((u) =>
+      fetch(u, { cache: 'no-cache', mode: u.startsWith('http') ? 'cors' : 'same-origin' })
+        .then((res) => { if (res && (res.ok || res.type === 'opaque')) return cache.put(u, res); })
+    )))
+  ]));
   self.skipWaiting();
 });
 
-// ایکٹیویٹ: پرانے کیش صاف کریں
+// ایکٹیویٹ: صرف پرانے ورژن کا کیش صاف کریں — کتابوں والا کیش رہنے دیں
 self.addEventListener('activate', (event) => {
   event.waitUntil(
-    caches.keys().then((keys) => {
-      return Promise.all(
-        keys.filter((key) => key !== CACHE_NAME).map((key) => caches.delete(key))
-      );
-    })
+    caches.keys().then((keys) => Promise.all(
+      keys.filter((key) => key !== CACHE_NAME && key !== DATA_CACHE).map((key) => caches.delete(key))
+    ))
   );
   self.clients.claim();
 });
 
-// فیچ: کیش میں ہو تو فوراً وہی دیں اور پیچھے سے نیٹ ورک سے تازہ کر لیں (اگلی بار نیا ورژن)؛
-// کیش میں نہ ہو تو نیٹ ورک سے لیں۔ نئی ریلیز پر CACHE_NAME بدلنے سے پرانا کیش خود صاف ہو جاتا ہے۔
-// نوٹ: /api/ کالز کبھی کیش نہ کریں (دوا کا جواب ہمیشہ تازہ ہونا چاہیے)
+const okToCache = (res) => res && (res.status === 200 || res.type === 'opaque');
+
+// نیٹ ورک پہلے، نہ ملے تو محفوظ ورژن
+function networkFirst(request, cacheName) {
+  return caches.open(cacheName).then((cache) =>
+    fetch(request).then((res) => {
+      if (res && res.status === 200) cache.put(request, res.clone());
+      return res;
+    }).catch(() => cache.match(request, { ignoreSearch: true }).then((c) => c || caches.match(request, { ignoreSearch: true })))
+  );
+}
+
 self.addEventListener('fetch', (event) => {
   const url = new URL(event.request.url);
 
+  // AI کے جواب: ہمیشہ انٹرنیٹ سے؛ نہ ہو تو صاف پیغام (کبھی کیش نہیں)
   if (url.pathname.startsWith('/api/')) {
     event.respondWith(fetch(event.request).catch(() => new Response(
-      JSON.stringify({ error: 'آف لائن ہیں — انٹرنیٹ سے جڑیں۔' }),
-      { headers: { 'Content-Type': 'application/json' } }
+      JSON.stringify({ error: OFFLINE_MSG, offline: true }),
+      { status: 503, headers: { 'Content-Type': 'application/json', 'X-Offline': '1' } }
     )));
     return;
   }
@@ -51,21 +85,16 @@ self.addEventListener('fetch', (event) => {
 
   // Google AdSense کی درخواستیں سیدھی نیٹ ورک پر جائیں (کیش نہ ہوں)
   if (/(^|\.)(googlesyndication|doubleclick|googleadservices|adtrafficquality)\.|google\.com$/.test(url.hostname)) return;
+  // GitHub API (کتابوں کی خودکار فہرست) اور فارم — کیش کی ضرورت نہیں
+  if (url.hostname === 'api.github.com' || url.hostname === 'formsubmit.co') return;
 
-  // ویب سائٹ سے اپ لوڈ کی گئی کتابوں کی فہرست ہمیشہ تازہ (نیٹ ورک نہ ہو تو محفوظ ورژن)
+  // بدلتی رہنے والی فہرستیں: ہمیشہ تازہ (نیٹ نہ ہو تو محفوظ ورژن)
   if (url.pathname.endsWith('/books/uploads.json') || url.pathname === '/ilaj.txt' || url.pathname === '/kitab-jagah.json') {
-    event.respondWith(
-      caches.open(CACHE_NAME).then((cache) =>
-        fetch(event.request).then((res) => {
-          if (res && res.status === 200) cache.put(event.request, res.clone());
-          return res;
-        }).catch(() => cache.match(event.request))
-      )
-    );
+    event.respondWith(networkFirst(event.request, DATA_CACHE));
     return;
   }
 
-  // صفحات (HTML): ہمیشہ نیٹ ورک سے تازہ ورژن — نیٹ ورک نہ ہو یا 5 سیکنڈ میں جواب نہ آئے تو محفوظ ورژن
+  // صفحات (HTML): نیٹ ورک سے تازہ — نیٹ نہ ہو یا 5 سیکنڈ میں جواب نہ آئے تو محفوظ ورژن
   const isPage = event.request.mode === 'navigate' || url.pathname === '/' || url.pathname.endsWith('.html');
   if (isPage) {
     event.respondWith(
@@ -76,25 +105,26 @@ self.addEventListener('fetch', (event) => {
         });
         const timeout = new Promise((resolve) => setTimeout(() => resolve(null), 5000));
         return Promise.race([network.catch(() => null), timeout]).then((res) =>
-          res || cache.match(event.request).then((cached) => cached || network)
+          res || cache.match(event.request, { ignoreSearch: true })
+            .then((cached) => cached || cache.match('/herbal.html') || cache.match('/'))
+            .then((cached) => cached || network)
         );
       })
     );
     return;
   }
 
-  // باقی فائلیں (تصاویر، ڈیٹا): محفوظ ورژن فوراً، پیچھے سے تازہ
+  // باقی سب (کتابوں کا متن، PDF، تصاویر، لائبریریاں، فونٹ): محفوظ ورژن فوراً، پیچھے سے تازہ
+  const cacheName = url.origin === self.location.origin && /\.(png|ico|svg)$/i.test(url.pathname) ? CACHE_NAME : DATA_CACHE;
   event.respondWith(
-    caches.open(CACHE_NAME).then((cache) =>
+    caches.open(cacheName).then((cache) =>
       cache.match(event.request).then((cached) => {
-        const network = fetch(event.request).then((networkResponse) => {
-          if (networkResponse && networkResponse.status === 200) {
-            cache.put(event.request, networkResponse.clone());
-          }
-          return networkResponse;
-        }).catch(() => cached);
+        const network = fetch(event.request).then((res) => {
+          if (okToCache(res)) cache.put(event.request, res.clone());
+          return res;
+        }).catch(() => cached || caches.match(event.request));
         if (cached) {
-          event.waitUntil(network);
+          event.waitUntil(network.catch(() => {}));
           return cached;
         }
         return network;
