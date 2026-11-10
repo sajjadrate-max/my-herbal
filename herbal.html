@@ -2,7 +2,7 @@
 <html lang="ur" dir="rtl">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <!-- Google AdSense -->
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9829612219556114" crossorigin="anonymous"></script>
 <title>My Herbal | میری حکمت — قانون مفرد اعضاء</title>
@@ -18,6 +18,9 @@
   --text:#1e2a22; --muted:#5f6f63; --card:#ffffff; --border:#cfe3c6;
 }
 *{box-sizing:border-box;}
+/* صفحہ ہمیشہ پوری اسکرین میں فٹ — دائیں بائیں نہ کھسکے */
+html, body{max-width:100%; overflow-x:hidden;}
+img, video, iframe, table, pre{max-width:100%;}
 body{margin:0; position:relative; color:var(--text);
   font-family:'Noto Nastaliq Urdu','Amiri',serif; line-height:2;
   background:
@@ -9333,6 +9336,7 @@ async function herbalShowPdfPage(entry, pageNum, queryText){
     modal.addEventListener('click', e=>{ if(e.target === modal) herbalClosePdfPageModal(); });
   }
   modal.style.display = 'block';
+  herbalSetZoom(true);
   const canvas1 = document.getElementById('herbalPdfPageCanvas');
   const block1 = document.getElementById('herbalPdfPageBlock1');
   const loadingEl = document.getElementById('herbalPdfPageLoading');
@@ -9349,6 +9353,7 @@ async function herbalShowPdfPage(entry, pageNum, queryText){
   }
 }
 function herbalClosePdfPageModal(){
+  herbalSetZoom(false);
   const modal = document.getElementById('herbalPdfPageModal');
   if(modal) modal.style.display = 'none';
 }
@@ -9475,6 +9480,7 @@ async function herbalOpenFullPdfViewer(entry, startPage, queryText){
     });
   }
   modal.style.display = 'block';
+  herbalSetZoom(true); // PDF پڑھتے وقت دو انگلیوں سے بڑا چھوٹا کر سکیں
   document.body.style.overflow = 'hidden';
   // فون کی اپنی اوپر/نیچے والی پٹیاں بھی چھپا کر پوری اسکرین پر کھولیں (جہاں براؤزر اجازت دے)
   try{ if(!document.fullscreenElement && modal.requestFullscreen) modal.requestFullscreen().catch(()=>{}); }catch(e){}
@@ -9627,9 +9633,15 @@ function herbalFullPdfNav(delta){
   st.queryText = ''; // اگلے/پچھلے صفحے پر جانے کے بعد پرانی تلاش کی زرد نشاندہی نہ دکھائیں
   herbalRenderFullPdfCurrentPage();
 }
+// صفحہ عام طور پر فکس (زوم بند)؛ صرف PDF دیکھتے وقت زوم کی اجازت
+function herbalSetZoom(on){
+  const m = document.querySelector('meta[name="viewport"]');
+  if(m) m.setAttribute('content', on ? 'width=device-width, initial-scale=1.0' : 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no');
+}
 function herbalCloseFullPdfModal(){
   const modal = document.getElementById('herbalFullPdfModal');
   if(modal) modal.style.display = 'none';
+  herbalSetZoom(false);
   document.body.style.overflow = '';
   try{ if(document.fullscreenElement && document.exitFullscreen) document.exitFullscreen().catch(()=>{}); }catch(e){}
 }
