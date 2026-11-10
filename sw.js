@@ -1,7 +1,7 @@
 // sw.js — My Herbal | قانونِ مفرد اعضاء
 // مقصد: ویب سائٹ انٹرنیٹ کے بغیر بھی پوری کھلے اور چلے؛ صرف AI کے جواب (/api/) کے لیے انٹرنیٹ چاہیے
 
-const CACHE_NAME = 'my-herbal-cache-v97';
+const CACHE_NAME = 'my-herbal-cache-v99';
 // کتابوں کا متن، PDF، لائبریریاں اور فونٹ الگ کیش میں — نئی ریلیز پر یہ نہیں مٹتا (ورنہ ہر اپ ڈیٹ کے بعد آف لائن کتابیں غائب)
 const DATA_CACHE = 'my-herbal-data-v1';
 const ASSETS_TO_CACHE = [
@@ -87,6 +87,20 @@ self.addEventListener('fetch', (event) => {
   if (/(^|\.)(googlesyndication|doubleclick|googleadservices|adtrafficquality)\.|google\.com$/.test(url.hostname)) return;
   // GitHub API (کتابوں کی خودکار فہرست) اور فارم — کیش کی ضرورت نہیں
   if (url.hostname === 'api.github.com' || url.hostname === 'formsubmit.co') return;
+
+  // PDF کتابیں: صفحہ کھولتے وقت صرف ضرورت کا حصہ (Range) سیدھا نیٹ سے؛ پوری فائل صرف "hc=1" والی درخواست پر
+  // فون میں محفوظ ہوتی ہے (اسی کے بغیر والے پتے پر)؛ محفوظ ہو تو پوری فائل فون سے
+  if (/\.pdf$/i.test(url.pathname)) {
+    if (event.request.headers.has('range')) return;
+    const clean = new URL(url.href); clean.searchParams.delete('hc');
+    if (url.searchParams.get('hc') === '1') {
+      event.respondWith(caches.open(DATA_CACHE).then((cache) => cache.match(clean.href).then((c) => c ||
+        fetch(clean.href).then((res) => { if (res && res.status === 200) cache.put(clean.href, res.clone()); return res; }))));
+      return;
+    }
+    event.respondWith(caches.open(DATA_CACHE).then((cache) => cache.match(clean.href).then((c) => c || fetch(event.request))));
+    return;
+  }
 
   // بدلتی رہنے والی فہرستیں: ہمیشہ تازہ (نیٹ نہ ہو تو محفوظ ورژن)
   if (url.pathname.endsWith('/books/uploads.json') || url.pathname === '/ilaj.txt' || url.pathname === '/kitab-jagah.json') {

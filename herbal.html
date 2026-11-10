@@ -18,6 +18,8 @@
   --text:#1e2a22; --muted:#5f6f63; --card:#ffffff; --border:#cfe3c6;
 }
 *{box-sizing:border-box;}
+/* تیز رفتار: لمبی فہرستوں کے صرف اسکرین پر نظر آنے والے ڈبے بنیں */
+.nuskha-card, .pm-organ-group, .meal-card{ content-visibility:auto; contain-intrinsic-size:auto 90px; }
 /* صفحہ ہمیشہ پوری اسکرین میں فٹ — دائیں بائیں نہ کھسکے */
 html, body{max-width:100%; overflow-x:hidden;}
 img, video, iframe, table, pre{max-width:100%;}
@@ -9656,6 +9658,83 @@ function herbalCloseFullPdfModal(){
 // بہت بڑی بلٹ اِن کتابیں (GitHub کی 25MB حد کی وجہ سے) کئی چھوٹی PDF فائلوں میں تقسیم ہیں۔
 // یہاں بتایا گیا ہے کہ کون سا صفحہ کس فائل میں ہے؛ صفحہ نمبر اصل کتاب والے ہی رہتے ہیں۔
 const PM_BUILTIN_PDF_PARTS = {
+  // بڑی کتابیں ~2.5MB کے حصوں میں — صفحہ کھولنے پر صرف اسی حصے کی فائل آتی ہے (پوری کتاب نہیں)
+  'Amraz_e_Gurda_o_Masana.pdf': [
+    { file:'Amraz_e_Gurda_o_Masana_part1.pdf', from:1, to:19 },
+    { file:'Amraz_e_Gurda_o_Masana_part2.pdf', from:20, to:38 },
+    { file:'Amraz_e_Gurda_o_Masana_part3.pdf', from:39, to:48 }
+  ],
+  'Asaan_Ilaj.pdf': [
+    { file:'Asaan_Ilaj_part1.pdf', from:1, to:6 },
+    { file:'Asaan_Ilaj_part2.pdf', from:7, to:10 },
+    { file:'Asaan_Ilaj_part3.pdf', from:11, to:14 },
+    { file:'Asaan_Ilaj_part4.pdf', from:15, to:18 },
+    { file:'Asaan_Ilaj_part5.pdf', from:19, to:22 },
+    { file:'Asaan_Ilaj_part6.pdf', from:23, to:26 },
+    { file:'Asaan_Ilaj_part7.pdf', from:27, to:30 },
+    { file:'Asaan_Ilaj_part8.pdf', from:31, to:34 },
+    { file:'Asaan_Ilaj_part9.pdf', from:35, to:38 },
+    { file:'Asaan_Ilaj_part10.pdf', from:39, to:42 },
+    { file:'Asaan_Ilaj_part11.pdf', from:43, to:46 },
+    { file:'Asaan_Ilaj_part12.pdf', from:47, to:50 },
+    { file:'Asaan_Ilaj_part13.pdf', from:51, to:54 },
+    { file:'Asaan_Ilaj_part14.pdf', from:55, to:58 },
+    { file:'Asaan_Ilaj_part15.pdf', from:59, to:62 },
+    { file:'Asaan_Ilaj_part16.pdf', from:63, to:66 }
+  ],
+  'Aurat_Shadi_se_Zachgi_Tak.pdf': [
+    { file:'Aurat_Shadi_se_Zachgi_Tak_part1.pdf', from:1, to:60 },
+    { file:'Aurat_Shadi_se_Zachgi_Tak_part2.pdf', from:61, to:77 }
+  ],
+  'Cholesterol_Urdu.pdf': [
+    { file:'Cholesterol_Urdu_part1.pdf', from:1, to:6 },
+    { file:'Cholesterol_Urdu_part2.pdf', from:7, to:12 },
+    { file:'Cholesterol_Urdu_part3.pdf', from:13, to:18 },
+    { file:'Cholesterol_Urdu_part4.pdf', from:19, to:24 },
+    { file:'Cholesterol_Urdu_part5.pdf', from:25, to:30 },
+    { file:'Cholesterol_Urdu_part6.pdf', from:31, to:32 }
+  ],
+  'Gharelu_Nuskhe_Part1.pdf': [
+    { file:'Gharelu_Nuskhe_Part1_part1.pdf', from:1, to:6 },
+    { file:'Gharelu_Nuskhe_Part1_part2.pdf', from:7, to:12 },
+    { file:'Gharelu_Nuskhe_Part1_part3.pdf', from:13, to:17 },
+    { file:'Gharelu_Nuskhe_Part1_part4.pdf', from:18, to:22 },
+    { file:'Gharelu_Nuskhe_Part1_part5.pdf', from:23, to:27 },
+    { file:'Gharelu_Nuskhe_Part1_part6.pdf', from:28, to:32 },
+    { file:'Gharelu_Nuskhe_Part1_part7.pdf', from:33, to:37 },
+    { file:'Gharelu_Nuskhe_Part1_part8.pdf', from:38, to:42 },
+    { file:'Gharelu_Nuskhe_Part1_part9.pdf', from:43, to:47 },
+    { file:'Gharelu_Nuskhe_Part1_part10.pdf', from:48, to:48 }
+  ],
+  'Ilaj_ul_Amraz.pdf': [
+    { file:'Ilaj_ul_Amraz_part1.pdf', from:1, to:16 },
+    { file:'Ilaj_ul_Amraz_part2.pdf', from:17, to:32 },
+    { file:'Ilaj_ul_Amraz_part3.pdf', from:33, to:48 },
+    { file:'Ilaj_ul_Amraz_part4.pdf', from:49, to:64 },
+    { file:'Ilaj_ul_Amraz_part5.pdf', from:65, to:73 }
+  ],
+  'Mujarrabat_Sehranasheen.pdf': [
+    { file:'Mujarrabat_Sehranasheen_part1.pdf', from:1, to:32 },
+    { file:'Mujarrabat_Sehranasheen_part2.pdf', from:33, to:64 },
+    { file:'Mujarrabat_Sehranasheen_part3.pdf', from:65, to:92 }
+  ],
+  'Mujarrabat_Zikai_Hakeem_Imamuddin.pdf': [
+    { file:'Mujarrabat_Zikai_Hakeem_Imamuddin_part1.pdf', from:1, to:13 },
+    { file:'Mujarrabat_Zikai_Hakeem_Imamuddin_part2.pdf', from:14, to:26 },
+    { file:'Mujarrabat_Zikai_Hakeem_Imamuddin_part3.pdf', from:27, to:39 },
+    { file:'Mujarrabat_Zikai_Hakeem_Imamuddin_part4.pdf', from:40, to:52 },
+    { file:'Mujarrabat_Zikai_Hakeem_Imamuddin_part5.pdf', from:53, to:65 },
+    { file:'Mujarrabat_Zikai_Hakeem_Imamuddin_part6.pdf', from:66, to:75 }
+  ],
+  'Qanoon_Mufrad_Aza_Aur_Dama.pdf': [
+    { file:'Qanoon_Mufrad_Aza_Aur_Dama_part1.pdf', from:1, to:11 },
+    { file:'Qanoon_Mufrad_Aza_Aur_Dama_part2.pdf', from:12, to:22 },
+    { file:'Qanoon_Mufrad_Aza_Aur_Dama_part3.pdf', from:23, to:33 },
+    { file:'Qanoon_Mufrad_Aza_Aur_Dama_part4.pdf', from:34, to:44 },
+    { file:'Qanoon_Mufrad_Aza_Aur_Dama_part5.pdf', from:45, to:55 },
+    { file:'Qanoon_Mufrad_Aza_Aur_Dama_part6.pdf', from:56, to:66 },
+    { file:'Qanoon_Mufrad_Aza_Aur_Dama_part7.pdf', from:67, to:70 }
+  ],
   'GYNAECOLOGY_BOOK_DIGITAL.pdf': [
     { file:'GYNAECOLOGY_part1.pdf', from:1,   to:180 },
     { file:'GYNAECOLOGY_part2.pdf', from:181, to:360 },
@@ -9676,7 +9755,7 @@ function herbalMakeMultiPartPdfDoc(parts){
   function loadPart(part){
     if(!cache[part.file]){
       cache[part.file] = (async ()=>{
-        const res = await fetch(herbalPdfUrl(part.file));
+        const res = await fetch(herbalCacheMark(herbalPdfUrl(part.file)));
         if(!res.ok){ const er = new Error('fetch failed: ' + res.status); if(res.status===404) er.notFound = part.file; throw er; }
         const buf = await res.arrayBuffer();
         return pdfjsLib.getDocument({ data: buf }).promise;
@@ -9701,6 +9780,10 @@ function pmNormFileName(n){ return String(n||'').toLowerCase().replace(/\.pdf$/,
 const PM_PDF_ALIASES = { 'Mufrad_Aza_Aur_Amraz_e_Jild.pdf': 'Amraz_e_Jild.pdf', 'Tehqiqat_o_Ilaj.pdf': 'Amraz_e_Maida.pdf' };
 // کتابوں کی PDF فائلیں اسی سائٹ کے books/ فولڈر سے (پرانی Herbal ریپو اب موجود نہیں)
 const HERBAL_PDF_BASE = 'books/';
+function herbalPdfAbs(u){ return new URL(u, location.href).href; }
+// "hc=1" والی درخواست service worker پوری فائل کے ساتھ فون میں محفوظ کرتا ہے (اسی کے بغیر والے پتے پر)
+function herbalCacheMark(u){ const a = herbalPdfAbs(u); return a + (a.includes('?') ? '&' : '?') + 'hc=1'; }
+async function herbalCachedPdf(u){ try{ const c = await caches.open('my-herbal-data-v1'); return await c.match(herbalPdfAbs(u)); }catch(e){ return null; } }
 function herbalPdfUrl(name){ return /^(https?:|blob:|data:)/i.test(name) ? name : HERBAL_PDF_BASE + encodeURI(name); }
 function pmResolvePdfPath(fileName){
   const list = window.PM_REPO_PDFS;
@@ -9818,10 +9901,22 @@ async function herbalOpenLibraryPdf(entry, pageNum, queryText, btnSelector){
       await doc.getPage(Math.floor(pageNum || 1)); // پہلا مطلوبہ حصہ لوڈ کر کے یقینی بنائیں کہ فائل موجود ہے
       entry.pdfDoc = doc;
     }else{
-      const res = await fetch(herbalPdfUrl(pdfPath));
-      if(!res.ok){ const er = new Error('fetch failed: ' + res.status); if(res.status===404) er.notFound = pdfPath; throw er; }
-      const buf = await res.arrayBuffer();
-      entry.pdfDoc = await pdfjsLib.getDocument({ data: buf }).promise;
+      const abs = herbalPdfAbs(herbalPdfUrl(pdfPath));
+      const cached = await herbalCachedPdf(abs);
+      if(cached){
+        // پہلے کھولی ہوئی کتاب: فون سے فوراً
+        entry.pdfDoc = await pdfjsLib.getDocument({ data: await cached.arrayBuffer() }).promise;
+      }else{
+        // پوری فائل کا انتظار نہیں — صرف وہ حصہ جس میں کھلنے والا صفحہ ہے (باقی ضرورت پر)
+        try{
+          entry.pdfDoc = await pdfjsLib.getDocument({ url: abs, rangeChunkSize: 262144, disableAutoFetch: true, disableStream: true }).promise;
+        }catch(err){
+          if(err && (err.name === 'MissingPDFException' || err.status === 404)){ const er = new Error('missing'); er.notFound = pdfPath; throw er; }
+          throw err;
+        }
+        // چند سیکنڈ بعد پوری کتاب پس منظر میں فون میں محفوظ — اگلی بار فوراً اور آف لائن بھی
+        setTimeout(()=>{ fetch(herbalCacheMark(abs)).catch(()=>{}); }, 6000);
+      }
     }
     herbalOpenFullPdfViewer(entry, pageNum || 1, queryText || '');
   }catch(e){
