@@ -20,9 +20,10 @@
 *{box-sizing:border-box;}
 /* "بیماریاں اور علاج": ہر بیماری کا الگ ڈبہ — اوپر نام، اندر مزاج اور علاج */
 .ilaj-grid{display:grid; grid-template-columns:repeat(auto-fill, minmax(155px, 1fr)); gap:8px; margin:6px 0 12px;}
-.ilaj-card{border:1px solid var(--border); border-radius:10px; padding:8px 10px; background:var(--card); line-height:1.9; font-size:.84rem; word-break:break-word; cursor:pointer; position:relative; content-visibility:auto; contain-intrinsic-size:auto 200px;}
+.ilaj-card{border:1px solid var(--border); border-radius:10px; padding:8px 10px; background:var(--card); line-height:1.9; font-size:.84rem; word-break:break-word; cursor:pointer; position:relative; content-visibility:auto; contain-intrinsic-size:auto 70px;}
 .ilaj-card.sp{border:2px solid var(--gold);}
-.ilaj-card h4{color:var(--gold); font-size:.98rem; margin:0 0 4px; border-bottom:1px solid var(--border); padding-bottom:4px;}
+.ilaj-card h4{color:var(--gold); font-size:.98rem; margin:0; padding:0; text-align:center;}
+.ilaj-card{display:flex; align-items:center; justify-content:center; min-height:64px;}
 .ilaj-card .ilaj-in{max-height:13em; overflow:hidden; white-space:pre-wrap;}
 .ilaj-card .ilaj-more{font-size:.72rem; color:var(--gold-soft); margin-top:4px;}
 .ilaj-mz{display:inline-block; font-size:.72rem; padding:0 8px; border-radius:10px; background:var(--navy2); color:var(--gold); margin:4px 0 2px; white-space:normal;}
@@ -8217,7 +8218,8 @@ async function ilajBuildCatalog(){
       const head = [lab, b.mizaj ? 'مزاج: ' + b.mizaj : ''].filter(Boolean).join(' — ');
       return (head ? `<span class="ilaj-mz">${escapeHtmlSearch(head)}</span>\n` : '') + ilajTextHtml(tx.trim() || '—');
     }).join('\n');
-    return `<div class="ilaj-card pm-mizaj-option${cls ? ' ' + cls : ''}" data-val="${escapeHtmlSearch(n)}"><h4>${cls === 'sp' ? '⭐ ' : ''}${escapeHtmlSearch(disp)}</h4><div class="ilaj-in">${inner}</div><div class="ilaj-more">👆 پورا دیکھیں / لکھیں</div></div>`;
+    // سامنے صرف نام؛ مزاج اور علاج ٹیپ کرنے پر اندر (تلاش کے لیے متن چھپا ہوا ساتھ رکھا ہے)
+    return `<div class="ilaj-card pm-mizaj-option${cls ? ' ' + cls : ''}" data-val="${escapeHtmlSearch(n)}"><h4>${cls === 'sp' ? '⭐ ' : ''}${escapeHtmlSearch(disp)}</h4><div class="ilaj-in" hidden>${inner}</div></div>`;
   };
   const grid = (names, cls)=> `<div class="ilaj-grid">${names.map(n=> card(n, cls)).join('')}</div>`;
   // 🚨 ایمرجنسی: کتاب کے ایمرجنسی/فوری نسخے + سائٹ کی وہ بیماریاں جو ایمرجنسی ہیں (میڈیکل صفحے والی نشان دہی)
