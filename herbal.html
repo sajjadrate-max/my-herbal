@@ -8090,8 +8090,8 @@ async function ilajEdSave(){
   await ilajShow(name, true);
   const st2 = document.getElementById('ilajEdStatus');
   if(st2){
-    st2.style.color = ok ? 'var(--gold-soft)' : '#c9821b';
-    st2.textContent = ok ? '✅ محفوظ ہو گیا — ایک دو منٹ میں سب کے لیے ویب سائٹ پر نظر آئے گا' : '⚠ صرف اس فون پر محفوظ ہوا (سب کے لیے نہیں) — ' + err;
+    st2.style.color = (ok || /GITHUB_TOKEN/.test(err)) ? 'var(--gold-soft)' : '#c9821b';
+    st2.textContent = ok ? '✅ محفوظ ہو گیا — ایک دو منٹ میں سب کے لیے ویب سائٹ پر نظر آئے گا' : (/GITHUB_TOKEN/.test(err) ? '✅ اس فون میں محفوظ ہو گیا' : '⚠ اس فون میں محفوظ ہوا — ' + err);
   }
 }
 function ilajRefreshTag(name){
@@ -8173,7 +8173,7 @@ async function ilajSetSpecial(name, on){
   const cat = document.getElementById('ilajCatalog'); if(cat){ delete cat.dataset.ready; ilajBuildCatalog(); }
   await ilajShow(name, true);
   const st2 = document.getElementById('ilajSpStatus');
-  if(st2){ st2.style.color = ok ? 'var(--gold-soft)' : '#c9821b'; st2.textContent = ok ? (on ? '✅ اسپیشل میں اوپر لگ گیا' : '✅ واپس اپنی جگہ پر') : '⚠ صرف اس فون پر — ' + err; }
+  if(st2){ st2.style.color = (ok || /GITHUB_TOKEN/.test(err)) ? 'var(--gold-soft)' : '#c9821b'; st2.textContent = ok ? (on ? '✅ اسپیشل میں اوپر لگ گیا' : '✅ واپس اپنی جگہ پر') : (/GITHUB_TOKEN|انٹرنیٹ/.test(err) && !/انٹرنیٹ/.test(err) ? (on ? '✅ اس فون پر اسپیشل میں لگ گیا' : '✅ اس فون پر واپس اپنی جگہ') : '⚠ اس فون پر محفوظ — ' + err); }
 }
 function ilajNew(){
   const n = (prompt('نئے نسخے یا بیماری کا نام لکھیں:') || '').trim().replace(/^[#=\s]+/, '');
@@ -8243,9 +8243,9 @@ async function ilajBuildCatalog(){
   const letters = ILAJ_BOOK.map(g=> Object.assign({}, g, { names: g.names.filter(n=> !spSet.has(n)) })).filter(g=> g.names.length)
     .map(g=> `<div class="ilaj-sec"><h4 class="ilaj-letter">${escapeHtmlSearch(g.group)} <small style="font-size:.75rem; color:var(--muted);">(${g.names.length})</small></h4>${grid(g.names)}</div>`).join('');
   el.innerHTML = `<div style="text-align:center; margin:4px 0 12px;"><button type="button" class="btn" onclick="ilajNew()">➕ نیا نسخہ / نئی بیماری شامل کریں</button></div>`
+    + (special.length ? `<div class="ilaj-sec"><h4 class="ilaj-letter">⭐ اسپیشل <small style="font-size:.75rem; color:var(--muted);">(${special.length})</small></h4>${grid(special, 'sp')}</div>` : '')
     + emergency
     + `<h3 style="color:var(--gold); text-align:center; margin:10px 0 4px;">📘 حکیم سجاد احمد بھٹی کے نسخے</h3><div class="pm-total">کل ${bookCount} — حروفِ تہجی کی ترتیب سے</div>`
-    + (special.length ? `<div class="ilaj-sec">${grid(special, 'sp')}</div>` : '')
     + letters;
   if(!el.dataset.wired){ el.dataset.wired = '1'; el.addEventListener('click', e=>{ const r = e.target.closest('.pm-mizaj-option'); if(r) ilajShow(r.dataset.val); }); }
   if(document.getElementById('ilajListFilter') && document.getElementById('ilajListFilter').value) ilajFilterList();
