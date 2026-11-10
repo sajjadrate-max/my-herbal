@@ -181,6 +181,27 @@ async function ilajSave(req, res) {
     for (let attempt = 0; attempt < 4; attempt++) {
       const f = await upGh('/contents/' + ILAJ_FILE + '?ref=' + BRANCH);
       const lines = Buffer.from(f.content, 'base64').toString('utf8').split('\n');
+      // ڈبہ ڈیلیٹ: "## نام" کا پورا حصہ، اسپیشل کی "* نام" لائن، اور "دیکھیں: نام" والے اشارے ہٹائیں
+      if (b.remove === true) {
+        if (!lines.some(l => l.trim() === '## ' + name)) return res.status(400).json({ error: 'یہ نام ilaj.txt میں نہیں ملا' });
+        const out = [];
+        for (let k = 0; k < lines.length; k++) {
+          const t = lines[k].trim();
+          if (t === '* ' + name) continue;
+          if (t.startsWith('## ')) {
+            let j = k + 1;
+            while (j < lines.length && !/^(##\s|=+|#\s*-+)/.test(lines[j].trim())) j++;
+            const sec = lines.slice(k + 1, j).map(x => x.trim()).filter(Boolean);
+            const isPointer = sec.length === 1 && /^دیکھیں\s*:/.test(sec[0]) && sec[0].replace(/^دیکھیں\s*:\s*/, '') === name;
+            if (t === '## ' + name || isPointer) { k = j - 1; continue; }
+          }
+          out.push(lines[k]);
+        }
+        await upGh('/contents/' + ILAJ_FILE, { method: 'PUT', body: JSON.stringify({
+          message: 'ڈبہ ڈیلیٹ: ' + name, branch: BRANCH, sha: f.sha,
+          content: Buffer.from(out.join('\n').replace(/\n{3,}/g, '\n\n'), 'utf8').toString('base64') }) });
+        return res.status(200).json({ ok: true });
+      }
       // نام بدلنا: "## پرانا" کو "## نیا"، اور اسپیشل/اشارے والی لائنیں بھی
       if (b.newName !== undefined) {
         const nn = String(b.newName || '').trim();
