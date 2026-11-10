@@ -171,7 +171,7 @@ async function ilajSave(req, res) {
         } catch (e) { if ((e.status !== 409 && e.status !== 422) || attempt === 3) throw e; }
       }
     }
-    const name = String(b.name || '').trim();
+    let name = String(b.name || '').trim();
     if (!name || name.length > 120 || /[\r\n]/.test(name) || /^[#=]/.test(name)) return res.status(400).json({ error: 'غلط نام' });
     const clean = t => String(t || '').replace(/\r/g, '').split('\n').map(l => l.replace(/^\s*#+/, '').trimEnd()).join('\n').trim().slice(0, 4000);
     const blocks = (Array.isArray(b.blocks) ? b.blocks : []).slice(0, 12).map(x => ({ mizaj: clean(x && x.mizaj).replace(/\n/g, ' ').slice(0, 120), text: clean(x && x.text) })).filter(x => x.mizaj || x.text);
@@ -181,6 +181,22 @@ async function ilajSave(req, res) {
     for (let attempt = 0; attempt < 4; attempt++) {
       const f = await upGh('/contents/' + ILAJ_FILE + '?ref=' + BRANCH);
       const lines = Buffer.from(f.content, 'base64').toString('utf8').split('\n');
+      // نام بدلنا: "## پرانا" کو "## نیا"، اور اسپیشل/اشارے والی لائنیں بھی
+      if (b.newName !== undefined) {
+        const nn = String(b.newName || '').trim();
+        if (!nn || nn.length > 120 || /[\r\n]/.test(nn) || /^[#=*]/.test(nn)) return res.status(400).json({ error: 'غلط نیا نام' });
+        if (nn !== name) {
+          if (lines.some(l => l.trim() === '## ' + nn)) return res.status(400).json({ error: 'یہ نام پہلے سے موجود ہے' });
+          if (!lines.some(l => l.trim() === '## ' + name)) return res.status(400).json({ error: 'یہ نام ilaj.txt میں نہیں ملا' });
+          for (let k = 0; k < lines.length; k++) {
+            const t = lines[k].trim();
+            if (t === '## ' + name) lines[k] = '## ' + nn;
+            else if (t === '* ' + name) lines[k] = '* ' + nn;
+            else if (/^دیکھیں\s*:/.test(t) && t.replace(/^دیکھیں\s*:\s*/, '') === name) lines[k] = 'دیکھیں: ' + nn;
+          }
+          name = nn;
+        }
+      }
       let i = lines.findIndex(l => l.trim() === '## ' + name);
       let next;
       if (typeof b.special === 'boolean') {
