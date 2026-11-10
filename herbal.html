@@ -8059,7 +8059,8 @@ function ilajEditorHtml(blocks){
     <h4 style="color:var(--gold); margin-bottom:8px;">✏️ مزاج اور علاج لکھیں</h4>
     <div class="ilaj-ed-namebox" style="margin-bottom:10px;">
       <label style="font-size:.85rem; color:var(--gold-soft);">بیماری / نسخے کا نام</label>
-      <input class="search" id="ilajEdName" style="display:block; width:100%; box-sizing:border-box; margin-top:4px;" placeholder="نام">
+      <input class="search" id="ilajEdName" style="display:block; width:100%; box-sizing:border-box; margin-top:4px;" placeholder="نام" onkeydown="if(event.key==='Enter'){event.preventDefault(); ilajEdSave();}">
+      <div style="text-align:center; margin-top:6px;"><button type="button" class="btn" style="padding:4px 16px; font-size:.85rem;" onclick="ilajEdSave()">✔ نام محفوظ کریں</button></div>
     </div>
     <div class="ilaj-ed-rows">${(blocks.length ? blocks : [{}]).map(row).join('')}</div>
     <div style="display:flex; gap:8px; flex-wrap:wrap; justify-content:center;">
