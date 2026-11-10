@@ -193,16 +193,30 @@ async function ilajSave(req, res) {
         while (sec.length && !sec[sec.length - 1].trim()) sec.pop();
         if (b.special) sec.push('* ' + name);
         next = lines.slice(0, h + 1).concat(sec, [''], lines.slice(e));
-      } else if (i < 0) {
-        // نیا نسخہ/بیماری: فائل کے آخر میں "نئے نسخے" کے حصے میں
-        if (!b.create || !blocks.length) return res.status(400).json({ error: 'یہ نام ilaj.txt میں نہیں ملا' });
-        while (lines.length && !lines[lines.length - 1].trim()) lines.pop();
-        const hdr = lines.some(l => /^=+\s*نئے نسخے\s*=+$/.test(l.trim())) ? [] : ['', '==================== نئے نسخے ===================='];
-        next = lines.concat(hdr, ['', '## ' + name], body.split('\n'), ['']);
       } else {
-        let j = i + 1;
-        while (j < lines.length && !/^(##\s|=+|#\s*-+)/.test(lines[j].trim())) j++;
-        next = lines.slice(0, i + 1).concat(body.split('\n'), [''], lines.slice(j));
+        // نیا نام: اپنے حصے ("نئے نسخے" یا "بیماری کے علاج") کے آخر میں؛ پہلے سے موجود نام کو "بیماری کے علاج" میں "* نام" سے جوڑیں
+        const G = ['نئے نسخے', 'بیماری کے علاج'].includes(b.group) ? b.group : 'نئے نسخے';
+        const work = lines.slice();
+        let h = work.findIndex(l => new RegExp('^=+\\s*' + G + '\\s*=+$').test(l.trim()));
+        if (h < 0) { while (work.length && !work[work.length - 1].trim()) work.pop(); work.push('', '==================== ' + G + ' ===================='); h = work.length - 1; }
+        let e = h + 1;
+        while (e < work.length && !/^=+/.test(work[e].trim())) e++;
+        while (e > h + 1 && !work[e - 1].trim()) e--;
+        const inGroup = work.slice(h + 1, e).some(l => l.trim() === '## ' + name || l.trim() === '* ' + name);
+        if (i < 0) {
+          if (!b.create || !blocks.length) return res.status(400).json({ error: 'یہ نام ilaj.txt میں نہیں ملا' });
+          next = work.slice(0, e).concat(['', '## ' + name], body.split('\n'), [''], work.slice(e));
+        } else {
+          let j = i + 1;
+          while (j < work.length && !/^(##\s|=+|#\s*-+)/.test(work[j].trim())) j++;
+          const upd = work.slice(0, i + 1).concat(body.split('\n'), [''], work.slice(j));
+          if (G === 'بیماری کے علاج' && !inGroup) {
+            let h2 = upd.findIndex(l => /^=+\s*بیماری کے علاج\s*=+$/.test(l.trim()));
+            let e2 = h2 + 1; while (e2 < upd.length && !/^=+/.test(upd[e2].trim())) e2++;
+            while (e2 > h2 + 1 && !upd[e2 - 1].trim()) e2--;
+            next = upd.slice(0, e2).concat(['* ' + name], upd.slice(e2));
+          } else next = upd;
+        }
       }
       try {
         await upGh('/contents/' + ILAJ_FILE, { method: 'PUT', body: JSON.stringify({
