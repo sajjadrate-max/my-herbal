@@ -10930,7 +10930,7 @@ if('serviceWorker' in navigator && herbalCanLoadSiteFiles()){
   const SID = Math.random().toString(36).slice(2, 8).toUpperCase();
   const events = [];
   let sentUpTo = 0, idleTimer = null;
-  const RESULT_IDS = ['mizajResult','diseaseApiResultBox','deficiencyResult','kamiSearchResult','nuskhaResult','qmResult','wajahResult','wajahSearchResult','ilajResult','itemInfoResult','pmResults','pmMizajResults','hzResults'];
+  const RESULT_IDS = ['mizajResult','diseaseApiResultBox','deficiencyResult','kamiSearchResult','nuskhaResult','qmResult','wajahResult','wajahSearchResult','itemInfoResult','pmResults','pmMizajResults','hzResults'];
   const clean = (s, n)=> String(s == null ? '' : s).replace(/\s+/g, ' ').trim().slice(0, n || 600);
   // نتیجے میں سطریں ویسی ہی رہیں جیسی سائٹ پر نظر آتی ہیں
   const cleanLines = (s, n)=> String(s == null ? '' : s).replace(/[ \t\u00a0]+/g, ' ').replace(/ *\n */g, '\n').replace(/\n{2,}/g, '\n').trim().slice(0, n || 600);
@@ -10941,6 +10941,9 @@ if('serviceWorker' in navigator && herbalCanLoadSiteFiles()){
     return clean(t ? t.textContent : sec.id.replace('page-',''), 60);
   }
   function add(type, text, n){
+    // بیماریاں اور علاج والے صفحے کی کوئی رپورٹ نہیں
+    const act = document.querySelector('.page-section.active');
+    if(act && act.id === 'page-ilaj') return;
     text = type === 'نتیجہ' ? cleanLines(text, n) : clean(text, n);
     if(!text) return;
     const last = events[events.length - 1];
