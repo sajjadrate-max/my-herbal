@@ -8328,7 +8328,7 @@ const ILAJ_ORGAN_KW = {
 const ILAJ_GEN = 'عمومی/پورے جسم کی بیماریاں';
 let ILAJ_MAP = null;
 function ilajWords(s){
-  return ' ' + String(s).replace(/[‌ً-ٰٟ]/g, '').replace(/ه/g, 'ہ').replace(/ي/g, 'ی').replace(/ك/g, 'ک')
+  return ' ' + String(s).normalize('NFC').replace(/[​-‏ً-ٰٟـ]/g, '').replace(/[هةۃ]/g, 'ہ').replace(/[يى]/g, 'ی').replace(/ك/g, 'ک')
     .replace(/[،,()\-:؟?۔.!"']/g, ' ').replace(/\s+/g, ' ').trim() + ' ';
 }
 function ilajBuildMap(){
@@ -8343,9 +8343,11 @@ function ilajBuildMap(){
   const kws = [];
   Object.keys(ILAJ_ORGAN_KW).forEach(o=>{ if(organs.has(o)) ILAJ_ORGAN_KW[o].forEach(k=> kws.push([ilajWords(k), o])); });
   const opt = new Set(pmMizajOptions);
+  const optW = {}; pmMizajOptions.forEach(o=> optW[ilajWords(o).replace(/ /g, '')] = o);
   ILAJ_BOOK.forEach(g=> g.names.forEach(n=>{
     if(ILAJ_SEE[n] || opt.has(n)) return;
-    const w = ilajWords(n);
+    const w = ilajWords(n), same = optW[w.replace(/ /g, '')];
+    if(same){ (map.dis[same] = map.dis[same] || []).push(n); return; }
     let best = null;
     terms.forEach(([t, s])=>{ if(w.includes(t) && (!best || t.length > best[0].length)) best = [t, s]; });
     if(best){ (map.dis[best[1]] = map.dis[best[1]] || []).push(n); return; }
