@@ -28,6 +28,11 @@
 .ilaj-card .ilaj-more{font-size:.72rem; color:var(--gold-soft); margin-top:4px;}
 .ilaj-mz{display:inline-block; font-size:.72rem; padding:0 8px; border-radius:10px; background:var(--navy2); color:var(--gold); margin:4px 0 2px; white-space:normal;}
 .ilaj-letter{color:var(--gold); font-size:1.3rem; margin:16px 4px 2px; border-bottom:2px solid var(--border);}
+.ilaj-dots{position:absolute; top:6px; left:6px; width:30px; height:30px; border:none; background:transparent; color:var(--gold); font-size:1.4rem; line-height:1; cursor:pointer; border-radius:50%; z-index:2;}
+.ilaj-dots:hover{background:var(--border);}
+.ilaj-menu{position:absolute; top:36px; left:6px; z-index:20; background:var(--card); border:1px solid var(--border); border-radius:10px; box-shadow:0 6px 18px rgba(0,0,0,.18); display:flex; flex-direction:column; min-width:170px; overflow:hidden;}
+.ilaj-menu button{background:none; border:none; border-bottom:1px solid var(--border); padding:10px 14px; text-align:right; font-family:inherit; font-size:.9rem; color:var(--text); cursor:pointer;}
+.ilaj-menu button:last-child{border-bottom:none;}
 .ilaj-row.has-t{border-right:4px solid var(--leaf);}
 /* تیز رفتار: لمبی فہرستوں کے صرف اسکرین پر نظر آنے والے ڈبے بنیں */
 .nuskha-card, .pm-organ-group, .meal-card{ content-visibility:auto; contain-intrinsic-size:auto 90px; }
@@ -8090,23 +8095,55 @@ function ilajEditorHtml(blocks){
       <input class="search ilaj-ed-mizaj" style="display:block; width:100%; box-sizing:border-box; margin:4px 0 8px;" placeholder="مثلاً: عضلاتی اعصابی" value="${escapeHtmlSearch(b.mizaj || '')}">
       <label style="font-size:.85rem; color:var(--gold-soft);">علاج / فارمولا</label>
       <label style="display:block;"></label><textarea class="search ilaj-ed-text" rows="6" style="display:block; width:100%; box-sizing:border-box; margin-top:4px; min-height:140px; font-family:inherit; line-height:2;" placeholder="اس مزاج کا علاج، دوا، خوراک، پرہیز...">${escapeHtmlSearch(b.text || '')}</textarea>
-      <div style="text-align:left;"><button type="button" class="btn secondary" style="padding:3px 12px; font-size:.75rem; color:#e0524f; border-color:#e0524f;" onclick="this.closest('.ilaj-ed-row').remove()">🗑 یہ مزاج ہٹائیں</button></div>
-    </div>`;
-  return `<div class="mujarrab-card" id="ilajEditor" style="border:2px dashed var(--gold);">
-    <h4 style="color:var(--gold); margin-bottom:8px;">✏️ مزاج اور علاج لکھیں</h4>
+      </div>`;
+  return `<div class="mujarrab-card" id="ilajEditor" style="border:2px dashed var(--gold); display:none;">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;"><h4 style="color:var(--gold); margin:0;">✏️ تبدیل کریں</h4><button type="button" class="btn secondary" style="padding:2px 12px; font-size:.8rem;" onclick="ilajEdClose()">✖ بند کریں</button></div>
     <div class="ilaj-ed-namebox" style="margin-bottom:10px;">
       <label style="font-size:.85rem; color:var(--gold-soft);">بیماری / نسخے کا نام</label>
       <input class="search" id="ilajEdName" style="display:block; width:100%; box-sizing:border-box; margin-top:4px;" placeholder="نام" onkeydown="if(event.key==='Enter'){event.preventDefault(); ilajEdSave();}">
       <div style="text-align:center; margin-top:6px;"><button type="button" class="btn" style="padding:4px 16px; font-size:.85rem;" onclick="ilajEdSave()">✔ نام محفوظ کریں</button></div>
     </div>
     <div class="ilaj-ed-rows">${(blocks.length ? blocks : [{}]).map(row).join('')}</div>
-    <div style="display:flex; gap:8px; flex-wrap:wrap; justify-content:center;">
-      <button type="button" class="btn secondary" onclick="ilajEdAddRow()">➕ ایک اور مزاج</button>
+    <div class="ilaj-ed-acts" style="display:flex; gap:8px; flex-wrap:wrap; justify-content:center;">
       <button type="button" class="btn" onclick="ilajEdSave()">💾 محفوظ کریں</button>
     </div>
-    <div style="text-align:center; margin-top:14px; border-top:1px solid var(--border); padding-top:10px;"><button type="button" id="ilajDelBtn" class="btn secondary" style="color:#e0524f; border-color:#e0524f;" onclick="ilajDelete()">🗑 یہ ڈبہ ڈیلیٹ کریں</button></div>
-    <p id="ilajEdStatus" style="text-align:center; font-size:.85rem; margin-top:8px;"></p>
   </div>`;
+}
+// ⋮ مینیو: ہر علاج کے ساتھ — تبدیل / ڈیلیٹ
+function ilajDots(items){
+  const enc = encodeURIComponent(JSON.stringify(items)).replace(/'/g, '%27');
+  return `<button type="button" class="ilaj-dots" aria-label="مزید" onclick="event.stopPropagation(); ilajMenu(this, '${enc}')">⋮</button>`;
+}
+function ilajMenu(btn, enc){
+  const old = document.querySelector('.ilaj-menu'); if(old){ const same = old.previousElementSibling === btn; old.remove(); if(same) return; }
+  const items = JSON.parse(decodeURIComponent(enc));
+  const m = document.createElement('div'); m.className = 'ilaj-menu';
+  items.forEach(([label, code, red])=>{ const b = document.createElement('button'); b.type = 'button'; b.textContent = label; if(red) b.style.color = '#e0524f';
+    b.onclick = e=>{ e.stopPropagation(); m.remove(); (new Function(code))(); }; m.appendChild(b); });
+  btn.after(m);
+}
+document.addEventListener('click', ()=>{ const m = document.querySelector('.ilaj-menu'); if(m) m.remove(); });
+function ilajEdOpen(mode, i){
+  const ed = document.getElementById('ilajEditor'); if(!ed) return;
+  const rows = ed.querySelectorAll('.ilaj-ed-row');
+  const nb = ed.querySelector('.ilaj-ed-namebox'), acts = ed.querySelector('.ilaj-ed-acts');
+  const at = (mode === 'row' && document.querySelector('#ilajResult .ilaj-blk[data-bi="' + i + '"]')) || document.getElementById('ilajTitleCard');
+  if(at) at.after(ed);
+  ed.style.display = '';
+  if(nb) nb.style.display = mode === 'name' ? '' : 'none';
+  if(acts) acts.style.display = mode === 'name' ? 'none' : '';
+  rows.forEach((r, j)=>{ r.style.display = (mode === 'row' && j === i) ? '' : 'none'; });
+  if(mode === 'new'){ ilajEdAddRow(); const all = ed.querySelectorAll('.ilaj-ed-row'); all.forEach((r, j)=> r.style.display = j === all.length - 1 ? '' : 'none'); }
+  const hdr = document.querySelector('header');
+  window.scrollTo({top: ed.getBoundingClientRect().top + window.scrollY - (hdr && getComputedStyle(hdr).position === 'sticky' ? hdr.offsetHeight : 0) - 8, behavior:'smooth'});
+  const f = ed.querySelector(mode === 'name' ? '#ilajEdName' : '.ilaj-ed-row:not([style*="none"]) textarea'); if(f) setTimeout(()=> f.focus(), 300);
+}
+function ilajEdClose(){ const ed = document.getElementById('ilajEditor'); if(ed) ed.style.display = 'none'; }
+function ilajDelBlock(i){
+  const ed = document.getElementById('ilajEditor'); if(!ed) return;
+  if(!confirm('یہ علاج ڈیلیٹ کر دیں؟')) return;
+  const r = ed.querySelectorAll('.ilaj-ed-row')[i]; if(r) r.remove();
+  ilajEdSave();
 }
 function ilajEdAddRow(){
   const wrap = document.querySelector('#ilajEditor .ilaj-ed-rows');
@@ -8175,13 +8212,18 @@ async function ilajShow(n, keepScroll){
   const other = pmMizajOtherNames(n);
   const blocks = data[n] || [];
   const back = `<div style="text-align:center; margin:8px 0;"><button class="btn" type="button" onclick="ilajBack()" style="border-radius:20px; padding:8px 22px;">⬅ واپس فہرست پر جائیں</button></div>`;
-  let html = back + `<div class="mujarrab-card" style="border-right-width:6px;"><h4 style="color:var(--gold); font-size:1.2rem; margin-bottom:4px;">${escapeHtmlSearch(n)}</h4>`
+  const canRename = ILAJ_NAMES.has(n) && !pmMizajOptions.includes(n), canDel = ILAJ_NAMES.has(n);
+  const topMenu = [['➕ نیا علاج / مزاج شامل کریں', "ilajEdOpen('new')"]]
+    .concat(canRename ? [['✏ نام تبدیل کریں', "ilajEdOpen('name')"]] : [])
+    .concat(canDel ? [[pmMizajOptions.includes(n) ? '🗑 اس کا لکھا سارا علاج مٹائیں' : '🗑 یہ پورا ڈبہ ڈیلیٹ کریں', 'ilajDelete()', 1]] : []);
+  let html = back + `<div class="mujarrab-card" id="ilajTitleCard" style="border-right-width:6px; position:relative;">${ilajDots(topMenu)}<h4 style="color:var(--gold); font-size:1.2rem; margin-bottom:4px; padding-left:30px;">${escapeHtmlSearch(n)}</h4>`
     + (other.length ? `<p style="font-size:.8rem; color:var(--muted);">دوسرے نام: ${other.map(escapeHtmlSearch).join('، ')}</p>` : '')
     + (organ ? `<p style="font-size:.85rem;">عضو: <b>${escapeHtmlSearch(organ)}</b></p>` : '')
     + `<div style="margin-top:8px;">${ILAJ_SPECIAL.includes(n)
         ? `<button type="button" class="btn secondary" style="padding:4px 14px; font-size:.85rem; border-radius:16px;" onclick="ilajSetSpecial('${escapeJsAttr(n)}', false)">⭐ اسپیشل ہے — عام کریں</button>`
         : `<button type="button" class="btn" style="padding:4px 14px; font-size:.85rem; border-radius:16px;" onclick="ilajSetSpecial('${escapeJsAttr(n)}', true)">☆ اسپیشل بنائیں</button>`}
-      <span id="ilajSpStatus" style="font-size:.78rem; margin-right:6px;"></span></div>` + `</div>`;
+      <span id="ilajSpStatus" style="font-size:.78rem; margin-right:6px;"></span></div>`
+    + `<p id="ilajEdStatus" style="font-size:.85rem; margin-top:6px;"></p></div>`;
   if(blocks.length){
     // ایک ہی بیماری کے کئی فارمولے: "📌 عنوان" والی پہلی لائن خانے کا عنوان بنتی ہے
     html += blocks.map((b, i)=>{
@@ -8189,21 +8231,21 @@ async function ilajShow(n, keepScroll){
       const m = text.match(/^📌\s*(.*)(\n|$)/);
       if(m){ label = m[1].trim(); text = text.slice(m[0].length) || '—'; }
       const title = [label ? escapeHtmlSearch(label) : '', b.mizaj ? 'مزاج: ' + escapeHtmlSearch(b.mizaj) : ''].filter(Boolean).join(' — ') || 'نسخہ';
-      return `<div class="mujarrab-card">
-      <h4 style="color:var(--gold); margin-bottom:6px;">${blocks.length > 1 ? (i + 1) + '۔ ' : ''}${title}</h4>
+      return `<div class="mujarrab-card ilaj-blk" data-bi="${i}" style="position:relative;">${ilajDots([['✏ تبدیل کریں', `ilajEdOpen('row', ${i})`], ['🗑 ڈیلیٹ کریں', `ilajDelBlock(${i})`, 1]])}
+      <h4 style="color:var(--gold); margin-bottom:6px; padding-left:30px;">${blocks.length > 1 ? (i + 1) + '۔ ' : ''}${title}</h4>
       <div style="white-space:pre-wrap; line-height:2;"><b style="color:var(--gold-soft);">علاج:</b> ${ilajTextHtml(text)}</div>
     </div>`;
     }).join('');
-  } else if(!ilajIsOwner()){
-    html += `<div class="mujarrab-card"><p style="color:var(--muted); text-align:center;">اس بیماری کا مزاج اور علاج ابھی درج نہیں کیا گیا۔</p></div>`;
+  } else {
+    html += `<div class="mujarrab-card" style="text-align:center;"><p style="color:var(--muted);">اس کا علاج ابھی درج نہیں کیا گیا۔</p>${ilajIsOwner() ? `<button type="button" class="btn" style="margin-top:6px; padding:4px 16px; font-size:.85rem; border-radius:16px;" onclick="ilajEdOpen('new')">➕ علاج لکھیں</button>` : ''}</div>`;
   }
   const rel = ilajRelatedBook(n);
   if(rel.length) html += `<h4 style="color:var(--gold); text-align:center; margin:12px 0 4px;">📘 کتاب (حکیم سجاد احمد بھٹی) سے اس کا علاج (${rel.length})</h4>` + rel.map(r=>{
     const bl = data[r] || [];
-    return `<div class="mujarrab-card"><h4 style="color:var(--gold); margin-bottom:6px;">${escapeHtmlSearch(r)}</h4>`
+    return `<div class="mujarrab-card" style="position:relative;">${ilajDots([['✏ تبدیل / ڈیلیٹ کریں', `ilajShow(${JSON.stringify(r)})`]])}<h4 style="color:var(--gold); margin-bottom:6px; padding-left:30px;">${escapeHtmlSearch(r)}</h4>`
       + bl.map(b=>{ let t = (b.text || '—').replace(/^📌\s*(.*)(\n|$)/, (m0, l)=> l.trim() + '\n');
           return `<div style="white-space:pre-wrap; line-height:2; margin-bottom:6px;">${b.mizaj ? `<span class="ilaj-mz">مزاج: ${escapeHtmlSearch(b.mizaj)}</span>\n` : ''}<b style="color:var(--gold-soft);">علاج:</b> ${ilajTextHtml(t)}</div>`; }).join('')
-      + `<button type="button" class="btn secondary" style="padding:3px 12px; font-size:.78rem; border-radius:14px;" onclick="ilajShow('${escapeJsAttr(r)}')">✏ یہ نسخہ الگ کھولیں</button></div>`;
+      + `</div>`;
   }).join('');
   // لکھنے کا ڈبہ
   if(ilajIsOwner()) html += ilajEditorHtml(blocks);
@@ -8211,11 +8253,7 @@ async function ilajShow(n, keepScroll){
   out.innerHTML = html;
   const ed = document.getElementById('ilajEditor'); if(ed){ ed.dataset.name = n; if(!ILAJ_NAMES.has(n)) ed.dataset.create = '1';
     // سائٹ کی اصل بیماریوں (اعضاء والی فہرست) کا نام نہیں بدلتا — باقی سب کا بدل سکتے ہیں
-    const nb = ed.querySelector('.ilaj-ed-namebox'), ni = document.getElementById('ilajEdName');
-    if(ni) ni.value = n;
-    if(nb && (pmMizajOptions.includes(n) || !ILAJ_NAMES.has(n))) nb.style.display = 'none';
-    const db = document.getElementById('ilajDelBtn');
-    if(db){ if(!ILAJ_NAMES.has(n)) db.style.display = 'none'; else if(pmMizajOptions.includes(n)) db.textContent = '🗑 اس کا لکھا علاج مٹائیں'; } }
+    const ni = document.getElementById('ilajEdName'); if(ni) ni.value = n; }
   if(keepScroll) return;
   const hdr = document.querySelector('header');
   window.scrollTo({top: out.getBoundingClientRect().top + window.scrollY - (hdr && getComputedStyle(hdr).position === 'sticky' ? hdr.offsetHeight : 0) - 8, behavior:'smooth'});
@@ -8248,7 +8286,7 @@ async function ilajSetSpecial(name, on){
 function ilajNew(){
   const n = (prompt('نئے نسخے یا بیماری کا نام لکھیں:') || '').trim().replace(/^[#=\s]+/, '');
   if(!n) return;
-  ilajShow(n);
+  ilajShow(n).then(()=> ilajEdOpen('new'));
 }
 function ilajBack(){
   const out = document.getElementById('ilajResult');
