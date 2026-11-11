@@ -7995,6 +7995,7 @@ function wajahFilterList(){
 // فائل کی ترتیب: "## بیماری کا نام" پھر "مزاج: …" اور "علاج: …" (کئی مزاج ہوں تو دوبارہ)؛ # سے شروع لائنیں نوٹ ہیں
 let ILAJ_DATA = null, ILAJ_LOADING = null;
 // کتاب ("کتاب: ا" وغیرہ) اور "نئے نسخے" کے حصے: [{group, names[]}] — فائل کی ترتیب سے؛ ILAJ_NAMES = فائل کے تمام نام
+let ILAJ_SERVER_NAMES = null;
 let ILAJ_BOOK = [], ILAJ_NAMES = new Set(), ILAJ_SEE = {}, ILAJ_SPECIAL = [];
 function ilajParse(txt){
   const out = {};
@@ -8032,11 +8033,13 @@ function ilajLoad(){
   if(!ILAJ_LOADING) ILAJ_LOADING = fetch('ilaj.txt', { cache:'no-store' }).then(r=> r.ok ? r.text() : '').catch(()=> '')
     .then(t=>{
       ILAJ_DATA = ilajParse(t);
+      ILAJ_SERVER_NAMES = new Set(Object.keys(ILAJ_DATA).filter(k=> (ILAJ_DATA[k] || []).length));
       // سرور پر محفوظ نہ ہو سکا تو مالک کے اس فون پر لکھا ہوا (صرف یہیں نظر آتا ہے)
       try{ (JSON.parse(localStorage.getItem('ilajDeleteLocal') || '[]') || []).forEach(n=> ilajApplyDelete(n)); }catch(e){}
+      // پہلے اس فون پر لکھا علاج، پھر نام کی تبدیلی — تاکہ نئے نام پر پڑا خالی خانہ نسخے کو نہ مٹائے
+      try{ const loc = JSON.parse(localStorage.getItem('ilajLocal') || '{}'); Object.keys(loc).forEach(k=>{ if(loc[k] && loc[k].length) ILAJ_DATA[k] = loc[k]; else delete ILAJ_DATA[k]; }); }catch(e){}
       try{ const rn = JSON.parse(localStorage.getItem('ilajRenameLocal') || '{}') || {}; Object.keys(rn).forEach(o=>{ if(ILAJ_NAMES.has(o)) ilajApplyRename(o, rn[o]); }); }catch(e){}
       try{ const sl = JSON.parse(localStorage.getItem('ilajSpecialLocal') || 'null'); if(Array.isArray(sl)) ILAJ_SPECIAL = sl; }catch(e){}
-      try{ const loc = JSON.parse(localStorage.getItem('ilajLocal') || '{}'); Object.keys(loc).forEach(k=>{ if(loc[k] && loc[k].length) ILAJ_DATA[k] = loc[k]; else delete ILAJ_DATA[k]; }); }catch(e){}
       return ILAJ_DATA;
     });
   return ILAJ_LOADING;
@@ -8045,7 +8048,7 @@ function ilajLoad(){
 // نام بدلنا (فہرستوں، اسپیشل، اشاروں اور ڈیٹا میں)
 function ilajApplyRename(oldN, newN){
   if(!ILAJ_DATA || !oldN || !newN || oldN === newN) return;
-  if(ILAJ_DATA[oldN]){ ILAJ_DATA[newN] = ILAJ_DATA[oldN]; delete ILAJ_DATA[oldN]; }
+  if(ILAJ_DATA[oldN]){ if(!(ILAJ_DATA[newN] && ILAJ_DATA[newN].length)) ILAJ_DATA[newN] = ILAJ_DATA[oldN]; delete ILAJ_DATA[oldN]; }
   ILAJ_BOOK.forEach(g=>{ g.names = g.names.map(x=> x === oldN ? newN : x); });
   ILAJ_SPECIAL = ILAJ_SPECIAL.map(x=> x === oldN ? newN : x);
   Object.keys(ILAJ_SEE).forEach(k=>{ if(ILAJ_SEE[k] === oldN) ILAJ_SEE[k] = newN; });
@@ -8143,6 +8146,7 @@ async function ilajEditOther(r, del){
   await ilajShow(r);
   if(del) ilajDelete(); else ilajEdOpen('all');
 }
+function ilajHadServer(n){ return !!(ILAJ_SERVER_NAMES && ILAJ_SERVER_NAMES.has(n)); }
 function ilajEdClose(){ const ed = document.getElementById('ilajEditor'); if(ed) ed.style.display = 'none'; }
 function ilajDelBlock(i){
   const ed = document.getElementById('ilajEditor'); if(!ed) return;
@@ -8185,7 +8189,7 @@ async function ilajEdSave(){
   }
   if(blocks.length) data[name] = blocks; else delete data[name];
   let loc = {}; try{ loc = JSON.parse(localStorage.getItem('ilajLocal') || '{}'); }catch(e){}
-  if(ok){ delete loc[name]; }
+  if(ok || (!blocks.length && !ilajHadServer(name))){ delete loc[name]; }
   else { loc[name] = blocks; }
   try{ localStorage.setItem('ilajLocal', JSON.stringify(loc)); }catch(e){}
   if(ed.dataset.create === '1' && blocks.length && !ILAJ_NAMES.has(name)){
