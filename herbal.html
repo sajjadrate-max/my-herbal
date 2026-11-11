@@ -8130,13 +8130,18 @@ function ilajEdOpen(mode, i){
   const at = (mode === 'row' && document.querySelector('#ilajResult .ilaj-blk[data-bi="' + i + '"]')) || document.getElementById('ilajTitleCard');
   if(at) at.after(ed);
   ed.style.display = '';
-  if(nb) nb.style.display = mode === 'name' ? '' : 'none';
+  if(nb) nb.style.display = (mode === 'name' || (mode === 'all' && ed.dataset.canRename)) ? '' : 'none';
   if(acts) acts.style.display = mode === 'name' ? 'none' : '';
-  rows.forEach((r, j)=>{ r.style.display = (mode === 'row' && j === i) ? '' : 'none'; });
+  rows.forEach((r, j)=>{ r.style.display = (mode === 'all' || (mode === 'row' && j === i)) ? '' : 'none'; });
   if(mode === 'new'){ ilajEdAddRow(); const all = ed.querySelectorAll('.ilaj-ed-row'); all.forEach((r, j)=> r.style.display = j === all.length - 1 ? '' : 'none'); }
   const hdr = document.querySelector('header');
   window.scrollTo({top: ed.getBoundingClientRect().top + window.scrollY - (hdr && getComputedStyle(hdr).position === 'sticky' ? hdr.offsetHeight : 0) - 8, behavior:'smooth'});
   const f = ed.querySelector(mode === 'name' ? '#ilajEdName' : '.ilaj-ed-row:not([style*="none"]) textarea'); if(f) setTimeout(()=> f.focus(), 300);
+}
+// کتاب کا جڑا ہوا نسخہ الگ کھول کر سیدھا تبدیل / ڈیلیٹ
+async function ilajEditOther(r, del){
+  await ilajShow(r);
+  if(del) ilajDelete(); else ilajEdOpen('all');
 }
 function ilajEdClose(){ const ed = document.getElementById('ilajEditor'); if(ed) ed.style.display = 'none'; }
 function ilajDelBlock(i){
@@ -8212,8 +8217,11 @@ async function ilajShow(n, keepScroll){
   const other = pmMizajOtherNames(n);
   const blocks = data[n] || [];
   const back = `<div style="text-align:center; margin:8px 0;"><button class="btn" type="button" onclick="ilajBack()" style="border-radius:20px; padding:8px 22px;">⬅ واپس فہرست پر جائیں</button></div>`;
-  const canRename = ILAJ_NAMES.has(n) && !pmMizajOptions.includes(n), canDel = ILAJ_NAMES.has(n);
-  const topMenu = [['➕ نیا علاج / مزاج شامل کریں', "ilajEdOpen('new')"]]
+  const canRename = ILAJ_NAMES.has(n) && !pmMizajOptions.includes(n), canDel = ILAJ_NAMES.has(n) && (blocks.length > 0 || !pmMizajOptions.includes(n));
+  const relB = ilajRelatedBook(n);
+  const topMenu = (blocks.length || canRename ? [['✏ تبدیل کریں', "ilajEdOpen('all')"]] : [])
+    .concat(relB.map(r=> ['✏ تبدیل: ' + r, 'ilajEditOther(' + JSON.stringify(r) + ')']))
+    .concat([['➕ نیا علاج / مزاج شامل کریں', "ilajEdOpen('new')"]])
     .concat(canRename ? [['✏ نام تبدیل کریں', "ilajEdOpen('name')"]] : [])
     .concat(canDel ? [[pmMizajOptions.includes(n) ? '🗑 اس کا لکھا سارا علاج مٹائیں' : '🗑 یہ پورا ڈبہ ڈیلیٹ کریں', 'ilajDelete()', 1]] : []);
   let html = back + `<div class="mujarrab-card" id="ilajTitleCard" style="border-right-width:6px; position:relative;">${ilajDots(topMenu)}<h4 style="color:var(--gold); font-size:1.2rem; margin-bottom:4px; padding-left:30px;">${escapeHtmlSearch(n)}</h4>`
@@ -8242,7 +8250,7 @@ async function ilajShow(n, keepScroll){
   const rel = ilajRelatedBook(n);
   if(rel.length) html += `<h4 style="color:var(--gold); text-align:center; margin:12px 0 4px;">📘 کتاب (حکیم سجاد احمد بھٹی) سے اس کا علاج (${rel.length})</h4>` + rel.map(r=>{
     const bl = data[r] || [];
-    return `<div class="mujarrab-card" style="position:relative;">${ilajDots([['✏ تبدیل / ڈیلیٹ کریں', `ilajShow(${JSON.stringify(r)})`]])}<h4 style="color:var(--gold); margin-bottom:6px; padding-left:30px;">${escapeHtmlSearch(r)}</h4>`
+    return `<div class="mujarrab-card" style="position:relative;">${ilajDots([['✏ تبدیل کریں', `ilajEditOther(${JSON.stringify(r)})`], ['🗑 ڈیلیٹ کریں', `ilajEditOther(${JSON.stringify(r)}, 1)`, 1]])}<h4 style="color:var(--gold); margin-bottom:6px; padding-left:30px;">${escapeHtmlSearch(r)}</h4>`
       + bl.map(b=>{ let t = (b.text || '—').replace(/^📌\s*(.*)(\n|$)/, (m0, l)=> l.trim() + '\n');
           return `<div style="white-space:pre-wrap; line-height:2; margin-bottom:6px;">${b.mizaj ? `<span class="ilaj-mz">مزاج: ${escapeHtmlSearch(b.mizaj)}</span>\n` : ''}<b style="color:var(--gold-soft);">علاج:</b> ${ilajTextHtml(t)}</div>`; }).join('')
       + `</div>`;
@@ -8253,7 +8261,8 @@ async function ilajShow(n, keepScroll){
   out.innerHTML = html;
   const ed = document.getElementById('ilajEditor'); if(ed){ ed.dataset.name = n; if(!ILAJ_NAMES.has(n)) ed.dataset.create = '1';
     // سائٹ کی اصل بیماریوں (اعضاء والی فہرست) کا نام نہیں بدلتا — باقی سب کا بدل سکتے ہیں
-    const ni = document.getElementById('ilajEdName'); if(ni) ni.value = n; }
+    const ni = document.getElementById('ilajEdName'); if(ni) ni.value = n;
+    if(canRename) ed.dataset.canRename = '1'; }
   if(keepScroll) return;
   const hdr = document.querySelector('header');
   window.scrollTo({top: out.getBoundingClientRect().top + window.scrollY - (hdr && getComputedStyle(hdr).position === 'sticky' ? hdr.offsetHeight : 0) - 8, behavior:'smooth'});
