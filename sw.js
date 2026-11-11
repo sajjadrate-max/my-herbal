@@ -1,7 +1,7 @@
 // sw.js — My Herbal | قانونِ مفرد اعضاء
 // مقصد: ویب سائٹ انٹرنیٹ کے بغیر بھی پوری کھلے اور چلے؛ صرف AI کے جواب (/api/) کے لیے انٹرنیٹ چاہیے
 
-const CACHE_NAME = 'my-herbal-cache-v109';
+const CACHE_NAME = 'my-herbal-cache-v110';
 // کتابوں کا متن، PDF، لائبریریاں اور فونٹ الگ کیش میں — نئی ریلیز پر یہ نہیں مٹتا (ورنہ ہر اپ ڈیٹ کے بعد آف لائن کتابیں غائب)
 const DATA_CACHE = 'my-herbal-data-v1';
 const ASSETS_TO_CACHE = [

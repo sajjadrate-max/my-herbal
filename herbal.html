@@ -8406,8 +8406,12 @@ async function ilajBuildCatalog(){
         + `</div>`;
     };
     const extra = (map.org[g.organ] || []).concat(g.organ === ILAJ_GEN ? map.gen : []);
-    const items = (g.dis.length ? `<div class="pm-sub-head">بیماریاں (${g.dis.length})</div>` + g.dis.map((n,i)=> row(n,i,false)).join('') : '')
-      + (g.sym.length ? `<div class="pm-sub-head">علامات (${g.sym.length})</div>` + g.sym.map((n,i)=> row(n,i,true)).join('') : '')
+    // جن کا علاج لکھا ہے وہ سب سے اوپر
+    const up = list=> list.filter(n=> ilajCountFor(n)).concat(list.filter(n=> !ilajCountFor(n)));
+    const dis = up(g.dis), sym = up(g.sym);
+    const head = (label, list)=>{ const k = list.filter(n=> ilajCountFor(n)).length; return `<div class="pm-sub-head">${label} (${list.length})${k ? ' — ✔ ' + k + ' کا علاج موجود' : ''}</div>`; };
+    const items = (dis.length ? head('بیماریاں', dis) + dis.map((n,i)=> row(n,i,false)).join('') : '')
+      + (sym.length ? head('علامات', sym) + sym.map((n,i)=> row(n,i,true)).join('') : '')
       + (extra.length ? `<div class="pm-sub-head">📘 ${g.organ === ILAJ_GEN ? 'باقی تمام نسخے (پورے جسم کے لیے)' : 'اس عضو کے مزید نسخے'} (${extra.length})</div>` + grid(extra) : '');
     withT += extra.length; totalT += withT;
     return `<details class="pm-organ-group" data-organ="${safe}"${g.organ === openOrgan ? ' open' : ''}>
