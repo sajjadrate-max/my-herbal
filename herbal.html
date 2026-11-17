@@ -34,6 +34,10 @@
 .ilaj-menu button{background:none; border:none; border-bottom:1px solid var(--border); padding:10px 14px; text-align:right; font-family:inherit; font-size:.9rem; color:var(--text); cursor:pointer;}
 .ilaj-menu button:last-child{border-bottom:none;}
 .ilaj-row.has-t{border-right:4px solid var(--leaf);}
+.ilaj-card.mv h4{padding:0 18px;}
+.ilaj-card .ilaj-dots{top:2px; left:2px; width:28px; height:28px; font-size:1.2rem;}
+.ilaj-card:has(.ilaj-menu){content-visibility:visible; contain:none; z-index:6; overflow:visible;}
+.ilaj-grid .ilaj-menu{top:30px; left:auto; right:2px; min-width:165px; max-width:calc(100vw - 40px);}
 /* تیز رفتار: لمبی فہرستوں کے صرف اسکرین پر نظر آنے والے ڈبے بنیں */
 .nuskha-card, .pm-organ-group, .meal-card{ content-visibility:auto; contain-intrinsic-size:auto 90px; }
 /* صفحہ ہمیشہ پوری اسکرین میں فٹ — دائیں بائیں نہ کھسکے */
@@ -8150,6 +8154,12 @@ async function ilajEditOther(r, del){
   await ilajShow(r);
   if(del) ilajDelete(); else ilajEdOpen('all');
 }
+async function ilajLinkOther(r){
+  await ilajShow(r);
+  ilajLinkPick();
+  const box = document.getElementById('ilajLinkBox');
+  if(box) setTimeout(()=> box.scrollIntoView({behavior:'smooth', block:'center'}), 350);
+}
 // 🔗 کتاب کا نسخہ کسی بیماری/علامت کے اندر لگائیں — اسی عضو کی فہرست پہلے، پھر باقی سب
 function ilajLinkPick(){
   const box = document.getElementById('ilajLinkBox'), ed = document.getElementById('ilajEditor');
@@ -8427,7 +8437,9 @@ async function ilajBuildCatalog(){
   // ڈبہ (کتاب کے نسخے): سامنے صرف نام؛ اندر کا متن تلاش کے لیے چھپا ہوا
   const card = (n, cls)=>{
     const disp = n.replace(/\s*\([^)]{1,2}\)$/, '');
-    return `<div class="ilaj-card pm-mizaj-option${cls ? ' ' + cls : ''}" data-val="${escapeHtmlSearch(n)}"><h4>${cls === 'sp' ? '⭐ ' : ''}${escapeHtmlSearch(disp)}</h4><div class="ilaj-in" hidden>${escapeHtmlSearch(ilajHiddenText([n]))}</div></div>`;
+    // "مزید نسخے" والے ڈبوں پر ⋮ — اوپر کی کسی بیماری/علامت میں ڈالنے کے لیے
+    const dots = cls === 'mv' ? ilajDots([['🔗 اوپر کسی بیماری / علامت میں ڈالیں', 'ilajLinkOther(' + JSON.stringify(n) + ')'], ['✏ تبدیل کریں', 'ilajEditOther(' + JSON.stringify(n) + ')'], ['🗑 ڈیلیٹ کریں', 'ilajEditOther(' + JSON.stringify(n) + ', 1)', 1]]) : '';
+    return `<div class="ilaj-card pm-mizaj-option${cls ? ' ' + cls : ''}" data-val="${escapeHtmlSearch(n)}">${dots}<h4>${cls === 'sp' ? '⭐ ' : ''}${escapeHtmlSearch(disp)}</h4><div class="ilaj-in" hidden>${escapeHtmlSearch(ilajHiddenText([n]))}</div></div>`;
   };
   const grid = (names, cls)=> `<div class="ilaj-grid">${names.map(n=> card(n, cls)).join('')}</div>`;
   // 🚨 ایمرجنسی: کتاب کے ایمرجنسی/فوری نسخے + سائٹ کی وہ بیماریاں جو ایمرجنسی ہیں
@@ -8472,7 +8484,7 @@ async function ilajBuildCatalog(){
     const head = (label, list)=>{ const k = list.filter(n=> ilajCountFor(n)).length; return `<div class="pm-sub-head">${label} (${list.length})${k ? ' — ✔ ' + k + ' کا علاج موجود' : ''}</div>`; };
     const items = (dis.length ? head('بیماریاں', dis) + dis.map((n,i)=> row(n,i,false)).join('') : '')
       + (sym.length ? head('علامات', sym) + sym.map((n,i)=> row(n,i,true)).join('') : '')
-      + (extra.length ? `<div class="pm-sub-head">📘 ${g.organ === ILAJ_GEN ? 'باقی تمام نسخے (پورے جسم کے لیے)' : 'اس عضو کے مزید نسخے'} (${extra.length})</div>` + grid(extra) : '');
+      + (extra.length ? `<div class="pm-sub-head">📘 ${g.organ === ILAJ_GEN ? 'باقی تمام نسخے (پورے جسم کے لیے)' : 'اس عضو کے مزید نسخے'} (${extra.length}) — ⋮ سے اوپر کسی بیماری میں ڈالیں</div>` + grid(extra, 'mv') : '');
     withT += extra.length; totalT += withT;
     return `<details class="pm-organ-group" data-organ="${safe}"${g.organ === openOrgan ? ' open' : ''}>
       <summary><span>${safe}</span><span class="pm-organ-count">${withT ? '✔ ' + withT + ' علاج' : 'ابھی علاج نہیں'}</span></summary>
