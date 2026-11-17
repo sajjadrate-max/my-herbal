@@ -181,6 +181,25 @@ async function ilajSave(req, res) {
     for (let attempt = 0; attempt < 4; attempt++) {
       const f = await upGh('/contents/' + ILAJ_FILE + '?ref=' + BRANCH);
       const lines = Buffer.from(f.content, 'base64').toString('utf8').split('\n');
+      // 🔗 تعلق: "تعلق" والے حصے میں "* نسخہ => بیماری" (خالی = اپنی جگہ واپس)
+      if (b.link !== undefined) {
+        const to = String(b.link || '').trim();
+        if (to.length > 120 || /[\r\n]|=>/.test(to)) return res.status(400).json({ error: 'غلط' });
+        let h = lines.findIndex(l => /^=+\s*تعلق\s*=+$/.test(l.trim()));
+        if (h < 0) { const g = lines.findIndex(l => /^=+/.test(l.trim())); h = g < 0 ? lines.length : g; lines.splice(h, 0, '==================== تعلق ====================', ''); }
+        let e = h + 1;
+        while (e < lines.length && !/^=+/.test(lines[e].trim())) e++;
+        const sec = lines.slice(h + 1, e).filter(l => !(l.trim().startsWith('* ') && l.trim().replace(/^\*\s*/, '').split(/\s*=>\s*/)[0] === name));
+        while (sec.length && !sec[sec.length - 1].trim()) sec.pop();
+        if (to) sec.push('* ' + name + ' => ' + to);
+        const next = lines.slice(0, h + 1).concat(sec, [''], lines.slice(e));
+        try {
+          await upGh('/contents/' + ILAJ_FILE, { method: 'PUT', body: JSON.stringify({
+            message: 'تعلق: ' + name + ' → ' + (to || 'اپنی جگہ'), branch: BRANCH, sha: f.sha,
+            content: Buffer.from(next.join('\n'), 'utf8').toString('base64') }) });
+          return res.status(200).json({ ok: true });
+        } catch (e2) { if ((e2.status !== 409 && e2.status !== 422) || attempt === 3) throw e2; continue; }
+      }
       // ڈبہ ڈیلیٹ: "## نام" کا پورا حصہ، اسپیشل کی "* نام" لائن، اور "دیکھیں: نام" والے اشارے ہٹائیں
       if (b.remove === true) {
         if (!lines.some(l => l.trim() === '## ' + name)) return res.status(400).json({ error: 'یہ نام ilaj.txt میں نہیں ملا' });

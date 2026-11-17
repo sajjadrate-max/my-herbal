@@ -7996,16 +7996,18 @@ function wajahFilterList(){
 let ILAJ_DATA = null, ILAJ_LOADING = null;
 // کتاب ("کتاب: ا" وغیرہ) اور "نئے نسخے" کے حصے: [{group, names[]}] — فائل کی ترتیب سے؛ ILAJ_NAMES = فائل کے تمام نام
 let ILAJ_SERVER_NAMES = null;
-let ILAJ_BOOK = [], ILAJ_NAMES = new Set(), ILAJ_SEE = {}, ILAJ_SPECIAL = [];
+let ILAJ_BOOK = [], ILAJ_NAMES = new Set(), ILAJ_SEE = {}, ILAJ_SPECIAL = [], ILAJ_LINK = {};
 function ilajParse(txt){
   const out = {};
   let cur = null, block = null, grp = null, curName = '';
-  ILAJ_BOOK = []; ILAJ_NAMES = new Set(); ILAJ_SEE = {}; ILAJ_SPECIAL = [];
-  let inSpecial = false;
+  ILAJ_BOOK = []; ILAJ_NAMES = new Set(); ILAJ_SEE = {}; ILAJ_SPECIAL = []; ILAJ_LINK = {};
+  let inSpecial = false, inLink = false;
   String(txt || '').split(/\r?\n/).forEach(raw=>{
     const line = raw.trim();
     const gm = line.match(/^=+\s*(.*?)\s*=+$/);
-    if(gm){ inSpecial = gm[1] === 'اسپیشل'; }
+    if(gm){ inSpecial = gm[1] === 'اسپیشل'; inLink = gm[1] === 'تعلق'; }
+    // "تعلق" والا حصہ: "* نسخہ => بیماری" — کتاب کا نسخہ کس بیماری/علامت کے اندر دکھے
+    if(!gm && inLink){ const lk = line.match(/^\*\s*(.+?)\s*=>\s*(.+)$/); if(lk) ILAJ_LINK[lk[1].trim()] = lk[2].trim(); return; }
     if(!gm && inSpecial){ const sp = line.match(/^\*\s*(.+)$/); if(sp && !ILAJ_SPECIAL.includes(sp[1].trim())) ILAJ_SPECIAL.push(sp[1].trim()); return; }
     if(gm){ grp = /^(کتاب:|نئے نسخے)/.test(gm[1]) ? { group: gm[1].replace(/^کتاب:\s*/, ''), names: [] } : null; if(grp) ILAJ_BOOK.push(grp); cur = null; return; }
     if(line.startsWith('## ')){
@@ -8038,6 +8040,7 @@ function ilajLoad(){
       try{ (JSON.parse(localStorage.getItem('ilajDeleteLocal') || '[]') || []).forEach(n=> ilajApplyDelete(n)); }catch(e){}
       // پہلے اس فون پر لکھا علاج، پھر نام کی تبدیلی — تاکہ نئے نام پر پڑا خالی خانہ نسخے کو نہ مٹائے
       try{ const loc = JSON.parse(localStorage.getItem('ilajLocal') || '{}'); Object.keys(loc).forEach(k=>{ if(loc[k] && loc[k].length) ILAJ_DATA[k] = loc[k]; else delete ILAJ_DATA[k]; }); }catch(e){}
+      try{ const ll = JSON.parse(localStorage.getItem('ilajLinkLocal') || 'null'); if(ll && typeof ll === 'object') ILAJ_LINK = ll; }catch(e){}
       try{ const rn = JSON.parse(localStorage.getItem('ilajRenameLocal') || '{}') || {}; Object.keys(rn).forEach(o=>{ if(ILAJ_NAMES.has(o)) ilajApplyRename(o, rn[o]); }); }catch(e){}
       try{ const sl = JSON.parse(localStorage.getItem('ilajSpecialLocal') || 'null'); if(Array.isArray(sl)) ILAJ_SPECIAL = sl; }catch(e){}
       return ILAJ_DATA;
@@ -8051,6 +8054,7 @@ function ilajApplyRename(oldN, newN){
   if(ILAJ_DATA[oldN]){ if(!(ILAJ_DATA[newN] && ILAJ_DATA[newN].length)) ILAJ_DATA[newN] = ILAJ_DATA[oldN]; delete ILAJ_DATA[oldN]; }
   ILAJ_BOOK.forEach(g=>{ g.names = g.names.map(x=> x === oldN ? newN : x); });
   ILAJ_SPECIAL = ILAJ_SPECIAL.map(x=> x === oldN ? newN : x);
+  if(ILAJ_LINK[oldN]){ ILAJ_LINK[newN] = ILAJ_LINK[oldN]; delete ILAJ_LINK[oldN]; }
   Object.keys(ILAJ_SEE).forEach(k=>{ if(ILAJ_SEE[k] === oldN) ILAJ_SEE[k] = newN; });
   if(ILAJ_SEE[oldN]){ ILAJ_SEE[newN] = ILAJ_SEE[oldN]; delete ILAJ_SEE[oldN]; }
   if(ILAJ_NAMES.has(oldN)){ ILAJ_NAMES.delete(oldN); ILAJ_NAMES.add(newN); }
@@ -8146,6 +8150,43 @@ async function ilajEditOther(r, del){
   await ilajShow(r);
   if(del) ilajDelete(); else ilajEdOpen('all');
 }
+// 🔗 کتاب کا نسخہ کسی بیماری/علامت کے اندر لگائیں — اسی عضو کی فہرست پہلے، پھر باقی سب
+function ilajLinkPick(){
+  const box = document.getElementById('ilajLinkBox'), ed = document.getElementById('ilajEditor');
+  if(!box || !ed) return;
+  const n = ed.dataset.name, groups = pmMizajGroups(pmMizajOptions);
+  const cur = ILAJ_LINK[n] || '';
+  const map = ILAJ_MAP || ilajBuildMap();
+  let mine = '';
+  groups.forEach(g=>{ if((map.org[g.organ] || []).includes(n) || (g.organ === ILAJ_GEN && map.gen.includes(n))) mine = g.organ; });
+  if(!mine && cur){ const g = groups.find(x=> x.dis.includes(cur) || x.sym.includes(cur)); if(g) mine = g.organ; }
+  const ordered = groups.slice().sort((a, b)=> (b.organ === mine) - (a.organ === mine));
+  const opts = ordered.map(g=> `<optgroup label="${escapeHtmlSearch(g.organ)}">${g.dis.concat(g.sym).map(x=> `<option value="${escapeHtmlSearch(x)}"${x === cur ? ' selected' : ''}>${escapeHtmlSearch(x)}${g.sym.includes(x) ? ' (علامت)' : ''}</option>`).join('')}</optgroup>`).join('');
+  box.innerHTML = `<div style="margin-top:8px; padding:8px; border:1px dashed var(--gold); border-radius:10px;">
+    <label style="font-size:.85rem; color:var(--gold-soft);">یہ نسخہ کس بیماری یا علامت کے اندر دکھے؟</label>
+    <select id="ilajLinkSel" class="search" style="display:block; width:100%; box-sizing:border-box; margin:6px 0;"><option value="">— اپنی جگہ (عضو کے مزید نسخے) —</option>${opts}</select>
+    <div style="text-align:center;"><button type="button" class="btn" style="padding:4px 16px; font-size:.85rem;" onclick="ilajLinkSave()">✔ محفوظ کریں</button>
+    <button type="button" class="btn secondary" style="padding:4px 12px; font-size:.85rem;" onclick="document.getElementById('ilajLinkBox').innerHTML=''">✖</button></div></div>`;
+}
+async function ilajLinkSave(){
+  const ed = document.getElementById('ilajEditor'), sel = document.getElementById('ilajLinkSel');
+  if(!ed || !sel) return;
+  const n = ed.dataset.name, to = sel.value;
+  const st = document.getElementById('ilajEdStatus'); if(st){ st.style.color = 'var(--muted)'; st.textContent = '⏳ ...'; }
+  let ok = false, err = '';
+  try{
+    const r = await fetch('/api/notify-disease?ilaj=1', { method:'POST', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify({ key: HERBAL_OWNER_KEY, name: n, link: to }) });
+    const d = await r.json().catch(()=> ({}));
+    ok = r.ok && d.ok; err = d.error || ('خرابی ' + r.status);
+  }catch(e){ err = 'انٹرنیٹ کا مسئلہ'; }
+  if(to) ILAJ_LINK[n] = to; else delete ILAJ_LINK[n];
+  try{ if(ok) localStorage.removeItem('ilajLinkLocal'); else localStorage.setItem('ilajLinkLocal', JSON.stringify(ILAJ_LINK)); }catch(e){}
+  const cat = document.getElementById('ilajCatalog'); if(cat){ delete cat.dataset.ready; ilajBuildCatalog(); }
+  await ilajShow(n, true);
+  const st2 = document.getElementById('ilajEdStatus');
+  if(st2){ st2.style.color = (ok || /GITHUB_TOKEN/.test(err)) ? 'var(--gold-soft)' : '#c9821b';
+    st2.textContent = (to ? '✅ اب یہ نسخہ "' + to + '" کے اندر نظر آئے گا' : '✅ واپس اپنی جگہ') + (ok ? '' : /GITHUB_TOKEN/.test(err) ? ' (اس فون پر)' : ' — ⚠ اس فون پر محفوظ: ' + err); }
+}
 function ilajHadServer(n){ return !!(ILAJ_SERVER_NAMES && ILAJ_SERVER_NAMES.has(n)); }
 function ilajEdClose(){ const ed = document.getElementById('ilajEditor'); if(ed) ed.style.display = 'none'; }
 function ilajDelBlock(i){
@@ -8225,12 +8266,15 @@ async function ilajShow(n, keepScroll){
   const relB = ilajRelatedBook(n);
   const topMenu = (blocks.length || canRename ? [['✏ تبدیل کریں', "ilajEdOpen('all')"]] : [])
     .concat(relB.map(r=> ['✏ تبدیل: ' + r, 'ilajEditOther(' + JSON.stringify(r) + ')']))
+    .concat(ILAJ_NAMES.has(n) && !pmMizajOptions.includes(n) ? [['🔗 کسی بیماری / علامت میں ڈالیں', 'ilajLinkPick()']] : [])
     .concat([['➕ نیا علاج / مزاج شامل کریں', "ilajEdOpen('new')"]])
     .concat(canRename ? [['✏ نام تبدیل کریں', "ilajEdOpen('name')"]] : [])
     .concat(canDel ? [[pmMizajOptions.includes(n) ? '🗑 اس کا لکھا سارا علاج مٹائیں' : '🗑 یہ پورا ڈبہ ڈیلیٹ کریں', 'ilajDelete()', 1]] : []);
   let html = back + `<div class="mujarrab-card" id="ilajTitleCard" style="border-right-width:6px; position:relative;">${ilajDots(topMenu)}<h4 style="color:var(--gold); font-size:1.2rem; margin-bottom:4px; padding-left:30px;">${escapeHtmlSearch(n)}</h4>`
     + (other.length ? `<p style="font-size:.8rem; color:var(--muted);">دوسرے نام: ${other.map(escapeHtmlSearch).join('، ')}</p>` : '')
     + (organ ? `<p style="font-size:.85rem;">عضو: <b>${escapeHtmlSearch(organ)}</b></p>` : '')
+    + (ILAJ_LINK[n] ? `<p style="font-size:.85rem; color:var(--leaf);">🔗 اس بیماری/علامت کے اندر: <b>${escapeHtmlSearch(ILAJ_LINK[n])}</b></p>` : '')
+    + `<div id="ilajLinkBox"></div>`
     + `<div style="margin-top:8px;">${ILAJ_SPECIAL.includes(n)
         ? `<button type="button" class="btn secondary" style="padding:4px 14px; font-size:.85rem; border-radius:16px;" onclick="ilajSetSpecial('${escapeJsAttr(n)}', false)">⭐ اسپیشل ہے — عام کریں</button>`
         : `<button type="button" class="btn" style="padding:4px 14px; font-size:.85rem; border-radius:16px;" onclick="ilajSetSpecial('${escapeJsAttr(n)}', true)">☆ اسپیشل بنائیں</button>`}
@@ -8350,6 +8394,7 @@ function ilajBuildMap(){
   const optW = {}; pmMizajOptions.forEach(o=> optW[ilajWords(o).replace(/ /g, '')] = o);
   ILAJ_BOOK.forEach(g=> g.names.forEach(n=>{
     if(ILAJ_SEE[n] || opt.has(n)) return;
+    if(ILAJ_LINK[n] && opt.has(ILAJ_LINK[n])){ (map.dis[ILAJ_LINK[n]] = map.dis[ILAJ_LINK[n]] || []).push(n); return; }
     const w = ilajWords(n), same = optW[w.replace(/ /g, '')];
     if(same){ (map.dis[same] = map.dis[same] || []).push(n); return; }
     let best = null;
