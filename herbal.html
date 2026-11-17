@@ -35,6 +35,13 @@
 .ilaj-menu button:last-child{border-bottom:none;}
 .ilaj-row.has-t{border-right:4px solid var(--leaf);}
 .ilaj-card.mv h4{padding:0 18px;}
+.ilaj-lk-recs{max-height:150px; overflow:auto; border:1px solid var(--border); border-radius:8px; padding:4px 8px; margin-top:4px; background:var(--card);}
+.ilaj-lk-rec{display:block; font-size:.85rem; padding:4px 0; border-bottom:1px solid var(--border);}
+.ilaj-lk-rec:last-child{border-bottom:none;}
+.ilaj-lk-list{max-height:280px; overflow:auto; border:1px solid var(--border); border-radius:8px; background:var(--card);}
+.ilaj-lk-org{position:sticky; top:0; background:var(--gold); color:#fff; font-size:.82rem; padding:3px 10px;}
+.ilaj-lk-opt{padding:8px 12px; border-bottom:1px solid var(--border); cursor:pointer; font-size:.9rem;}
+.ilaj-lk-opt.on{background:var(--leaf); color:#fff; font-weight:700;}
 .ilaj-card .ilaj-dots{top:2px; left:2px; width:28px; height:28px; font-size:1.2rem;}
 .ilaj-card:has(.ilaj-menu){content-visibility:visible; contain:none; z-index:6; overflow:visible;}
 .ilaj-grid .ilaj-menu{top:30px; left:auto; right:2px; min-width:165px; max-width:calc(100vw - 40px);}
@@ -8171,31 +8178,65 @@ function ilajLinkPick(){
   groups.forEach(g=>{ if((map.org[g.organ] || []).includes(n) || (g.organ === ILAJ_GEN && map.gen.includes(n))) mine = g.organ; });
   if(!mine && cur){ const g = groups.find(x=> x.dis.includes(cur) || x.sym.includes(cur)); if(g) mine = g.organ; }
   const ordered = groups.slice().sort((a, b)=> (b.organ === mine) - (a.organ === mine));
-  const opts = ordered.map(g=> `<optgroup label="${escapeHtmlSearch(g.organ)}">${g.dis.concat(g.sym).map(x=> `<option value="${escapeHtmlSearch(x)}"${x === cur ? ' selected' : ''}>${escapeHtmlSearch(x)}${g.sym.includes(x) ? ' (علامت)' : ''}</option>`).join('')}</optgroup>`).join('');
+  // ساتھ ڈالنے کے لیے: اسی عضو کے باقی "مزید نسخے" (یہ والا پہلے سے منتخب)
+  const pool = [n].concat(((mine === ILAJ_GEN ? map.gen : map.org[mine]) || []).filter(x=> x !== n));
+  const chk = pool.map(x=> `<label class="ilaj-lk-rec"><input type="checkbox" value="${escapeHtmlSearch(x)}"${x === n ? ' checked' : ''}> ${escapeHtmlSearch(x)}</label>`).join('');
+  const row = (x, label, extra)=> `<div class="ilaj-lk-opt${x === cur ? ' on' : ''}" data-v="${escapeHtmlSearch(x)}" onclick="ilajLinkChoose(this)">${label}${extra || ''}</div>`;
+  const list = row('', '— اپنی جگہ (عضو کے مزید نسخے) —')
+    + ordered.map(g=> `<div class="ilaj-lk-org">${escapeHtmlSearch(g.organ)}</div>` + g.dis.concat(g.sym).map(x=> row(x, escapeHtmlSearch(x), g.sym.includes(x) ? ' <small style="color:var(--muted);">(علامت)</small>' : '')).join('')).join('');
   box.innerHTML = `<div style="margin-top:8px; padding:8px; border:1px dashed var(--gold); border-radius:10px;">
-    <label style="font-size:.85rem; color:var(--gold-soft);">یہ نسخہ کس بیماری یا علامت کے اندر دکھے؟</label>
-    <select id="ilajLinkSel" class="search" style="display:block; width:100%; box-sizing:border-box; margin:6px 0;"><option value="">— اپنی جگہ (عضو کے مزید نسخے) —</option>${opts}</select>
+    <label style="font-size:.85rem; color:var(--gold-soft);">1) کون کون سے نسخے ڈالنے ہیں؟ (ایک سے زیادہ چن سکتے ہیں)</label>
+    <div class="ilaj-lk-recs">${chk}</div>
+    <label style="font-size:.85rem; color:var(--gold-soft); display:block; margin-top:8px;">2) کس بیماری یا علامت کے اندر؟</label>
+    <input id="ilajLinkQ" class="search" type="search" placeholder="🔍 بیماری یا علامت تلاش کریں..." style="display:block; width:100%; box-sizing:border-box; margin:6px 0;" oninput="ilajLinkFilter()">
+    <div id="ilajLinkList" class="ilaj-lk-list">${list}</div>
+    <input type="hidden" id="ilajLinkSel" value="${escapeHtmlSearch(cur)}">
+    <p id="ilajLinkPicked" style="font-size:.85rem; margin:6px 0; text-align:center;">${cur ? 'منتخب: <b>' + escapeHtmlSearch(cur) + '</b>' : ''}</p>
     <div style="text-align:center;"><button type="button" class="btn" style="padding:4px 16px; font-size:.85rem;" onclick="ilajLinkSave()">✔ محفوظ کریں</button>
     <button type="button" class="btn secondary" style="padding:4px 12px; font-size:.85rem;" onclick="document.getElementById('ilajLinkBox').innerHTML=''">✖</button></div></div>`;
+}
+function ilajLinkChoose(el){
+  document.querySelectorAll('#ilajLinkList .ilaj-lk-opt.on').forEach(o=> o.classList.remove('on'));
+  el.classList.add('on');
+  document.getElementById('ilajLinkSel').value = el.dataset.v;
+  const p = document.getElementById('ilajLinkPicked');
+  if(p) p.innerHTML = el.dataset.v ? 'منتخب: <b>' + escapeHtmlSearch(el.dataset.v) + '</b>' : 'منتخب: اپنی جگہ';
+}
+function ilajLinkFilter(){
+  const q = pmNormalizeWord(document.getElementById('ilajLinkQ').value || '');
+  const list = document.getElementById('ilajLinkList'); if(!list) return;
+  list.querySelectorAll('.ilaj-lk-opt').forEach(o=>{ o.style.display = !q || pmNormalizeWord(o.dataset.v + ' ' + pmMizajOtherNames(o.dataset.v).join(' ')).indexOf(q) !== -1 ? '' : 'none'; });
+  list.querySelectorAll('.ilaj-lk-org').forEach(h=>{
+    let e = h.nextElementSibling, any = false;
+    while(e && !e.classList.contains('ilaj-lk-org')){ if(e.style.display !== 'none') any = true; e = e.nextElementSibling; }
+    h.style.display = any ? '' : 'none';
+  });
 }
 async function ilajLinkSave(){
   const ed = document.getElementById('ilajEditor'), sel = document.getElementById('ilajLinkSel');
   if(!ed || !sel) return;
   const n = ed.dataset.name, to = sel.value;
+  const names = Array.from(document.querySelectorAll('#ilajLinkBox .ilaj-lk-recs input:checked')).map(c=> c.value);
+  if(!names.length){ alert('کم از کم ایک نسخہ چنیں'); return; }
   const st = document.getElementById('ilajEdStatus'); if(st){ st.style.color = 'var(--muted)'; st.textContent = '⏳ ...'; }
-  let ok = false, err = '';
-  try{
-    const r = await fetch('/api/notify-disease?ilaj=1', { method:'POST', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify({ key: HERBAL_OWNER_KEY, name: n, link: to }) });
-    const d = await r.json().catch(()=> ({}));
-    ok = r.ok && d.ok; err = d.error || ('خرابی ' + r.status);
-  }catch(e){ err = 'انٹرنیٹ کا مسئلہ'; }
-  if(to) ILAJ_LINK[n] = to; else delete ILAJ_LINK[n];
+  let ok = true, err = '';
+  for(const nm of names){
+    let one = false;
+    try{
+      const r = await fetch('/api/notify-disease?ilaj=1', { method:'POST', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify({ key: HERBAL_OWNER_KEY, name: nm, link: to }) });
+      const d = await r.json().catch(()=> ({}));
+      one = r.ok && d.ok; if(!one) err = d.error || ('خرابی ' + r.status);
+    }catch(e){ err = 'انٹرنیٹ کا مسئلہ'; }
+    if(!one) ok = false;
+    if(to) ILAJ_LINK[nm] = to; else delete ILAJ_LINK[nm];
+  }
   try{ if(ok) localStorage.removeItem('ilajLinkLocal'); else localStorage.setItem('ilajLinkLocal', JSON.stringify(ILAJ_LINK)); }catch(e){}
   const cat = document.getElementById('ilajCatalog'); if(cat){ delete cat.dataset.ready; ilajBuildCatalog(); }
-  await ilajShow(n, true);
+  // ایک سے زیادہ نسخے ہوں تو سیدھا اس بیماری کا ڈبہ کھولیں جس میں ڈالے
+  await ilajShow(to && names.length > 1 ? to : n, true);
   const st2 = document.getElementById('ilajEdStatus');
   if(st2){ st2.style.color = (ok || /GITHUB_TOKEN/.test(err)) ? 'var(--gold-soft)' : '#c9821b';
-    st2.textContent = (to ? '✅ اب یہ نسخہ "' + to + '" کے اندر نظر آئے گا' : '✅ واپس اپنی جگہ') + (ok ? '' : /GITHUB_TOKEN/.test(err) ? ' (اس فون پر)' : ' — ⚠ اس فون پر محفوظ: ' + err); }
+    st2.textContent = (to ? '✅ ' + names.length + ' نسخے "' + to + '" کے اندر ڈال دیے' : '✅ ' + names.length + ' نسخے واپس اپنی جگہ') + (ok ? '' : /GITHUB_TOKEN/.test(err) ? ' (اس فون پر)' : ' — ⚠ اس فون پر محفوظ: ' + err); }
 }
 function ilajHadServer(n){ return !!(ILAJ_SERVER_NAMES && ILAJ_SERVER_NAMES.has(n)); }
 function ilajEdClose(){ const ed = document.getElementById('ilajEditor'); if(ed) ed.style.display = 'none'; }
