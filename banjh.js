@@ -151,24 +151,40 @@
   }
   function sideHtml(c, s){
     const t = c[s].tests, nxt = new Set(nextFor(c, s));
+    const order = TESTS[s].map(g=> g.items.map(([id])=> id)).flat();
+    const okIds = order.filter(id=> t[id] && t[id].status === 'ok'), badIds = order.filter(id=> t[id] && t[id].status === 'bad');
+    // ہو چکا ٹیسٹ: صاف رنگین نشان (✓ ٹھیک / ✗ خراب) — ٹیپ کر کے بدل سکتے ہیں
+    const doneRow = id=>{
+      const r = t[id], a = ALL[id], ok = r.status === 'ok';
+      return `<div class="bj-done ${r.status}" onclick="banjhTest('${s}','${id}')"><span class="bj-pill ${r.status}">${ok ? '✓ ٹھیک' : '✗ خراب'}</span>
+        <div class="bj-tb"><b class="bj-en" dir="ltr">${esc(a.en)}</b> <span class="bj-ur">— ${esc(a.ur)}</span>
+        ${r.value ? `<div class="bj-val">${esc(r.value)}</div>` : ''}${r.note ? `<div class="bj-tn">${esc(r.note)}</div>` : ''}<div class="bj-hint">📅 ${fmtD(r.date || Date.now())}</div></div></div>`;
+    };
+    // علاج: AI کی بتائی بیماریاں؛ نہ ہوں تو خراب ٹیسٹوں کی خرابی
+    let treat = (c[s].treat || []).slice();
+    if(!treat.length) treat = badIds.map(id=> t[id].note || (ALL[id].en + ' خراب')).filter(Boolean);
     const stages = TESTS[s].map((g, gi)=>{
-      const rows = g.items.map(([id, en, ur, hint])=>{
-        const r = t[id] || {};
-        const icon = r.status === 'ok' ? '<span class="bj-ic ok">✔</span>' : r.status === 'bad' ? '<span class="bj-ic bad">✖</span>' : nxt.has(id) ? '<span class="bj-ic nx">👉</span>' : '<span class="bj-ic">○</span>';
-        return `<div class="bj-test${r.status ? ' ' + r.status : ''}${nxt.has(id) ? ' nx' : ''}" onclick="banjhTest('${s}','${id}')">${icon}<div class="bj-tb">${gi === 0 ? '<span class="bj-basic">⭐ BASIC</span> ' : ''}<b class="bj-en" dir="ltr">${esc(en)}</b><div class="bj-ur">${esc(ur)}</div>
-          ${r.value ? `<div class="bj-val">${esc(r.value)}</div>` : ''}${r.note ? `<div class="bj-tn">${esc(r.note)}</div>` : ''}${hint ? `<div class="bj-hint">❓ کیوں: ${esc(hint)}</div>` : ''}
-          ${r.date ? `<div class="bj-hint">📅 ${fmtD(r.date)}</div>` : ''}</div></div>`;
+      const pend = g.items.filter(([id])=> !(t[id] && t[id].status));
+      const doneN = g.items.length - pend.length;
+      if(!pend.length) return `<div class="bj-stage"><div class="bj-st done">${gi === 0 ? '⭐ ' : ''}${esc(g.st)} — ✓ سب ٹیسٹ ہو گئے (اوپر)</div></div>`;
+      const rows = pend.map(([id, en, ur, hint])=>{
+        const icon = nxt.has(id) ? '<span class="bj-ic nx">👉</span>' : '<span class="bj-ic">○</span>';
+        return `<div class="bj-test${nxt.has(id) ? ' nx' : ''}" onclick="banjhTest('${s}','${id}')">${icon}<div class="bj-tb">${gi === 0 ? '<span class="bj-basic">⭐ BASIC</span> ' : ''}<b class="bj-en" dir="ltr">${esc(en)}</b><div class="bj-ur">${esc(ur)}</div>
+          ${hint ? `<div class="bj-hint">❓ کیوں: ${esc(hint)}</div>` : ''}</div></div>`;
       }).join('');
-      return `<div class="bj-stage"><div class="bj-st">${gi === 0 ? '⭐ ' : ''}${esc(g.st)}</div>${rows}</div>`;
+      return `<div class="bj-stage"><div class="bj-st">${gi === 0 ? '⭐ ' : ''}${esc(g.st)}${doneN ? ` <small>(${doneN} ہو گئے — اوپر)</small>` : ''}</div>${rows}</div>`;
     }).join('');
-    const treat = c[s].treat || [];
     const who = s === 'm' ? c.husband : c.wife;
     return `<div class="bj-side bj-${s}">
       <h3>${SIDE[s]} — ${esc(who)}</h3>
-      ${nxt.size ? `<div class="bj-next">👉 <b>اب یہ ٹیسٹ کروائیں:</b><ol>${[...nxt].map(id=> `<li>${ALL[id].stage === 0 ? '⭐ ' : ''}<b class="bj-en" dir="ltr">${esc(ALL[id].en)}</b> — ${esc(ALL[id].ur)}</li>`).join('')}</ol></div>` : `<div class="bj-next done">✔ اس وقت کوئی نیا ٹیسٹ ضروری نہیں</div>`}
-      ${treat.length ? `<div class="bj-treat">🩺 <b>ان کا علاج کریں:</b><ul>${treat.map(x=> `<li>${esc(x)}</li>`).join('')}</ul></div>` : ''}
+      ${okIds.length ? `<div class="bj-box ok"><div class="bj-bh">✅ ٹھیک ٹیسٹ — مکمل (${okIds.length})</div>${okIds.map(doneRow).join('')}</div>` : ''}
+      ${badIds.length ? `<div class="bj-box bad"><div class="bj-bh">❌ خراب ٹیسٹ (${badIds.length})</div>${badIds.map(doneRow).join('')}</div>` : ''}
+      ${treat.length ? `<div class="bj-treat"><div class="bj-bh">🩺 اب ان بیماریوں کا علاج کریں:</div><ol>${treat.map(x=> `<li>${esc(x)}</li>`).join('')}</ol><div class="bj-hint">علاج کے بعد یہی ٹیسٹ دوبارہ کروا کر رپورٹ بھیجیں — ٹھیک ہو تو ✓ لگ جائے گا</div></div>` : ''}
+      ${nxt.size ? `<div class="bj-next"><div class="bj-bh">👉 ${badIds.length ? 'ساتھ میں' : 'اب'} یہ ٹیسٹ کروائیں:</div><ol>${[...nxt].map(id=> `<li>${ALL[id].stage === 0 ? '⭐ ' : ''}<b class="bj-en" dir="ltr">${esc(ALL[id].en)}</b> — ${esc(ALL[id].ur)}</li>`).join('')}</ol></div>`
+        : `<div class="bj-next done">✓ اس وقت کوئی نیا ٹیسٹ ضروری نہیں${treat.length ? ' — پہلے اوپر والا علاج کریں' : ''}</div>`}
       <label class="btn bj-up">📷 ${s === 'm' ? 'مرد' : 'عورت'} کی رپورٹ کی تصویر بھیجیں<input type="file" accept="image/*" multiple hidden onchange="banjhReport('${s}', this)"></label>
       <div id="bjStatus_${s}" class="bj-status"></div>
+      <div class="bj-bh" style="margin-top:12px; color:var(--gold);">⏳ باقی ٹیسٹ (مرحلہ وار)</div>
       ${stages}
     </div>`;
   }
@@ -319,6 +335,17 @@
   .bj-test{display:flex; gap:8px; align-items:flex-start; padding:7px 6px; border-bottom:1px dashed var(--border); cursor:pointer; font-size:.88rem;}
   .bj-test.ok{background:rgba(31,157,85,.08);} .bj-test.bad{background:rgba(224,82,79,.08);} .bj-test.nx{background:rgba(201,130,27,.1);}
   .bj-en{font-family:Poppins, Arial, sans-serif; font-size:.95rem; display:inline-block; direction:ltr; unicode-bidi:isolate;}
+  .bj-box{border-radius:10px; padding:6px 8px; margin-bottom:8px;}
+  .bj-box.ok{background:rgba(31,157,85,.08); border:2px solid #1f9d55;}
+  .bj-box.bad{background:rgba(224,82,79,.07); border:2px solid #e0524f;}
+  .bj-bh{font-weight:700; font-size:.92rem; margin-bottom:4px;}
+  .bj-box.ok .bj-bh{color:#1f9d55;} .bj-box.bad .bj-bh{color:#e0524f;}
+  .bj-done{display:flex; gap:8px; align-items:flex-start; padding:6px 2px; border-top:1px dashed var(--border); cursor:pointer; font-size:.86rem;}
+  .bj-pill{flex:0 0 auto; color:#fff; font-weight:700; font-size:.8rem; border-radius:12px; padding:1px 9px; margin-top:2px; white-space:nowrap;}
+  .bj-pill.ok{background:#1f9d55;} .bj-pill.bad{background:#e0524f;}
+  .bj-done.ok .bj-tn{color:#1f9d55;}
+  .bj-treat ol, .bj-next ol{margin:4px 22px 0 0; padding:0;}
+  .bj-st.done{background:#1f9d55;}
   .bj-basic{display:inline-block; background:#c9821b; color:#fff; font-size:.7rem; font-weight:700; border-radius:10px; padding:0 7px; margin-left:4px; direction:ltr;}
   .bj-ur{color:var(--gold); font-size:.85rem;}
   .bj-next ol{margin:4px 22px 0 0; padding:0;} .bj-next li{margin:2px 0;}
