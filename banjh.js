@@ -177,7 +177,12 @@
     const who = s === 'm' ? c.husband : c.wife;
     return `<div class="bj-side bj-${s}">
       <h3>${SIDE[s]} — ${esc(who)}</h3>
-      ${okIds.length ? `<div class="bj-box ok"><div class="bj-bh">✅ ٹھیک ٹیسٹ — مکمل (${okIds.length})</div>${okIds.map(doneRow).join('')}</div>` : ''}
+      <div class="bj-sum"><div class="bj-bh">📊 خلاصہ — کل ${order.length} ٹیسٹ</div>
+        <div class="bj-cnt"><span class="ok">✓ ٹھیک: ${okIds.length}</span><span class="bad">✗ خراب: ${badIds.length}</span><span class="pd">⏳ باقی: ${order.length - okIds.length - badIds.length}</span></div>
+        <div class="bj-chips">${okIds.map(id=> `<span class="bj-chip ok">✓ ${esc(ALL[id].en)}</span>`).join('')}${badIds.map(id=> `<span class="bj-chip bad">✗ ${esc(ALL[id].en)}</span>`).join('')}${!okIds.length && !badIds.length ? '<span class="bj-hint">ابھی کوئی ٹیسٹ نہیں ہوا</span>' : ''}</div>
+      </div>
+      ${okIds.length ? `<div class="bj-box ok"><div class="bj-bh">✅ ٹھیک ٹیسٹ — مکمل (${okIds.length})</div>${okIds.map(doneRow).join('')}</div>`
+        : (badIds.length ? `<div class="bj-box ok"><div class="bj-bh">✅ ٹھیک ٹیسٹ — مکمل (0)</div><div class="bj-hint">ابھی کوئی ٹیسٹ ٹھیک نہیں آیا۔ جو ٹیسٹ رپورٹ میں نہیں تھے وہ نیچے "باقی" میں ہیں — ان کی رپورٹ بھیجیں یا ٹیسٹ پر ٹیپ کر کے خود ✓ لگائیں۔</div></div>` : '')}
       ${badIds.length ? `<div class="bj-box bad"><div class="bj-bh">❌ خراب ٹیسٹ (${badIds.length})</div>${badIds.map(doneRow).join('')}</div>` : ''}
       ${treat.length ? `<div class="bj-treat"><div class="bj-bh">🩺 اب ان بیماریوں کا علاج کریں:</div><ol>${treat.map(x=> `<li>${esc(x)}</li>`).join('')}</ol><div class="bj-hint">علاج کے بعد یہی ٹیسٹ دوبارہ کروا کر رپورٹ بھیجیں — ٹھیک ہو تو ✓ لگ جائے گا</div></div>` : ''}
       ${nxt.size ? `<div class="bj-next"><div class="bj-bh">👉 ${badIds.length ? 'ساتھ میں' : 'اب'} یہ ٹیسٹ کروائیں:</div><ol>${[...nxt].map(id=> `<li>${ALL[id].stage === 0 ? '⭐ ' : ''}<b class="bj-en" dir="ltr">${esc(ALL[id].en)}</b> — ${esc(ALL[id].ur)}</li>`).join('')}</ol></div>`
@@ -335,6 +340,13 @@
   .bj-test{display:flex; gap:8px; align-items:flex-start; padding:7px 6px; border-bottom:1px dashed var(--border); cursor:pointer; font-size:.88rem;}
   .bj-test.ok{background:rgba(31,157,85,.08);} .bj-test.bad{background:rgba(224,82,79,.08);} .bj-test.nx{background:rgba(201,130,27,.1);}
   .bj-en{font-family:Poppins, Arial, sans-serif; font-size:.95rem; display:inline-block; direction:ltr; unicode-bidi:isolate;}
+  .bj-sum{border:2px solid var(--gold); border-radius:10px; padding:6px 8px; margin-bottom:8px; background:var(--card);}
+  .bj-cnt{display:flex; gap:6px; flex-wrap:wrap; margin:4px 0;}
+  .bj-cnt span{border-radius:12px; padding:1px 10px; font-weight:700; font-size:.85rem; color:#fff;}
+  .bj-cnt .ok{background:#1f9d55;} .bj-cnt .bad{background:#e0524f;} .bj-cnt .pd{background:#8a8a8a;}
+  .bj-chips{display:flex; flex-wrap:wrap; gap:4px;}
+  .bj-chip{font-family:Poppins, Arial, sans-serif; direction:ltr; font-size:.75rem; border-radius:10px; padding:1px 8px; border:1px solid;}
+  .bj-chip.ok{color:#1f9d55; border-color:#1f9d55; background:rgba(31,157,85,.08);} .bj-chip.bad{color:#e0524f; border-color:#e0524f; background:rgba(224,82,79,.07);}
   .bj-box{border-radius:10px; padding:6px 8px; margin-bottom:8px;}
   .bj-box.ok{background:rgba(31,157,85,.08); border:2px solid #1f9d55;}
   .bj-box.bad{background:rgba(224,82,79,.07); border:2px solid #e0524f;}
