@@ -40,18 +40,18 @@
         ['tsh_f','TSH','تھائیرائیڈ کا ٹیسٹ','تھائیرائیڈ کی خرابی سے انڈا نہیں بنتا اور حمل ضائع ہو سکتا ہے۔ حمل کے لیے 2.5 سے کم بہتر'],
         ['prl_f','Prolactin','پرولیکٹن ہارمون','زیادہ ہو تو انڈا نہیں بنتا اور ماہواری بے قاعدہ ہو جاتی ہے'],
         ['cbc_f','CBC / Hemoglobin','خون کا مکمل ٹیسٹ','خون کی کمی — حمل سے پہلے پوری ہونی چاہیے'],
-        ['sugar_f','HbA1c / Blood Sugar','شوگر کا ٹیسٹ','شوگر اور انسولین کی مزاحمت PCOS کے ساتھ عام ہے']
+        ['sugar_f','HbA1c / Blood Sugar','شوگر کا ٹیسٹ','شوگر اور انسولین کی مزاحمت PCOS کے ساتھ عام ہے'],
+        ['prog21','Day-21 Progesterone (Mid-luteal)','انڈا بننے کی تصدیق کا ٹیسٹ','ماہواری آنے سے 7 دن پہلے (28 دن کے سائیکل میں 21واں دن)۔ 10 ng/ml سے زیادہ = انڈا بنا اور پھٹا (Ovulation)؛ کم = انڈا نہیں بن رہا']
       ]},
-      { st:'مرحلہ 2 — انڈا بنتا ہے یا نہیں (Ovulation)', items:[
-        ['prog21','Day-21 Progesterone','21ویں دن پروجیسٹرون','تصدیق کہ انڈا بنا اور پھٹا۔ 10 ng/ml سے زیادہ = انڈا بنا (Ovulation)'],
+      { st:'مرحلہ 2 — نالیاں اور انفیکشن (ضروری — چاہے پہلا مرحلہ ٹھیک ہو)', always:true, items:[
+        ['hvs','High Vaginal Swab (HVS)','ویجائنل سواب','HSG سے پہلے انفیکشن ختم ہونا ضروری — لیکوریا، بدبو، سوزش کا جراثیم معلوم کرنا'],
+        ['hsg','HSG (Hysterosalpingography)','نالیوں کا ٹیسٹ (ماہواری کے دن 7–10)','فیلوپین نالیاں کھلی ہیں یا بند، اور بچہ دانی کے اندر کی بناوٹ'],
+        ['rubella','Rubella IgG','روبیلا کا ٹیسٹ','حمل سے پہلے حفاظت — منفی ہو تو ٹیکہ لگوانا']
+      ]},
+      { st:'مرحلہ 3 — اگر انڈا نہ بنے / PCOS', items:[
         ['follicle','Follicular Tracking','انڈے کی نشوونما کا الٹراساؤنڈ','ماہواری کے 10ویں دن سے — انڈا 18–24mm بن کر پھٹتا ہے یا نہیں'],
         ['androgen','Testosterone / DHEA-S','مردانہ ہارمون (عورت میں)','چہرے پر بال، دانے، بے قاعدہ ماہواری — PCOS کی تصدیق'],
         ['vitd','Vitamin D','وٹامن ڈی','کمی سے انڈے کی کوالٹی اور حمل ٹھہرنے پر اثر']
-      ]},
-      { st:'مرحلہ 3 — نالیاں اور انفیکشن', items:[
-        ['hsg','HSG (Hysterosalpingography)','نالیوں کا ٹیسٹ (ماہواری کے دن 7–10)','فیلوپین نالیاں کھلی ہیں یا بند، اور بچہ دانی کے اندر کی بناوٹ'],
-        ['hvs','High Vaginal Swab (HVS)','ویجائنل سواب','لیکوریا، بدبو، سوزش — انفیکشن کا جراثیم معلوم کرنا'],
-        ['rubella','Rubella IgG','روبیلا کا ٹیسٹ','حمل سے پہلے حفاظت — منفی ہو تو ٹیکہ لگوانا']
       ]},
       { st:'مرحلہ 4 — ماہر کے ٹیسٹ', items:[
         ['sis','Saline Sonography / 3D Ultrasound','بچہ دانی کا خاص الٹراساؤنڈ','بچہ دانی کے اندر پولیپ، پردہ (Septum) یا چپکاؤ'],
@@ -143,7 +143,7 @@
       if(pend.length){
         // مرحلہ 2 سے آگے: صرف تب جب پچھلے مرحلے میں کچھ خراب ہو
         const gi = TESTS[s].indexOf(g);
-        if(gi > 0 && !Object.keys(t).some(k=> t[k].status === 'bad')) return [];
+        if(gi > 0 && !g.always && !Object.keys(t).some(k=> t[k].status === 'bad')) return [];
         return pend.map(([id])=> id);
       }
     }
@@ -155,17 +155,17 @@
       const rows = g.items.map(([id, en, ur, hint])=>{
         const r = t[id] || {};
         const icon = r.status === 'ok' ? '<span class="bj-ic ok">✔</span>' : r.status === 'bad' ? '<span class="bj-ic bad">✖</span>' : nxt.has(id) ? '<span class="bj-ic nx">👉</span>' : '<span class="bj-ic">○</span>';
-        return `<div class="bj-test${r.status ? ' ' + r.status : ''}${nxt.has(id) ? ' nx' : ''}" onclick="banjhTest('${s}','${id}')">${icon}<div class="bj-tb"><b class="bj-en" dir="ltr">${esc(en)}</b><div class="bj-ur">${esc(ur)}</div>
+        return `<div class="bj-test${r.status ? ' ' + r.status : ''}${nxt.has(id) ? ' nx' : ''}" onclick="banjhTest('${s}','${id}')">${icon}<div class="bj-tb">${gi === 0 ? '<span class="bj-basic">⭐ BASIC</span> ' : ''}<b class="bj-en" dir="ltr">${esc(en)}</b><div class="bj-ur">${esc(ur)}</div>
           ${r.value ? `<div class="bj-val">${esc(r.value)}</div>` : ''}${r.note ? `<div class="bj-tn">${esc(r.note)}</div>` : ''}${hint ? `<div class="bj-hint">❓ کیوں: ${esc(hint)}</div>` : ''}
           ${r.date ? `<div class="bj-hint">📅 ${fmtD(r.date)}</div>` : ''}</div></div>`;
       }).join('');
-      return `<div class="bj-stage"><div class="bj-st">${esc(g.st)}</div>${rows}</div>`;
+      return `<div class="bj-stage"><div class="bj-st">${gi === 0 ? '⭐ ' : ''}${esc(g.st)}</div>${rows}</div>`;
     }).join('');
     const treat = c[s].treat || [];
     const who = s === 'm' ? c.husband : c.wife;
     return `<div class="bj-side bj-${s}">
       <h3>${SIDE[s]} — ${esc(who)}</h3>
-      ${nxt.size ? `<div class="bj-next">👉 <b>اب یہ ٹیسٹ کروائیں:</b><ol>${[...nxt].map(id=> `<li><b class="bj-en" dir="ltr">${esc(ALL[id].en)}</b> — ${esc(ALL[id].ur)}</li>`).join('')}</ol></div>` : `<div class="bj-next done">✔ اس وقت کوئی نیا ٹیسٹ ضروری نہیں</div>`}
+      ${nxt.size ? `<div class="bj-next">👉 <b>اب یہ ٹیسٹ کروائیں:</b><ol>${[...nxt].map(id=> `<li>${ALL[id].stage === 0 ? '⭐ ' : ''}<b class="bj-en" dir="ltr">${esc(ALL[id].en)}</b> — ${esc(ALL[id].ur)}</li>`).join('')}</ol></div>` : `<div class="bj-next done">✔ اس وقت کوئی نیا ٹیسٹ ضروری نہیں</div>`}
       ${treat.length ? `<div class="bj-treat">🩺 <b>ان کا علاج کریں:</b><ul>${treat.map(x=> `<li>${esc(x)}</li>`).join('')}</ul></div>` : ''}
       <label class="btn bj-up">📷 ${s === 'm' ? 'مرد' : 'عورت'} کی رپورٹ کی تصویر بھیجیں<input type="file" accept="image/*" multiple hidden onchange="banjhReport('${s}', this)"></label>
       <div id="bjStatus_${s}" class="bj-status"></div>
@@ -319,6 +319,7 @@
   .bj-test{display:flex; gap:8px; align-items:flex-start; padding:7px 6px; border-bottom:1px dashed var(--border); cursor:pointer; font-size:.88rem;}
   .bj-test.ok{background:rgba(31,157,85,.08);} .bj-test.bad{background:rgba(224,82,79,.08);} .bj-test.nx{background:rgba(201,130,27,.1);}
   .bj-en{font-family:Poppins, Arial, sans-serif; font-size:.95rem; display:inline-block; direction:ltr; unicode-bidi:isolate;}
+  .bj-basic{display:inline-block; background:#c9821b; color:#fff; font-size:.7rem; font-weight:700; border-radius:10px; padding:0 7px; margin-left:4px; direction:ltr;}
   .bj-ur{color:var(--gold); font-size:.85rem;}
   .bj-next ol{margin:4px 22px 0 0; padding:0;} .bj-next li{margin:2px 0;}
   .bj-ic{flex:0 0 22px; text-align:center; font-weight:700; font-size:1.05rem; color:var(--muted);}
