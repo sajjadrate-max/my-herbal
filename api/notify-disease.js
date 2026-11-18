@@ -24,15 +24,71 @@
 export const config = {
   api: {
     bodyParser: {
-      sizeLimit: '8mb' // سکرین شاٹ تصویر کی گنجائش کے لیے
+      sizeLimit: '9mb' // سکرین شاٹ / رپورٹ کی تصویروں کی گنجائش کے لیے
     }
   }
 };
+
+export const maxDuration = 60;
+
+// ===== بانجھ پن: لیب رپورٹ کی تصویر پڑھ کر ہر ٹیسٹ ٹھیک/خراب، کس بیماری کا علاج کرنا ہے، اور اگلا ٹیسٹ =====
+// مریض کا نام نہیں بھیجا جاتا؛ تصویر صرف پڑھی جاتی ہے، کہیں محفوظ نہیں ہوتی۔ دوا/نسخہ AI نہیں بتاتا — صرف بیماری کا نام۔
+async function banjhReport(req, res) {
+  if (req.method !== 'POST') return res.status(405).json({ error: 'صرف POST' });
+  const apiKey = process.env.OPENAI_API_KEY;
+  if (!apiKey) return res.status(500).json({ error: 'سرور پر OPENAI_API_KEY سیٹ نہیں ہے۔' });
+  try {
+    const b = typeof req.body === 'string' ? JSON.parse(req.body) : (req.body || {});
+    const side = b.side === 'f' ? 'f' : 'm';
+    const images = (Array.isArray(b.images) ? b.images : []).slice(0, 3).map(String).filter(u => /^data:image\/(jpeg|png|webp);base64,/.test(u) && u.length < 2_600_000);
+    if (!images.length) return res.status(400).json({ error: 'رپورٹ کی تصویر نہیں ملی' });
+    const tests = (Array.isArray(b.tests) ? b.tests : []).slice(0, 40).map(t => ({ id: String(t.id || '').slice(0, 20), name: String(t.name || '').slice(0, 80), stage: +t.stage || 1, hint: String(t.hint || '').slice(0, 200) })).filter(t => /^[a-z0-9_]+$/.test(t.id));
+    const done = (Array.isArray(b.done) ? b.done : []).slice(0, 40).map(t => ({ id: String(t.id || '').slice(0, 20), name: String(t.name || '').slice(0, 80), status: t.status === 'ok' ? 'ok' : 'bad', value: String(t.value || '').slice(0, 120) }));
+    const who = side === 'm' ? 'مرد (شوہر) — مردانہ بانجھ پن' : 'عورت (بیوی) — زنانہ بانجھ پن';
+    const system = `آپ ایک تجربہ کار لیبارٹری/زچگی و بانجھ پن کے ماہر ہیں جو ایک حکیم کی مدد کر رہے ہیں۔ مریض: ${who}۔
+آپ کو لیب رپورٹ کی تصویریں، ٹیسٹوں کی مرحلہ وار فہرست (id کے ساتھ) اور پہلے سے ہو چکے ٹیسٹوں کے نتیجے دیے جائیں گے۔
+کام:
+1) تصویر میں جو ٹیسٹ اس فہرست کے ہیں ان کی ویلیو پڑھیں اور معیاری نارمل حد (رپورٹ پر لکھی حد، ورنہ WHO 2021 / عام معیار) کے مطابق فیصلہ کریں: "ok" (ٹھیک) یا "bad" (خراب)۔ صاف نہ پڑھا جائے تو اسے شامل نہ کریں۔
+   ایک ٹیسٹ میں کئی ویلیو ہوں (مثلاً سیمن: تعداد، حرکت، بناوٹ، پس سیلز) تو کوئی ایک بھی اہم ویلیو خراب ہو تو "bad"، اور note میں بتائیں کیا خراب ہے۔
+2) "value": اہم ویلیو مختصر (مثلاً "تعداد 8 ملین/ml، حرکت 20٪")۔ "note": اردو میں ایک مختصر جملہ — کیا ٹھیک ہے یا کیا خرابی ہے۔
+3) فہرست سے باہر کوئی اہم ٹیسٹ رپورٹ میں ہو تو "other" میں {name,value,note}۔
+4) "treat": جو خرابیاں ملیں ان کی بیماریوں کے صرف نام اردو میں (مثلاً "سپرم کی کمی (اولیگو سپرمیا)"، "سپرم کی حرکت کم (استھینو سپرمیا)"، "پرولیکٹن زیادہ"، "تھائیرائیڈ کم (ہائپو تھائیرائیڈ)"، "PCOS"، "سیمن میں انفیکشن (پس سیلز)")۔ کوئی دوا، نسخہ یا خوراک ہرگز نہ لکھیں — علاج حکیم خود کرے گا۔ خرابی نہ ہو تو خالی۔
+   پہلے کے خراب نتیجوں کی بیماریاں بھی شامل رکھیں جب تک نئی رپورٹ انہیں ٹھیک نہ دکھائے۔
+5) "next": فہرست کے صرف id — مرحلہ وار اگلے کون سے ٹیسٹ کروانے چاہئیں (ابھی تک نہ ہوئے ہوں)۔ سب بنیادی ٹیسٹ ٹھیک ہوں تو اگلے مرحلے پر صرف تب جائیں جب واقعی ضروری ہو۔ خرابی ہو تو اس کی وجہ ڈھونڈنے والا ٹیسٹ (مثلاً سیمن خراب → ہارمون، ویریکوسیل کا الٹراساؤنڈ؛ پس سیلز → سیمن کلچر؛ سپرم صفر → FSH، کیریو ٹائپ، Y مائیکرو ڈیلیشن)۔ 0 سے 4 id۔
+6) "summary": اردو میں 1–2 جملے کہ رپورٹ میں کیا ملا اور آگے کیا کرنا ہے۔
+ہر عبارت اردو رسم الخط میں (ٹیسٹ کے انگریزی مخففات جیسے FSH، AMH، TSH ٹھیک ہیں)۔
+صرف JSON: {"results":[{"id":"semen","status":"bad","value":"...","note":"..."}],"other":[{"name":"...","value":"...","note":"..."}],"treat":["..."],"next":["fsh_m"],"summary":"..."}`;
+    const content = [{ type: 'text', text: 'ٹیسٹوں کی فہرست:\n' + tests.map(t => `${t.id} — مرحلہ ${t.stage} — ${t.name}${t.hint ? ' (' + t.hint + ')' : ''}`).join('\n')
+      + '\n\nپہلے کے نتیجے:\n' + (done.length ? done.map(t => `${t.id} ${t.name}: ${t.status === 'ok' ? 'ٹھیک' : 'خراب'} ${t.value}`).join('\n') : 'کوئی نہیں') + '\n\nرپورٹ کی تصویریں:' }];
+    images.forEach(u => content.push({ type: 'image_url', image_url: { url: u, detail: 'high' } }));
+    const r = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
+      body: JSON.stringify({ model: process.env.OPENAI_VISION_MODEL || 'gpt-4o', messages: [{ role: 'system', content: system }, { role: 'user', content }], temperature: 0, response_format: { type: 'json_object' } })
+    });
+    if (!r.ok) return res.status(502).json({ error: 'AI سے جواب نہیں ملا — دوبارہ کوشش کریں' });
+    const data = await r.json();
+    let out = {};
+    try { out = JSON.parse((data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content) || '{}'); } catch (e) { out = {}; }
+    const ids = new Set(tests.map(t => t.id));
+    const s = (x, n) => String(x == null ? '' : x).trim().slice(0, n);
+    return res.status(200).json({
+      results: (Array.isArray(out.results) ? out.results : []).filter(x => x && ids.has(x.id) && (x.status === 'ok' || x.status === 'bad')).map(x => ({ id: x.id, status: x.status, value: s(x.value, 160), note: s(x.note, 240) })).slice(0, 30),
+      other: (Array.isArray(out.other) ? out.other : []).filter(x => x && x.name).map(x => ({ name: s(x.name, 80), value: s(x.value, 120), note: s(x.note, 200) })).slice(0, 12),
+      treat: (Array.isArray(out.treat) ? out.treat : []).map(x => s(x, 80)).filter(Boolean).slice(0, 10),
+      next: (Array.isArray(out.next) ? out.next : []).filter(x => ids.has(x)).slice(0, 4),
+      summary: s(out.summary, 500)
+    });
+  } catch (err) {
+    return res.status(500).json({ error: String(err && err.message ? err.message : err).slice(0, 200) });
+  }
+}
 
 export default async function handler(req, res) {
   if (req.query && req.query.upload === '1') return uploadBookHandler(req, res);
   if (req.query && req.query.apk === '1') return apkDownload(req, res);
   if (req.query && req.query.ilaj === '1') return ilajSave(req, res);
+  if (req.query && req.query.banjh === '1') return banjhReport(req, res);
   if (req.method !== 'POST') {
     res.setHeader('Allow', ['POST']);
     return res.status(405).json({ error: 'صرف POST request قبول ہے۔' });

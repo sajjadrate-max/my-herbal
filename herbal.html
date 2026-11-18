@@ -222,6 +222,7 @@ tr:nth-child(even){background:rgba(31,122,77,0.04);}
 footer{position:fixed; left:0; right:0; bottom:0; z-index:55; text-align:center; padding:10px; background:var(--gold); color:#eef7ea; border-top:1px solid var(--border); font-size:.85rem;}
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="/banjh.js" defer></script>
 </head>
 <body>
 
@@ -235,6 +236,7 @@ footer{position:fixed; left:0; right:0; bottom:0; z-index:55; text-align:center;
     <a onclick="showPage('kami')" id="nav-kami"><span class="ni">🩺</span>وٹامن و معدنیات کی کمی</a>
     <a onclick="showPage('ilaj')" id="nav-ilaj"><span class="ni">📋</span>بیماریاں اور علاج</a>
     <a onclick="showPage('wajah')" id="nav-wajah"><span class="ni">💊</span>میڈیکل کے مطابق ادویات</a>
+    <a onclick="showPage('banjh')" id="nav-banjh" style="grid-column:1 / -1;"><span class="ni">👨‍👩‍👧</span>بانجھ پن — میاں بیوی کے ٹیسٹ اور علاج</a>
   </nav>
 </header>
 
@@ -420,6 +422,12 @@ footer{position:fixed; left:0; right:0; bottom:0; z-index:55; text-align:center;
   <div id="ilajResult" style="margin:10px 0;"></div>
   <div class="big-search-wrap"><input class="search big-search" id="ilajListFilter" type="search" placeholder="بیماری یا علامت تلاش کریں..." oninput="ilajFilterList()"><div class="big-search-count" id="ilajListFilterCount"></div></div>
   <div id="ilajCatalog" style="margin-top:8px;"></div>
+</section>
+
+<section class="page-section" id="page-banjh">
+  <h2 class="section-title">👨‍👩‍👧 بانجھ پن — میاں بیوی کے ٹیسٹ اور علاج</h2>
+  <div class="note">پہلے میاں بیوی کے نام لکھ کر کھاتہ بنائیں۔ ایک طرف مرد کے، دوسری طرف عورت کے ٹیسٹ مرحلہ وار ہیں۔ رپورٹ کی تصویر بھیجیں — ٹھیک ٹیسٹ پر سبز ✔، خراب پر سرخ ✖ لگے گا، کس بیماری کا علاج کرنا ہے اور اگلا کون سا ٹیسٹ کروانا ہے وہ بھی بتایا جائے گا۔ ہر کھاتے کا پورا ریکارڈ ہمیشہ محفوظ رہتا ہے۔ <b>رپورٹ کا فیصلہ مدد کے لیے ہے — حتمی رائے ڈاکٹر/معالج کی۔</b></div>
+  <div id="banjhRoot" style="margin-top:10px;"></div>
 </section>
 
 <section class="page-section" id="page-wajah">
@@ -791,6 +799,7 @@ function showPage(id){
   if(id === 'kami'){ const el = document.getElementById('deficiencySymptomList'); if(el && el.dataset.pending){ delete el.dataset.pending; herbalBuildKamiCatalog(el); } }
   if(id === 'wajah' && typeof wajahBuildCatalog === 'function') wajahBuildCatalog();
   if(id === 'ilaj' && typeof ilajBuildCatalog === 'function') ilajBuildCatalog();
+  if(id === 'banjh' && typeof banjhInit === 'function') banjhInit();
   if(id === 'wajah' && typeof wajahRenderBookList === 'function') wajahRenderBookList();
   if(id === 'naskhesaz' && typeof qmBuildCatalog === 'function') qmBuildCatalog();
   if(id === 'pdfmulti'){ const el = document.getElementById('pmMizajOptionsList'); if(el && el.dataset.pending){ delete el.dataset.pending; pmRenderMizajOptionsList(pmMizajOptions); } }
@@ -11060,7 +11069,7 @@ if('serviceWorker' in navigator && herbalCanLoadSiteFiles()){
   function add(type, text, n){
     // بیماریاں اور علاج والے صفحے کی کوئی رپورٹ نہیں
     const act = document.querySelector('.page-section.active');
-    if(act && act.id === 'page-ilaj') return;
+    if(act && (act.id === 'page-ilaj' || act.id === 'page-banjh')) return; // بانجھ پن: مریضوں کے نام کبھی ای میل میں نہیں
     text = type === 'نتیجہ' ? cleanLines(text, n) : clean(text, n);
     if(!text) return;
     const last = events[events.length - 1];
