@@ -3,64 +3,65 @@
 // بیک اپ: "📤 بیک اپ" سے فائل بنتی ہے، "📥" سے واپس لگتی ہے۔ رپورٹ کی تصویر صرف پڑھنے کے لیے AI کو جاتی ہے (محفوظ نہیں ہوتی)۔
 (function(){
   // ---------- ٹیسٹوں کی مرحلہ وار فہرست ----------
+  // [id, انگریزی نام, اردو نام, یہ ٹیسٹ کیوں / نارمل حد]
   const TESTS = {
     m: [
-      { st:'مرحلہ 1 — بنیادی ٹیسٹ', items:[
-        ['semen','سیمن انالیسس (مادہ منویہ کا ٹیسٹ)','2 سے 5 دن پرہیز کے بعد۔ نارمل (WHO): مقدار 1.4ml+، تعداد 16 ملین/ml+، حرکت (پروگریسو) 30٪+، کل حرکت 42٪+، بناوٹ 4٪+، pH 7.2+'],
-        ['urine_m','پیشاب کا ٹیسٹ (Urine R/E)','انفیکشن، پس سیلز، شوگر'],
-        ['cbc_m','CBC (خون کا مکمل ٹیسٹ)','خون کی کمی، انفیکشن'],
-        ['sugar_m','شوگر (HbA1c / Random)','شوگر سپرم اور انزال پر اثر کرتی ہے']
+      { st:'مرحلہ 1 — بنیادی ٹیسٹ (Basic)', items:[
+        ['semen','Semen Analysis','مادہ منویہ کا ٹیسٹ','مرد کا سب سے پہلا اور اہم ٹیسٹ — سپرم کی تعداد، حرکت اور بناوٹ دیکھی جاتی ہے۔ 2 سے 5 دن پرہیز کے بعد۔ نارمل (WHO): مقدار 1.4ml+، تعداد 16 ملین/ml+، پروگریسو حرکت 30٪+، کل حرکت 42٪+، بناوٹ 4٪+، pH 7.2+'],
+        ['urine_m','Urine R/E','پیشاب کا ٹیسٹ','پیشاب کی نالی کا انفیکشن، پس سیلز یا شوگر — یہ سپرم کو نقصان دیتے ہیں'],
+        ['cbc_m','CBC','خون کا مکمل ٹیسٹ','خون کی کمی یا جسم میں انفیکشن تو نہیں'],
+        ['sugar_m','HbA1c / Blood Sugar','شوگر کا ٹیسٹ','شوگر سے کمزوری، انزال کی خرابی اور سپرم کمزور ہوتے ہیں']
       ]},
-      { st:'مرحلہ 2 — اگر سیمن خراب ہو (ہارمون)', items:[
-        ['semen2','دوبارہ سیمن انالیسس','پہلی رپورٹ خراب ہو تو 2–3 ماہ بعد تصدیق کے لیے'],
-        ['fsh_m','FSH','زیادہ ہو تو خصیے کی کمزوری؛ کم ہو تو دماغی غدود کا مسئلہ'],
-        ['lh_m','LH',''],
-        ['testo','ٹیسٹوسٹیرون (صبح 8–10 بجے)','نارمل تقریباً 300–1000 ng/dl'],
-        ['prl_m','پرولیکٹن','زیادہ ہو تو کمزوری اور سپرم کی کمی'],
-        ['tsh_m','TSH (تھائیرائیڈ)','']
+      { st:'مرحلہ 2 — ہارمون (اگر سیمن خراب ہو)', items:[
+        ['semen2','Repeat Semen Analysis','دوبارہ سیمن ٹیسٹ','پہلی رپورٹ خراب ہو تو 2–3 ماہ بعد تصدیق — سپرم ہر 3 ماہ میں نئے بنتے ہیں'],
+        ['fsh_m','FSH','سپرم بنانے والا ہارمون','زیادہ ہو تو خصیہ کمزور ہے؛ کم ہو تو دماغی غدود (پچوٹری) سے حکم نہیں آ رہا'],
+        ['lh_m','LH','ٹیسٹوسٹیرون بنانے کا حکم دینے والا ہارمون','FSH کے ساتھ دیکھا جاتا ہے کہ خرابی خصیے میں ہے یا دماغی غدود میں'],
+        ['testo','Total Testosterone','مردانہ ہارمون (صبح 8–10 بجے)','کم ہو تو کمزوری، خواہش کی کمی اور سپرم کم۔ نارمل تقریباً 300–1000 ng/dl'],
+        ['prl_m','Prolactin','پرولیکٹن ہارمون','زیادہ ہو تو ٹیسٹوسٹیرون کم، کمزوری اور سپرم کی کمی'],
+        ['tsh_m','TSH','تھائیرائیڈ کا ٹیسٹ','تھائیرائیڈ کی کمی/زیادتی سے سپرم اور جنسی طاقت متاثر ہوتی ہے']
       ]},
       { st:'مرحلہ 3 — وجہ کی تلاش', items:[
-        ['us_scrotal','خصیوں کا الٹراساؤنڈ / ڈوپلر','ویریکوسیل (رگوں کا پھولنا)، خصیے کا سائز'],
-        ['semen_cs','سیمن کلچر (پس سیلز / انفیکشن)','سیمن میں پس سیلز زیادہ ہوں تو'],
-        ['peu','انزال کے بعد پیشاب کا ٹیسٹ','سیمن کی مقدار بہت کم ہو تو (ریٹروگریڈ انزال)'],
-        ['asa','اینٹی سپرم اینٹی باڈیز','سپرم آپس میں چپکے ہوں تو']
+        ['us_scrotal','Scrotal Ultrasound / Doppler','خصیوں کا الٹراساؤنڈ / ڈوپلر','ویریکوسیل (خصیے کی رگوں کا پھولنا) — سپرم کی کمی کی عام وجہ؛ خصیے کا سائز اور رکاوٹ'],
+        ['semen_cs','Semen Culture & Sensitivity','سیمن کلچر','سیمن میں پس سیلز زیادہ ہوں تو انفیکشن کا جراثیم معلوم کرنا'],
+        ['peu','Post-Ejaculatory Urine','انزال کے بعد پیشاب کا ٹیسٹ','سیمن کی مقدار بہت کم ہو تو دیکھا جاتا ہے کہ مادہ پیچھے مثانے میں تو نہیں جا رہا'],
+        ['asa','Anti-Sperm Antibodies (MAR test)','سپرم کے خلاف اینٹی باڈیز','سپرم آپس میں چپکے ہوں (agglutination) تو']
       ]},
       { st:'مرحلہ 4 — ماہر کے ٹیسٹ', items:[
-        ['dfi','سپرم DNA فریگمنٹیشن','بار بار حمل ضائع ہو یا رپورٹ نارمل ہو پھر بھی حمل نہ ہو'],
-        ['karyo_m','کیریو ٹائپ (کروموسوم)','سپرم بالکل نہ ہوں (ازو سپرمیا) یا بہت کم ہوں'],
-        ['ymicro','Y کروموسوم مائیکرو ڈیلیشن','ازو سپرمیا میں']
+        ['dfi','Sperm DNA Fragmentation (DFI)','سپرم کے DNA کی ٹوٹ پھوٹ','رپورٹ نارمل ہو پھر بھی حمل نہ ہو، یا بار بار حمل ضائع ہو'],
+        ['karyo_m','Karyotype','کروموسوم کا ٹیسٹ','سپرم بالکل نہ ہوں (Azoospermia) یا بہت ہی کم ہوں'],
+        ['ymicro','Y-Chromosome Microdeletion','Y کروموسوم کا ٹیسٹ','Azoospermia یا شدید کمی میں — سپرم بننے کا جینیاتی مسئلہ']
       ]}
     ],
     f: [
-      { st:'مرحلہ 1 — بنیادی ٹیسٹ', items:[
-        ['tvs','الٹراساؤنڈ (بچہ دانی اور بیضہ دانی)','رسولی، سسٹ، PCOS، انڈوں کی تعداد (AFC)'],
-        ['d2','ماہواری کے 2–3 دن: FSH، LH، ایسٹراڈیول','FSH 10 سے کم بہتر؛ LH/FSH زیادہ ہو تو PCOS کا شبہ'],
-        ['amh','AMH (انڈوں کا ذخیرہ)','تقریباً 1–3.5 ng/ml نارمل؛ کم = ذخیرہ کم، بہت زیادہ = PCOS'],
-        ['tsh_f','TSH (تھائیرائیڈ)','حمل کے لیے 2.5 سے کم بہتر'],
-        ['prl_f','پرولیکٹن','زیادہ ہو تو انڈا نہیں بنتا'],
-        ['cbc_f','CBC / ہیموگلوبن','خون کی کمی'],
-        ['sugar_f','شوگر (HbA1c / Random)','']
+      { st:'مرحلہ 1 — بنیادی ٹیسٹ (Basic)', items:[
+        ['tvs','Pelvic / Transvaginal Ultrasound (TVS)','بچہ دانی اور بیضہ دانی کا الٹراساؤنڈ','رسولی (Fibroid)، سسٹ، PCOS، بچہ دانی کی بناوٹ، اور انڈوں کی تعداد (AFC)'],
+        ['d2','Day 2–3 FSH, LH, Estradiol (E2)','ماہواری کے 2–3 دن کے ہارمون','انڈے بنانے والے ہارمون۔ FSH 10 سے کم بہتر؛ LH، FSH سے دگنا ہو تو PCOS کا شبہ'],
+        ['amh','AMH (Anti-Müllerian Hormone)','انڈوں کا ذخیرہ','بیضہ دانی میں کتنے انڈے باقی ہیں۔ تقریباً 1–3.5 ng/ml نارمل؛ کم = ذخیرہ کم، بہت زیادہ = PCOS'],
+        ['tsh_f','TSH','تھائیرائیڈ کا ٹیسٹ','تھائیرائیڈ کی خرابی سے انڈا نہیں بنتا اور حمل ضائع ہو سکتا ہے۔ حمل کے لیے 2.5 سے کم بہتر'],
+        ['prl_f','Prolactin','پرولیکٹن ہارمون','زیادہ ہو تو انڈا نہیں بنتا اور ماہواری بے قاعدہ ہو جاتی ہے'],
+        ['cbc_f','CBC / Hemoglobin','خون کا مکمل ٹیسٹ','خون کی کمی — حمل سے پہلے پوری ہونی چاہیے'],
+        ['sugar_f','HbA1c / Blood Sugar','شوگر کا ٹیسٹ','شوگر اور انسولین کی مزاحمت PCOS کے ساتھ عام ہے']
       ]},
-      { st:'مرحلہ 2 — انڈا بنتا ہے یا نہیں', items:[
-        ['prog21','21ویں دن پروجیسٹرون','10 ng/ml سے زیادہ = انڈا بنا (اوویولیشن)'],
-        ['follicle','فولیکل ٹریکنگ (الٹراساؤنڈ دن 10 سے)','انڈا 18–24mm بن کر پھٹتا ہے یا نہیں'],
-        ['androgen','ٹیسٹوسٹیرون / DHEAS','بال زیادہ، دانے، بے قاعدہ ماہواری (PCOS)'],
-        ['vitd','وٹامن D','']
+      { st:'مرحلہ 2 — انڈا بنتا ہے یا نہیں (Ovulation)', items:[
+        ['prog21','Day-21 Progesterone','21ویں دن پروجیسٹرون','تصدیق کہ انڈا بنا اور پھٹا۔ 10 ng/ml سے زیادہ = انڈا بنا (Ovulation)'],
+        ['follicle','Follicular Tracking','انڈے کی نشوونما کا الٹراساؤنڈ','ماہواری کے 10ویں دن سے — انڈا 18–24mm بن کر پھٹتا ہے یا نہیں'],
+        ['androgen','Testosterone / DHEA-S','مردانہ ہارمون (عورت میں)','چہرے پر بال، دانے، بے قاعدہ ماہواری — PCOS کی تصدیق'],
+        ['vitd','Vitamin D','وٹامن ڈی','کمی سے انڈے کی کوالٹی اور حمل ٹھہرنے پر اثر']
       ]},
       { st:'مرحلہ 3 — نالیاں اور انفیکشن', items:[
-        ['hsg','HSG (نالیوں کا ٹیسٹ — ماہواری کے دن 7–10)','نالیاں کھلی ہیں یا بند، بچہ دانی کی بناوٹ'],
-        ['hvs','ویجائنل سواب / انفیکشن کا ٹیسٹ','لیکوریا، بدبو، سوزش'],
-        ['rubella','روبیلا IgG','حمل سے پہلے حفاظت']
+        ['hsg','HSG (Hysterosalpingography)','نالیوں کا ٹیسٹ (ماہواری کے دن 7–10)','فیلوپین نالیاں کھلی ہیں یا بند، اور بچہ دانی کے اندر کی بناوٹ'],
+        ['hvs','High Vaginal Swab (HVS)','ویجائنل سواب','لیکوریا، بدبو، سوزش — انفیکشن کا جراثیم معلوم کرنا'],
+        ['rubella','Rubella IgG','روبیلا کا ٹیسٹ','حمل سے پہلے حفاظت — منفی ہو تو ٹیکہ لگوانا']
       ]},
       { st:'مرحلہ 4 — ماہر کے ٹیسٹ', items:[
-        ['sis','سالائن سونو / 3D الٹراساؤنڈ','بچہ دانی کے اندر پولیپ یا پردہ'],
-        ['hysteroscopy','ہسٹرو اسکوپی','بچہ دانی کے اندر کا معائنہ'],
-        ['laparoscopy','لیپرو اسکوپی','اینڈومیٹریوسس، نالیوں کی رکاوٹ']
+        ['sis','Saline Sonography / 3D Ultrasound','بچہ دانی کا خاص الٹراساؤنڈ','بچہ دانی کے اندر پولیپ، پردہ (Septum) یا چپکاؤ'],
+        ['hysteroscopy','Hysteroscopy','بچہ دانی کے اندر کیمرے سے معائنہ','اندر کی رکاوٹ دیکھنا اور اسی وقت ٹھیک کرنا'],
+        ['laparoscopy','Laparoscopy','پیٹ میں کیمرے سے معائنہ','اینڈومیٹریوسس، نالیوں کی رکاوٹ اور چپکاؤ']
       ]}
     ]
   };
   const SIDE = { m:'👨 مرد (شوہر)', f:'👩 عورت (بیوی)' };
-  const ALL = {}; ['m','f'].forEach(s=> TESTS[s].forEach((g, gi)=> g.items.forEach(([id, name, hint])=> ALL[id] = { id, name, hint, side:s, stage:gi })));
+  const ALL = {}; ['m','f'].forEach(s=> TESTS[s].forEach((g, gi)=> g.items.forEach(([id, en, ur, why])=> ALL[id] = { id, en, ur, why, name: en + ' (' + ur + ')', side:s, stage:gi })));
   const esc = s=> String(s == null ? '' : s).replace(/[&<>"']/g, c=> ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
   // ---------- فون میں محفوظ (IndexedDB) ----------
@@ -151,11 +152,11 @@
   function sideHtml(c, s){
     const t = c[s].tests, nxt = new Set(nextFor(c, s));
     const stages = TESTS[s].map((g, gi)=>{
-      const rows = g.items.map(([id, name, hint])=>{
+      const rows = g.items.map(([id, en, ur, hint])=>{
         const r = t[id] || {};
         const icon = r.status === 'ok' ? '<span class="bj-ic ok">✔</span>' : r.status === 'bad' ? '<span class="bj-ic bad">✖</span>' : nxt.has(id) ? '<span class="bj-ic nx">👉</span>' : '<span class="bj-ic">○</span>';
-        return `<div class="bj-test${r.status ? ' ' + r.status : ''}${nxt.has(id) ? ' nx' : ''}" onclick="banjhTest('${s}','${id}')">${icon}<div class="bj-tb"><b>${esc(name)}</b>
-          ${r.value ? `<div class="bj-val">${esc(r.value)}</div>` : ''}${r.note ? `<div class="bj-tn">${esc(r.note)}</div>` : (!r.status && hint ? `<div class="bj-hint">${esc(hint)}</div>` : '')}
+        return `<div class="bj-test${r.status ? ' ' + r.status : ''}${nxt.has(id) ? ' nx' : ''}" onclick="banjhTest('${s}','${id}')">${icon}<div class="bj-tb"><b class="bj-en" dir="ltr">${esc(en)}</b><div class="bj-ur">${esc(ur)}</div>
+          ${r.value ? `<div class="bj-val">${esc(r.value)}</div>` : ''}${r.note ? `<div class="bj-tn">${esc(r.note)}</div>` : ''}${hint ? `<div class="bj-hint">❓ کیوں: ${esc(hint)}</div>` : ''}
           ${r.date ? `<div class="bj-hint">📅 ${fmtD(r.date)}</div>` : ''}</div></div>`;
       }).join('');
       return `<div class="bj-stage"><div class="bj-st">${esc(g.st)}</div>${rows}</div>`;
@@ -164,7 +165,7 @@
     const who = s === 'm' ? c.husband : c.wife;
     return `<div class="bj-side bj-${s}">
       <h3>${SIDE[s]} — ${esc(who)}</h3>
-      ${nxt.size ? `<div class="bj-next">👉 اب یہ ٹیسٹ کروائیں: <b>${[...nxt].map(id=> esc(ALL[id].name)).join('، ')}</b></div>` : `<div class="bj-next done">✔ اس وقت کوئی نیا ٹیسٹ ضروری نہیں</div>`}
+      ${nxt.size ? `<div class="bj-next">👉 <b>اب یہ ٹیسٹ کروائیں:</b><ol>${[...nxt].map(id=> `<li><b class="bj-en" dir="ltr">${esc(ALL[id].en)}</b> — ${esc(ALL[id].ur)}</li>`).join('')}</ol></div>` : `<div class="bj-next done">✔ اس وقت کوئی نیا ٹیسٹ ضروری نہیں</div>`}
       ${treat.length ? `<div class="bj-treat">🩺 <b>ان کا علاج کریں:</b><ul>${treat.map(x=> `<li>${esc(x)}</li>`).join('')}</ul></div>` : ''}
       <label class="btn bj-up">📷 ${s === 'm' ? 'مرد' : 'عورت'} کی رپورٹ کی تصویر بھیجیں<input type="file" accept="image/*" multiple hidden onchange="banjhReport('${s}', this)"></label>
       <div id="bjStatus_${s}" class="bj-status"></div>
@@ -240,7 +241,7 @@
     let images, thumbs;
     try{ images = await Promise.all(files.map(f=> shrink(f, 1600, .82))); thumbs = await Promise.all(files.map(f=> shrink(f, 500, .6))); }
     catch(e){ say('⚠ ' + e.message, '#e0524f'); return; }
-    const tests = TESTS[s].map((g, gi)=> g.items.map(([id, name, hint])=> ({ id, name, stage: gi + 1, hint }))).flat();
+    const tests = TESTS[s].map((g, gi)=> g.items.map(([id, en, ur, hint])=> ({ id, name: en + ' — ' + ur, stage: gi + 1, hint }))).flat();
     const done = Object.keys(c[s].tests).map(id=> ({ id, name: ALL[id] ? ALL[id].name : id, status: c[s].tests[id].status, value: c[s].tests[id].value }));
     let d = null;
     try{
@@ -317,6 +318,9 @@
   .bj-st{background:var(--gold); color:#fff; border-radius:8px; padding:3px 10px; font-size:.82rem; margin:10px 0 4px;}
   .bj-test{display:flex; gap:8px; align-items:flex-start; padding:7px 6px; border-bottom:1px dashed var(--border); cursor:pointer; font-size:.88rem;}
   .bj-test.ok{background:rgba(31,157,85,.08);} .bj-test.bad{background:rgba(224,82,79,.08);} .bj-test.nx{background:rgba(201,130,27,.1);}
+  .bj-en{font-family:Poppins, Arial, sans-serif; font-size:.95rem; display:inline-block; direction:ltr; unicode-bidi:isolate;}
+  .bj-ur{color:var(--gold); font-size:.85rem;}
+  .bj-next ol{margin:4px 22px 0 0; padding:0;} .bj-next li{margin:2px 0;}
   .bj-ic{flex:0 0 22px; text-align:center; font-weight:700; font-size:1.05rem; color:var(--muted);}
   .bj-tb{flex:1;} .bj-val{color:var(--text); font-size:.82rem;} .bj-tn{color:#b03a37; font-size:.8rem;} .bj-hint{color:var(--muted); font-size:.75rem;}
   .bj-test.ok .bj-tn{color:#1f9d55;}
