@@ -204,17 +204,61 @@
     c.log.push({ t:Date.now(), side:s, text: k + ': ' + (m[1] === '0' ? 'ہٹا دیا' : m[1] === '1' ? '✓ ٹھیک' : '✗ خراب') + ' (خود لکھا)' });
     await put(c); render();
   };
+  // ریکارڈ: ہر رپورٹ ایک خانے میں — تصویریں اوپر، پھر ✅ ٹھیک / ❌ خراب + علاج / 👉 اگلے ٹیسٹ
+  function logEntries(c){
+    const out = []; let pend = [];
+    (c.log || []).forEach(e=>{
+      if(e.img && /^\(رپورٹ کا صفحہ \d+\)$/.test(e.text || '')){ pend.push(e.img); return; }
+      const g = Object.assign({}, e);
+      g.imgs = (e.imgs || []).slice();
+      if(e.img) g.imgs.push(e.img);
+      if(pend.length){ g.imgs = pend.concat(g.imgs); pend = []; }
+      out.push(g);
+    });
+    if(pend.length) out.push({ t: Date.now(), side: '', imgs: pend, text: '' });
+    return out.reverse();
+  }
+  function logParse(e){
+    if(e.ok || e.bad) return e;
+    const r = { summary: [], ok: [], bad: [], treat: [], next: [] };
+    String(e.text || '').split('\n').forEach(l=>{
+      l = l.trim(); if(!l) return;
+      let m;
+      if((m = l.match(/^[✓✔]\s*(.*)$/))) r.ok.push(m[1]);
+      else if((m = l.match(/^[✗✖]\s*(.*)$/))) r.bad.push(m[1]);
+      else if((m = l.match(/^•\s*(.*)$/))) (/زیادہ|کم|انفیکشن|خراب|غیر نارمل|abnormal|high|low/i.test(m[1]) ? r.bad : r.ok).push(m[1]);
+      else if((m = l.match(/^🩺\s*علاج کریں\s*:\s*(.*)$/))) r.treat = m[1].split(/\s*،\s*/).filter(Boolean);
+      else if((m = l.match(/^👉\s*اگلا ٹیسٹ\s*:\s*(.*)$/))) r.next = m[1].split(/\s*،\s*/).filter(Boolean);
+      else r.summary.push(l);
+    });
+    r.summary = r.summary.join('\n');
+    return r;
+  }
+  function logHtml(c){
+    const list = logEntries(c);
+    return `<h3 style="color:var(--gold); margin:18px 0 6px; text-align:center;">📒 مکمل ریکارڈ (${list.length})</h3>`
+      + (list.map(e=>{
+        const p = logParse(e), isRep = p.ok.length || p.bad.length || p.treat.length || p.next.length;
+        const li = a=> `<ol>${a.map(x=> `<li>${esc(x)}</li>`).join('')}</ol>`;
+        return `<div class="bj-log bj-${e.side}"><div class="bj-log-h">${e.side === 'm' ? '👨 مرد' : e.side === 'f' ? '👩 عورت' : '📝'} · ${new Date(e.t).toLocaleString('en-GB')}${e.imgs.length ? ' · 📷 ' + e.imgs.length + ' صفحے' : ''}</div>
+          ${e.imgs.length ? `<div class="bj-imgs">${e.imgs.map(u=> `<img src="${u}" alt="رپورٹ" class="bj-thumb" onclick="this.classList.toggle('big')">`).join('')}</div>` : ''}
+          ${isRep ? `${p.summary ? `<div class="bj-lsum">${esc(p.summary)}</div>` : ''}
+            ${p.ok.length ? `<div class="bj-box ok"><div class="bj-bh">✅ یہ ٹیسٹ ہو گئے اور ٹھیک ہیں — دوبارہ کروانے کی ضرورت نہیں</div>${li(p.ok)}</div>` : ''}
+            ${p.bad.length ? `<div class="bj-box bad"><div class="bj-bh">❌ یہ ٹیسٹ خراب ہیں</div>${li(p.bad)}
+              ${p.treat.length ? `<div class="bj-bh" style="color:var(--text); margin-top:4px;">🩺 ان بیماریوں کا علاج کریں:</div>${li(p.treat)}` : ''}
+              <div class="bj-hint" style="font-weight:700;">علاج مکمل ہونے کے بعد یہی ٹیسٹ دوبارہ کروا کر رپورٹ دکھائیں</div></div>` : ''}
+            ${p.next.length ? `<div class="bj-next"><div class="bj-bh">👉 آگے یہ ٹیسٹ کروائیں:</div>${li(p.next)}</div>` : ''}`
+          : `<div style="white-space:pre-wrap;">${esc(e.text || '')}</div>`}
+        </div>`;
+      }).join('') || '<p style="text-align:center; color:var(--muted);">ابھی کوئی رپورٹ نہیں</p>');
+  }
   function render(){
     const c = CUR, el = root(); if(!c || !el) return;
-    const log = (c.log || []).slice().reverse();
     el.innerHTML = `<div style="text-align:center; margin-bottom:8px;"><button type="button" class="btn" onclick="banjhList()">⬅ تمام کھاتے</button></div>
       <div class="bj-head">👨 ${esc(c.husband)} <span style="color:var(--muted);">&</span> 👩 ${esc(c.wife)}<div class="bj-case-meta">کھاتہ: ${fmtD(c.created)} · آخری تبدیلی: ${fmtD(c.updated || c.created)}</div></div>
       <div class="bj-tabs"><button type="button" class="${TAB === 'm' ? 'on' : ''}" onclick="banjhTab('m')">👨 مرد</button><button type="button" class="${TAB === 'f' ? 'on' : ''}" onclick="banjhTab('f')">👩 عورت</button></div>
       <div class="bj-cols tab-${TAB}">${sideHtml(c, 'm')}${sideHtml(c, 'f')}</div>
-      <h3 style="color:var(--gold); margin:18px 0 6px; text-align:center;">📒 مکمل ریکارڈ (${log.length})</h3>
-      ${log.map(e=> `<div class="bj-log bj-${e.side}"><div class="bj-log-h">${e.side === 'm' ? '👨' : e.side === 'f' ? '👩' : '📝'} ${new Date(e.t).toLocaleString('en-GB')}</div>
-        ${e.img ? `<img src="${e.img}" alt="رپورٹ" class="bj-thumb" onclick="this.classList.toggle('big')">` : ''}
-        <div style="white-space:pre-wrap;">${esc(e.text)}</div></div>`).join('') || '<p style="text-align:center; color:var(--muted);">ابھی کوئی رپورٹ نہیں</p>'}
+      ${logHtml(c)}
       <div style="display:flex; gap:8px; justify-content:center; flex-wrap:wrap; margin:14px 0;">
         <button type="button" class="btn secondary" onclick="banjhNote()">📝 نوٹ لکھیں</button>
         <button type="button" class="btn secondary" onclick="banjhRename()">✏ نام درست کریں</button>
@@ -281,24 +325,27 @@
       d = await r.json().catch(()=> ({}));
       if(!r.ok || d.error){ say('⚠ ' + (d.error || ('خرابی ' + r.status)), '#e0524f'); return; }
     }catch(e){ say('⚠ انٹرنیٹ کا مسئلہ — دوبارہ کوشش کریں', '#e0524f'); return; }
-    const lines = [];
+    const lines = [], okL = [], badL = [];
     (d.results || []).forEach(x=>{
       if(!ALL[x.id] || ALL[x.id].side !== s) return;
       if(x.status !== 'ok' && x.status !== 'bad') return;
       c[s].tests[x.id] = { status: x.status, value: x.value || '', note: x.note || '', date: Date.now() };
-      lines.push((x.status === 'ok' ? '✓ ' : '✗ ') + ALL[x.id].name + (x.value ? ': ' + x.value : '') + (x.note ? ' — ' + x.note : ''));
+      const ln = ALL[x.id].name + (x.value ? ': ' + x.value : '') + (x.note ? ' — ' + x.note : '');
+      lines.push((x.status === 'ok' ? '✓ ' : '✗ ') + ln); (x.status === 'ok' ? okL : badL).push(ln);
     });
     c[s].extra = c[s].extra || {};
     (d.other || []).forEach(x=>{
       if(x.status === 'ok' || x.status === 'bad') c[s].extra[x.name] = { status: x.status, value: x.value || '', note: x.note || '', date: Date.now() };
-      lines.push((x.status === 'ok' ? '✓ ' : x.status === 'bad' ? '✗ ' : '• ') + x.name + (x.value ? ': ' + x.value : '') + (x.note ? ' — ' + x.note : ''));
+      const ln = x.name + (x.value ? ': ' + x.value : '') + (x.note ? ' — ' + x.note : '');
+      lines.push((x.status === 'ok' ? '✓ ' : x.status === 'bad' ? '✗ ' : '• ') + ln);
+      if(x.status === 'ok') okL.push(ln); else if(x.status === 'bad') badL.push(ln);
     });
     if(Array.isArray(d.treat)) c[s].treat = d.treat;
     c[s].next = (d.next || []).filter(id=> ALL[id] && ALL[id].side === s);
     const text = (d.summary ? d.summary + '\n' : '') + lines.join('\n')
       + (c[s].treat.length ? '\n🩺 علاج کریں: ' + c[s].treat.join('، ') : '')
       + (c[s].next.length ? '\n👉 اگلا ٹیسٹ: ' + c[s].next.map(id=> ALL[id].name).join('، ') : '');
-    thumbs.forEach((img, i)=> c.log.push({ t: Date.now() + i, side: s, img, text: i === thumbs.length - 1 ? text : '(رپورٹ کا صفحہ ' + (i + 1) + ')' }));
+    c.log.push({ t: Date.now(), side: s, imgs: thumbs, text, summary: d.summary || '', ok: okL, bad: badL, treat: c[s].treat.slice(), next: c[s].next.map(id=> ALL[id].name) });
     await put(c);
     render();
     say(lines.length ? '✅ رپورٹ پڑھ لی — نتیجہ اوپر لگ گیا' : '⚠ اس تصویر میں فہرست کا کوئی ٹیسٹ صاف نہیں پڑھا جا سکا — صاف تصویر بھیجیں یا ٹیسٹ پر ٹیپ کر کے خود لکھیں', lines.length ? 'var(--leaf)' : '#c9821b');
@@ -384,8 +431,11 @@
   .bj-log{border:1px solid var(--border); border-radius:10px; padding:8px; margin:6px 0; background:var(--card); font-size:.86rem; line-height:1.9;}
   .bj-log.bj-m{border-right:4px solid #2b6cb0;} .bj-log.bj-f{border-right:4px solid #c05680;}
   .bj-log-h{color:var(--muted); font-size:.75rem;}
-  .bj-thumb{max-width:110px; border-radius:6px; float:left; margin:0 0 4px 8px; cursor:zoom-in;}
-  .bj-thumb.big{max-width:100%; float:none; display:block; margin:6px auto;}
+  .bj-imgs{display:flex; flex-wrap:wrap; gap:6px; margin:6px 0;}
+  .bj-thumb{width:84px; height:110px; object-fit:cover; border-radius:6px; border:1px solid var(--border); cursor:zoom-in;}
+  .bj-thumb.big{width:100%; height:auto; object-fit:contain;}
+  .bj-lsum{white-space:pre-wrap; margin:4px 0 6px;}
+  .bj-log .bj-box ol, .bj-log .bj-next ol{margin:2px 22px 0 0; padding:0;}
   `;
   document.head.appendChild(css);
 
