@@ -51,7 +51,7 @@ async function banjhReport(req, res) {
 1) تصویر میں جو ٹیسٹ اس فہرست کے ہیں ان کی ویلیو پڑھیں اور معیاری نارمل حد (رپورٹ پر لکھی حد، ورنہ WHO 2021 / عام معیار) کے مطابق فیصلہ کریں: "ok" (ٹھیک) یا "bad" (خراب)۔ صاف نہ پڑھا جائے تو اسے شامل نہ کریں۔
    ایک ٹیسٹ میں کئی ویلیو ہوں (مثلاً سیمن: تعداد، حرکت، بناوٹ، پس سیلز) تو کوئی ایک بھی اہم ویلیو خراب ہو تو "bad"، اور note میں بتائیں کیا خراب ہے۔
 2) "value": اہم ویلیو مختصر (مثلاً "تعداد 8 ملین/ml، حرکت 20٪")۔ "note": اردو میں ایک مختصر جملہ — کیا ٹھیک ہے یا کیا خرابی ہے۔
-3) فہرست سے باہر کوئی اہم ٹیسٹ رپورٹ میں ہو تو "other" میں {name,value,note}۔
+3) فہرست سے باہر کوئی ٹیسٹ رپورٹ میں ہو تو "other" میں {name (انگریزی نام، مثلاً "Urine R/E"),value,status ("ok" یا "bad"),note}۔
 4) "treat": جو خرابیاں ملیں ان کی بیماریوں کے صرف نام اردو میں (مثلاً "سپرم کی کمی (اولیگو سپرمیا)"، "سپرم کی حرکت کم (استھینو سپرمیا)"، "پرولیکٹن زیادہ"، "تھائیرائیڈ کم (ہائپو تھائیرائیڈ)"، "PCOS"، "سیمن میں انفیکشن (پس سیلز)")۔ کوئی دوا، نسخہ یا خوراک ہرگز نہ لکھیں — علاج حکیم خود کرے گا۔ خرابی نہ ہو تو خالی۔
    پہلے کے خراب نتیجوں کی بیماریاں بھی شامل رکھیں جب تک نئی رپورٹ انہیں ٹھیک نہ دکھائے۔
 5) "next": فہرست کے صرف id — مرحلہ وار اگلے کون سے ٹیسٹ کروانے چاہئیں (ابھی تک نہ ہوئے ہوں)۔ سب بنیادی ٹیسٹ ٹھیک ہوں تو اگلے مرحلے پر صرف تب جائیں جب واقعی ضروری ہو۔ خرابی ہو تو اس کی وجہ ڈھونڈنے والا ٹیسٹ (مثلاً سیمن خراب → ہارمون، ویریکوسیل کا الٹراساؤنڈ؛ پس سیلز → سیمن کلچر؛ سپرم صفر → FSH، کیریو ٹائپ، Y مائیکرو ڈیلیشن)۔ 0 سے 4 id۔
@@ -74,7 +74,7 @@ async function banjhReport(req, res) {
     const s = (x, n) => String(x == null ? '' : x).trim().slice(0, n);
     return res.status(200).json({
       results: (Array.isArray(out.results) ? out.results : []).filter(x => x && ids.has(x.id) && (x.status === 'ok' || x.status === 'bad')).map(x => ({ id: x.id, status: x.status, value: s(x.value, 160), note: s(x.note, 240) })).slice(0, 30),
-      other: (Array.isArray(out.other) ? out.other : []).filter(x => x && x.name).map(x => ({ name: s(x.name, 80), value: s(x.value, 120), note: s(x.note, 200) })).slice(0, 12),
+      other: (Array.isArray(out.other) ? out.other : []).filter(x => x && x.name).map(x => ({ name: s(x.name, 80), value: s(x.value, 120), status: x.status === 'ok' ? 'ok' : x.status === 'bad' ? 'bad' : '', note: s(x.note, 200) })).slice(0, 12),
       treat: (Array.isArray(out.treat) ? out.treat : []).map(x => s(x, 80)).filter(Boolean).slice(0, 10),
       next: (Array.isArray(out.next) ? out.next : []).filter(x => ids.has(x)).slice(0, 4),
       summary: s(out.summary, 500)
