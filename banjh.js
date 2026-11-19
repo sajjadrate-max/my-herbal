@@ -65,6 +65,35 @@
   const ALL = {}; ['m','f'].forEach(s=> TESTS[s].forEach((g, gi)=> g.items.forEach(([id, en, ur, why])=> ALL[id] = { id, en, ur, why, name: en + ' (' + ur + ')', side:s, stage:gi })));
   const esc = s=> String(s == null ? '' : s).replace(/[&<>"']/g, c=> ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
+  // ---------- خرابی ← عام طور پر دی جانے والی دوائیں (معروف بین الاقوامی کمپنیاں؛ خوراک نہیں — صرف ڈاکٹر کے نسخے سے) ----------
+  const MEDS = [
+    { re:/پرولیکٹن|prolactin/i, items:[['Cabergoline','Dostinex — Pfizer'],['Bromocriptine','Parlodel — Novartis']], note:'پرولیکٹن بہت زیادہ ہو تو دماغی غدود کا MRI بھی' },
+    { re:/انڈا نہ|انڈا نہیں|اوویولیشن|ovulation|PCOS|پی سی او/i, items:[['Letrozole','Femara — Novartis'],['Clomiphene Citrate','Clomid — Sanofi'],['Metformin','Glucophage — Merck']], note:'Metformin صرف PCOS / انسولین مزاحمت میں۔ انڈا بننے کی دوا کے ساتھ فولیکل ٹریکنگ ضروری' },
+    { re:/پروجیسٹرون|progesterone|لیوٹیل/i, items:[['Dydrogesterone','Duphaston — Abbott'],['Micronized Progesterone','Utrogestan — Besins']], note:'' },
+    { re:/تھائیرائیڈ کم|ہائپو|hypothyroid|TSH زیادہ/i, items:[['Levothyroxine','Eltroxin — GSK / Euthyrox — Merck']], note:'' },
+    { re:/تھائیرائیڈ زیادہ|ہائپر تھائیرائیڈ|hyperthyroid/i, items:[['Carbimazole','Neo-Mercazole — Amdipharm']], note:'' },
+    { re:/پیشاب.*(انفیکشن|پس)|پس سیلز|UTI|urine/i, items:[['Antibiotic (per culture)','Augmentin — GSK / Ciproxin — Bayer']], note:'پہلے Urine C/S کروائیں، پھر اسی کے مطابق دوا' },
+    { re:/ویجائنل|لیکوریا|بیکٹیریل ویجائنوسس|ٹرائیکو/i, items:[['Metronidazole','Flagyl — Sanofi'],['Clotrimazole','Canesten — Bayer']], note:'Clotrimazole فنگس کے لیے۔ میاں بیوی دونوں کا علاج ساتھ' },
+    { re:/سیمن.*(انفیکشن|پس)|لیوکو/i, items:[['Doxycycline','Vibramycin — Pfizer']], note:'سیمن کلچر کے مطابق' },
+    { re:/سپرم.*(کمی|کم)|اولیگو|oligo|استھینو|asthenو|حرکت کم|بناوٹ|ٹیراٹو/i, items:[['L-Carnitine + Acetyl-L-Carnitine','Proxeed Plus — Alfasigma'],['Clomiphene Citrate','Clomid — Sanofi']], note:'Clomiphene صرف ماہر کے مشورے سے۔ ⚠ ٹیسٹوسٹیرون کی گولی/ٹیکہ ہرگز نہیں — اس سے سپرم اور کم ہو جاتے ہیں' },
+    { re:/ٹیسٹوسٹیرون کم|low testosterone|ہائپو گونیڈ/i, items:[['hCG injection','Pregnyl — Organon']], note:'⚠ بانجھ پن میں ٹیسٹوسٹیرون خود نہ دیں — سپرم بننا رک جاتا ہے' },
+    { re:/ازو سپرمیا|azoospermia|سپرم صفر|سپرم نہیں/i, items:[['ماہرِ امراضِ مردانہ (Urologist/Andrologist) سے رجوع','—']], note:'وجہ کے مطابق علاج (ہارمون، سرجری یا TESA)' },
+    { re:/ویریکوسیل|varicocele/i, items:[['سرجری (Varicocelectomy) — یورولوجسٹ','—']], note:'' },
+    { re:/شوگر|ذیابیطس|diabet/i, items:[['Metformin','Glucophage — Merck']], note:'' },
+    { re:/خون کی کمی|ہیموگلوبن|anemi/i, items:[['Iron + Folic Acid','Fefol — GSK / Ferrograd-Folic — Abbott']], note:'' },
+    { re:/وٹامن ڈی|vitamin d/i, items:[['Cholecalciferol (Vitamin D3)','—']], note:'' },
+    { re:/AMH کم|ذخیرہ کم|FSH زیادہ/i, items:[['دوا سے ذخیرہ نہیں بڑھتا — جلد ماہرِ بانجھ پن (IVF) سے رجوع','—']], note:'' },
+    { re:/نالیاں بند|نالی بند|tubal|HSG خراب/i, items:[['لیپرو/ہسٹرو اسکوپی یا IVF — ماہر سے رجوع','—']], note:'' }
+  ];
+  function medsFor(x){ return MEDS.filter(m=> m.re.test(x)); }
+  function treatHtml(list){
+    return `<ol class="bj-tl">${list.map(x=>{
+      const ms = medsFor(x);
+      return `<li><b>${esc(x)}</b>${ms.length ? `<div class="bj-meds">${ms.map(m=> m.items.map(([g, b])=> `<div class="bj-med">💊 <span dir="ltr" class="bj-en" style="font-size:.85rem;">${esc(g)}</span>${b !== '—' ? ` — <span dir="ltr" class="bj-brand">${esc(b)}</span>` : ''}</div>`).join('') + (m.note ? `<div class="bj-mnote">${esc(m.note)}</div>` : '')).join('')}</div>` : ''}</li>`;
+    }).join('')}</ol>
+    <div class="bj-rx">⚠ یہ دوائیں عام طور پر ڈاکٹر دیتے ہیں — صرف مستند ڈاکٹر کے نسخے اور خوراک سے۔ حمل ٹھہرنے کا شبہ ہو تو کوئی دوا ڈاکٹر سے پوچھے بغیر جاری نہ رکھیں۔</div>`;
+  }
+
   // ---------- فون میں محفوظ (IndexedDB) ----------
   let dbp = null;
   function db(){
@@ -187,7 +216,7 @@
       </div>
       ${badD.length ? `<div class="bj-box bad"><div class="bj-bh">❌ خراب ٹیسٹ (${badD.length}) — پہلے ان کا علاج مکمل کریں، پھر یہی ٹیسٹ دوبارہ کروائیں</div>
         <div class="bj-chips">${badD.map(d=> `<span class="bj-chip bad">✗ ${esc(d.en)}</span>`).join('')}</div>
-        ${treat.length ? `<div class="bj-bh" style="margin-top:6px; color:var(--text);">🩺 ان بیماریوں کا علاج کریں:</div><ol>${treat.map(x=> `<li>${esc(x)}</li>`).join('')}</ol>` : ''}
+        ${treat.length ? `<div class="bj-bh" style="margin-top:6px; color:var(--text);">🩺 ان بیماریوں کا علاج کریں:</div>${treatHtml(treat)}` : ''}
         <div class="bj-hint">علاج کے بعد یہی ٹیسٹ دوبارہ کروا کر رپورٹ بھیجیں — ٹھیک آئے تو سبز ✓ لگ جائے گا</div></div>` : ''}
       ${nxt.size ? `<div class="bj-next"><div class="bj-bh">👉 ${badD.length ? 'ہو سکے تو ساتھ میں یہ ٹیسٹ بھی کروائیں' : 'آگے یہ ٹیسٹ کروائیں'}:</div><ol>${nextList}</ol></div>`
         : `<div class="bj-next done">✓ اس وقت کوئی نیا ٹیسٹ ضروری نہیں${badD.length ? ' — پہلے اوپر والا علاج کریں' : ''}</div>`}
@@ -248,7 +277,7 @@
           ${isRep ? `${p.summary ? `<div class="bj-lsum">${esc(p.summary)}</div>` : ''}
             ${p.ok.length ? `<div class="bj-box ok"><div class="bj-bh">✅ یہ ٹیسٹ ہو گئے اور ٹھیک ہیں — دوبارہ کروانے کی ضرورت نہیں</div>${li(p.ok)}</div>` : ''}
             ${p.bad.length ? `<div class="bj-box bad"><div class="bj-bh">❌ یہ ٹیسٹ خراب ہیں</div>${li(p.bad)}
-              ${p.treat.length ? `<div class="bj-bh" style="color:var(--text); margin-top:4px;">🩺 ان بیماریوں کا علاج کریں:</div>${li(p.treat)}` : ''}
+              ${p.treat.length ? `<div class="bj-bh" style="color:var(--text); margin-top:4px;">🩺 ان بیماریوں کا علاج کریں:</div>${treatHtml(p.treat)}` : ''}
               <div class="bj-hint" style="font-weight:700;">علاج مکمل ہونے کے بعد یہی ٹیسٹ دوبارہ کروا کر رپورٹ دکھائیں</div></div>` : ''}
             ${p.next.length ? `<div class="bj-next"><div class="bj-bh">👉 آگے یہ ٹیسٹ کروائیں:</div>${li(p.next)}</div>` : ''}`
           : `<div style="white-space:pre-wrap;">${esc(e.text || '')}</div>`}
@@ -447,6 +476,11 @@
   .bj-no.ok{background:#1f9d55;} .bj-no.bad{background:#e0524f;} .bj-no.pd{background:#8a8a8a;} .bj-no.pd.nx{background:#c9821b;}
   .bj-sub{font-weight:700; font-size:.85rem; margin:8px 0 2px; padding:2px 8px; border-radius:8px; color:#fff;}
   .bj-sub.ok{background:#1f9d55;} .bj-sub.bad{background:#e0524f;}
+  .bj-tl{margin:4px 22px 0 0; padding:0;} .bj-tl > li{margin:6px 0;}
+  .bj-meds{background:var(--card); border:1px dashed var(--border); border-radius:8px; padding:4px 8px; margin-top:3px;}
+  .bj-med{font-size:.82rem; line-height:1.8;} .bj-brand{color:#2b6cb0; font-family:Poppins, Arial, sans-serif; font-size:.8rem;}
+  .bj-mnote{font-size:.75rem; color:#b03a37;}
+  .bj-rx{font-size:.74rem; color:#b03a37; margin-top:6px; font-weight:700;}
   .bj-box{border-radius:10px; padding:6px 8px; margin-bottom:8px;}
   .bj-box.ok{background:rgba(31,157,85,.08); border:2px solid #1f9d55;}
   .bj-box.bad{background:rgba(224,82,79,.07); border:2px solid #e0524f;}
