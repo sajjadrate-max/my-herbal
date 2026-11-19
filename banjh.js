@@ -157,18 +157,20 @@
     const done = order.filter(id=> t[id] && t[id].status).map(id=> ({ key:id, en:ALL[id].en, ur:ALL[id].ur, r:t[id], tap:`banjhTest('${s}','${id}')` }))
       .concat(Object.keys(ex).filter(k=> ex[k].status).map(k=> ({ key:k, en:k, ur:'', r:ex[k], tap:`banjhExtra('${s}',${JSON.stringify(k).replace(/"/g, '&quot;')})` })));
     const okD = done.filter(d=> d.r.status === 'ok'), badD = done.filter(d=> d.r.status === 'bad');
-    const row = d=> `<div class="bj-done ${d.r.status}" onclick="${d.tap}"><span class="bj-pill ${d.r.status}">${d.r.status === 'ok' ? '✓ ٹھیک' : '✗ خراب'}</span>
+    const row = (d, i)=> `<div class="bj-done ${d.r.status}" onclick="${d.tap}"><span class="bj-no ${d.r.status}">${i + 1}</span><span class="bj-pill ${d.r.status}">${d.r.status === 'ok' ? '✓ ٹھیک' : '✗ خراب'}</span>
         <div class="bj-tb"><b class="bj-en" dir="ltr">${esc(d.en)}</b>${d.ur ? ` <span class="bj-ur">— ${esc(d.ur)}</span>` : ''}
         ${d.r.value ? `<div class="bj-val">${esc(d.r.value)}</div>` : ''}${d.r.note ? `<div class="bj-tn">${esc(d.r.note)}</div>` : ''}<div class="bj-hint">📅 ${fmtD(d.r.date || Date.now())}</div></div></div>`;
     let treat = (c[s].treat || []).slice();
     if(!treat.length) treat = badD.map(d=> d.r.note || (d.en + ' خراب')).filter(Boolean);
     const pendN = order.filter(id=> !(t[id] && t[id].status)).length;
+    let pno = 0;
     const stages = TESTS[s].map((g, gi)=>{
       const pend = g.items.filter(([id])=> !(t[id] && t[id].status));
       const doneN = g.items.length - pend.length;
       if(!pend.length) return `<div class="bj-stage"><div class="bj-st done">${gi === 0 ? '⭐ ' : ''}${esc(g.st)} — ✓ سب ٹیسٹ ہو گئے (اوپر)</div></div>`;
       const rows = pend.map(([id, en, ur, hint])=>{
-        const icon = nxt.has(id) ? '<span class="bj-ic nx">👉</span>' : '<span class="bj-ic">○</span>';
+        pno++;
+        const icon = `<span class="bj-no pd${nxt.has(id) ? ' nx' : ''}">${pno}</span>`;
         return `<div class="bj-test${nxt.has(id) ? ' nx' : ''}" onclick="banjhTest('${s}','${id}')">${icon}<div class="bj-tb">${gi === 0 ? '<span class="bj-basic">⭐ BASIC</span> ' : ''}<b class="bj-en" dir="ltr">${esc(en)}</b><div class="bj-ur">${esc(ur)}</div>
           ${hint ? `<div class="bj-hint">❓ کیوں: ${esc(hint)}</div>` : ''}</div></div>`;
       }).join('');
@@ -180,7 +182,7 @@
       <h3>${SIDE[s]} — ${esc(who)}</h3>
       <div class="bj-box all"><div class="bj-bh">✅ مکمل ہو چکے ٹیسٹ (${done.length})</div>
         <div class="bj-cnt"><span class="ok">✓ ٹھیک: ${okD.length}</span><span class="bad">✗ خراب: ${badD.length}</span><span class="pd">⏳ باقی: ${pendN}</span></div>
-        ${done.length ? okD.concat(badD).map(row).join('') : '<div class="bj-hint">ابھی کوئی ٹیسٹ نہیں ہوا — نیچے والے ٹیسٹ کروا کر رپورٹ کی تصویر بھیجیں۔</div>'}
+        ${done.length ? (okD.length ? `<div class="bj-sub ok">✓ ٹھیک ٹیسٹ (${okD.length})</div>` + okD.map(row).join('') : '') + (badD.length ? `<div class="bj-sub bad">✗ خراب ٹیسٹ (${badD.length})</div>` + badD.map(row).join('') : '') : '<div class="bj-hint">ابھی کوئی ٹیسٹ نہیں ہوا — نیچے والے ٹیسٹ کروا کر رپورٹ کی تصویر بھیجیں۔</div>'}
       </div>
       ${badD.length ? `<div class="bj-box bad"><div class="bj-bh">❌ خراب ٹیسٹ (${badD.length}) — پہلے ان کا علاج مکمل کریں، پھر یہی ٹیسٹ دوبارہ کروائیں</div>
         <div class="bj-chips">${badD.map(d=> `<span class="bj-chip bad">✗ ${esc(d.en)}</span>`).join('')}</div>
@@ -190,7 +192,7 @@
         : `<div class="bj-next done">✓ اس وقت کوئی نیا ٹیسٹ ضروری نہیں${badD.length ? ' — پہلے اوپر والا علاج کریں' : ''}</div>`}
       <label class="btn bj-up">📷 ${s === 'm' ? 'مرد' : 'عورت'} کی رپورٹ کی تصویر بھیجیں<input type="file" accept="image/*" multiple hidden onchange="banjhReport('${s}', this)"></label>
       <div id="bjStatus_${s}" class="bj-status"></div>
-      <div class="bj-bh" style="margin-top:12px; color:var(--gold);">⏳ باقی ٹیسٹ (مرحلہ وار)</div>
+      <div class="bj-bh" style="margin-top:12px; color:var(--gold);">⏳ باقی ٹیسٹ (${pendN}) — مرحلہ وار</div>
       ${stages}
     </div>`;
   }
@@ -411,6 +413,10 @@
   .bj-chip.ok{color:#1f9d55; border-color:#1f9d55; background:rgba(31,157,85,.08);} .bj-chip.bad{color:#e0524f; border-color:#e0524f; background:rgba(224,82,79,.07);}
   .bj-box.all{background:rgba(31,157,85,.05); border:2px solid #1f9d55;}
   .bj-box.all > .bj-bh{color:#1f9d55;}
+  .bj-no{flex:0 0 24px; height:24px; line-height:24px; border-radius:50%; text-align:center; color:#fff; font-weight:700; font-size:.8rem; font-family:Poppins, Arial, sans-serif; margin-top:2px;}
+  .bj-no.ok{background:#1f9d55;} .bj-no.bad{background:#e0524f;} .bj-no.pd{background:#8a8a8a;} .bj-no.pd.nx{background:#c9821b;}
+  .bj-sub{font-weight:700; font-size:.85rem; margin:8px 0 2px; padding:2px 8px; border-radius:8px; color:#fff;}
+  .bj-sub.ok{background:#1f9d55;} .bj-sub.bad{background:#e0524f;}
   .bj-box{border-radius:10px; padding:6px 8px; margin-bottom:8px;}
   .bj-box.ok{background:rgba(31,157,85,.08); border:2px solid #1f9d55;}
   .bj-box.bad{background:rgba(224,82,79,.07); border:2px solid #e0524f;}
