@@ -7,7 +7,7 @@
   const TESTS = {
     m: [
       { st:'مرحلہ 1 — بنیادی ٹیسٹ (Basic)', items:[
-        ['semen','Semen Analysis','مادہ منویہ کا ٹیسٹ','مرد کا سب سے پہلا اور اہم ٹیسٹ — سپرم کی تعداد، حرکت اور بناوٹ دیکھی جاتی ہے۔ 2 سے 5 دن پرہیز کے بعد۔ نارمل (WHO): مقدار 1.4ml+، تعداد 16 ملین/ml+، پروگریسو حرکت 30٪+، کل حرکت 42٪+، بناوٹ 4٪+، pH 7.2+'],
+        ['semen','Semen Analysis','مادہ منویہ کا ٹیسٹ','مرد کا سب سے پہلا اور اہم ٹیسٹ — سپرم کی تعداد، حرکت اور بناوٹ دیکھی جاتی ہے۔ 2 سے 5 دن پرہیز کے بعد۔ نارمل (WHO): مقدار 1.4ml+، تعداد 16 ملین/ml+، پروگریسو حرکت 30٪+، کل حرکت 42٪+، بناوٹ 4٪+، pH 7.2+۔ ⚠ سپرم کم ہوں تو ٹیسٹوسٹیرون کی گولی/ٹیکہ ہرگز نہیں — سپرم اور کم ہو جاتے ہیں'],
         ['urine_m','Urine R/E','پیشاب کا ٹیسٹ','پیشاب کی نالی کا انفیکشن، پس سیلز یا شوگر — یہ سپرم کو نقصان دیتے ہیں'],
         ['cbc_m','CBC','خون کا مکمل ٹیسٹ','خون کی کمی یا جسم میں انفیکشن تو نہیں'],
         ['sugar_m','HbA1c / Blood Sugar','شوگر کا ٹیسٹ','شوگر سے کمزوری، انزال کی خرابی اور سپرم کمزور ہوتے ہیں']
@@ -16,7 +16,7 @@
         ['semen2','Repeat Semen Analysis','دوبارہ سیمن ٹیسٹ','پہلی رپورٹ خراب ہو تو 2–3 ماہ بعد تصدیق — ایک سپرم کو بن کر تیار ہونے میں تقریباً 3 ماہ لگتے ہیں، اس لیے علاج یا بیماری کا اثر رپورٹ میں 3 ماہ بعد نظر آتا ہے'],
         ['fsh_m','FSH','سپرم بنانے والا ہارمون','زیادہ ہو تو خصیہ کمزور ہے؛ کم ہو تو دماغی غدود (پچوٹری) سے حکم نہیں آ رہا'],
         ['lh_m','LH','ٹیسٹوسٹیرون بنانے کا حکم دینے والا ہارمون','FSH کے ساتھ دیکھا جاتا ہے کہ خرابی خصیے میں ہے یا دماغی غدود میں'],
-        ['testo','Total Testosterone','مردانہ ہارمون (صبح 8–10 بجے)','کم ہو تو کمزوری، خواہش کی کمی اور سپرم کم۔ نارمل تقریباً 300–1000 ng/dl'],
+        ['testo','Total Testosterone','مردانہ ہارمون (صبح 8–10 بجے)','کم ہو تو کمزوری، خواہش کی کمی اور سپرم کم۔ نارمل تقریباً 300–1000 ng/dl۔ ⚠ کم ہو تب بھی بانجھ مرد کو ٹیسٹوسٹیرون خود نہ دیں — سپرم بننا رک جاتا ہے؛ ماہر hCG یا Clomiphene دیتا ہے'],
         ['prl_m','Prolactin','پرولیکٹن ہارمون','زیادہ ہو تو ٹیسٹوسٹیرون کم، کمزوری اور سپرم کی کمی'],
         ['tsh_m','TSH','تھائیرائیڈ کا ٹیسٹ','تھائیرائیڈ کی کمی/زیادتی سے سپرم اور جنسی طاقت متاثر ہوتی ہے']
       ]},
@@ -222,6 +222,7 @@
     const nextList = [...nxt].map(id=> `<li>${ALL[id].stage === 0 ? '⭐ ' : ''}<b class="bj-en" dir="ltr">${esc(ALL[id].en)}</b> — ${esc(ALL[id].ur)}</li>`).join('');
     return `<div class="bj-side bj-${s}">
       <h3>${SIDE[s]} — ${esc(who)}</h3>
+      ${s === 'm' ? `<div class="bj-warn">⚠ اہم: بانجھ پن (سپرم کی کمی) میں ٹیسٹوسٹیرون کی گولی، ٹیکہ، جیل یا باڈی بلڈنگ کے سٹیرائیڈ ہرگز نہ دیں — اس سے دماغ سپرم بنانے کا حکم (FSH/LH) بند کر دیتا ہے اور سپرم کم یا بالکل ختم ہو جاتے ہیں۔ دوا بند کرنے کے بعد سپرم واپس آنے میں 6–12 ماہ یا زیادہ لگ سکتے ہیں، کبھی پوری طرح واپس نہیں آتے۔ مریض سے ضرور پوچھیں کہ کہیں جم/طاقت کے ٹیکے تو نہیں لے رہا۔</div>` : ''}
       <div class="bj-box all"><div class="bj-bh">✅ مکمل ہو چکے ٹیسٹ (${done.length})</div>
         <div class="bj-cnt"><span class="ok">✓ ٹھیک: ${okD.length}</span><span class="bad">✗ خراب: ${badD.length}</span><span class="pd">⏳ باقی: ${pendN}</span></div>
         ${done.length ? (okD.length ? `<div class="bj-sub ok">✓ ٹھیک ٹیسٹ (${okD.length})</div>` + okD.map(row).join('') : '') + (badD.length ? `<div class="bj-sub bad">✗ خراب ٹیسٹ (${badD.length})</div>` + badD.map(row).join('') : '') : '<div class="bj-hint">ابھی کوئی ٹیسٹ نہیں ہوا — نیچے والے ٹیسٹ کروا کر رپورٹ کی تصویر بھیجیں۔</div>'}
@@ -495,6 +496,7 @@
   .bj-role.first{background:#1f9d55;} .bj-role.alt{background:#8a8a8a;} .bj-role.add{background:#2b6cb0;}
   .bj-one{font-size:.8rem; font-weight:700; color:#c9821b; margin-bottom:4px;}
   .bj-days{margin-right:22px; font-size:.8rem; color:#1f6f3f; font-weight:700;}
+  .bj-warn{background:#fdecea; border:2px solid #e0524f; color:#b03a37; border-radius:10px; padding:6px 10px; font-size:.82rem; font-weight:700; line-height:1.9; margin-bottom:8px;}
   .bj-mrow{margin-right:22px;} .bj-lb{color:var(--muted); font-size:.75rem;}
   .bj-brand{color:#2b6cb0; font-family:Poppins, Arial, sans-serif; font-size:.85rem;} .bj-co{color:#7b3fa0; font-family:Poppins, Arial, sans-serif; font-size:.82rem;} .bj-cn{font-size:.75rem; color:var(--muted);}
   .bj-mnote{font-size:.75rem; color:#b03a37;}
