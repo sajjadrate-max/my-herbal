@@ -66,30 +66,38 @@
   const esc = s=> String(s == null ? '' : s).replace(/[&<>"']/g, c=> ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
   // ---------- خرابی ← عام طور پر دی جانے والی دوائیں (معروف بین الاقوامی کمپنیاں؛ خوراک نہیں — صرف ڈاکٹر کے نسخے سے) ----------
+  // ہر دوا: [اصل دوا (نمک/Generic)، [[برانڈ (بازار میں نام)، کمپنی، ملک], ...]]
   const MEDS = [
-    { re:/پرولیکٹن|prolactin/i, items:[['Cabergoline','Dostinex — Pfizer'],['Bromocriptine','Parlodel — Novartis']], note:'پرولیکٹن بہت زیادہ ہو تو دماغی غدود کا MRI بھی' },
-    { re:/انڈا نہ|انڈا نہیں|اوویولیشن|ovulation|PCOS|پی سی او/i, items:[['Letrozole','Femara — Novartis'],['Clomiphene Citrate','Clomid — Sanofi'],['Metformin','Glucophage — Merck']], note:'Metformin صرف PCOS / انسولین مزاحمت میں۔ انڈا بننے کی دوا کے ساتھ فولیکل ٹریکنگ ضروری' },
-    { re:/پروجیسٹرون|progesterone|لیوٹیل/i, items:[['Dydrogesterone','Duphaston — Abbott'],['Micronized Progesterone','Utrogestan — Besins']], note:'' },
-    { re:/تھائیرائیڈ کم|ہائپو|hypothyroid|TSH زیادہ/i, items:[['Levothyroxine','Eltroxin — GSK / Euthyrox — Merck']], note:'' },
-    { re:/تھائیرائیڈ زیادہ|ہائپر تھائیرائیڈ|hyperthyroid/i, items:[['Carbimazole','Neo-Mercazole — Amdipharm']], note:'' },
-    { re:/پیشاب.*(انفیکشن|پس)|پس سیلز|UTI|urine/i, items:[['Antibiotic (per culture)','Augmentin — GSK / Ciproxin — Bayer']], note:'پہلے Urine C/S کروائیں، پھر اسی کے مطابق دوا' },
-    { re:/ویجائنل|لیکوریا|بیکٹیریل ویجائنوسس|ٹرائیکو/i, items:[['Metronidazole','Flagyl — Sanofi'],['Clotrimazole','Canesten — Bayer']], note:'Clotrimazole فنگس کے لیے۔ میاں بیوی دونوں کا علاج ساتھ' },
-    { re:/سیمن.*(انفیکشن|پس)|لیوکو/i, items:[['Doxycycline','Vibramycin — Pfizer']], note:'سیمن کلچر کے مطابق' },
-    { re:/سپرم.*(کمی|کم)|اولیگو|oligo|استھینو|asthenو|حرکت کم|بناوٹ|ٹیراٹو/i, items:[['L-Carnitine + Acetyl-L-Carnitine','Proxeed Plus — Alfasigma'],['Clomiphene Citrate','Clomid — Sanofi']], note:'Clomiphene صرف ماہر کے مشورے سے۔ ⚠ ٹیسٹوسٹیرون کی گولی/ٹیکہ ہرگز نہیں — اس سے سپرم اور کم ہو جاتے ہیں' },
-    { re:/ٹیسٹوسٹیرون کم|low testosterone|ہائپو گونیڈ/i, items:[['hCG injection','Pregnyl — Organon']], note:'⚠ بانجھ پن میں ٹیسٹوسٹیرون خود نہ دیں — سپرم بننا رک جاتا ہے' },
-    { re:/ازو سپرمیا|azoospermia|سپرم صفر|سپرم نہیں/i, items:[['ماہرِ امراضِ مردانہ (Urologist/Andrologist) سے رجوع','—']], note:'وجہ کے مطابق علاج (ہارمون، سرجری یا TESA)' },
-    { re:/ویریکوسیل|varicocele/i, items:[['سرجری (Varicocelectomy) — یورولوجسٹ','—']], note:'' },
-    { re:/شوگر|ذیابیطس|diabet/i, items:[['Metformin','Glucophage — Merck']], note:'' },
-    { re:/خون کی کمی|ہیموگلوبن|anemi/i, items:[['Iron + Folic Acid','Fefol — GSK / Ferrograd-Folic — Abbott']], note:'' },
-    { re:/وٹامن ڈی|vitamin d/i, items:[['Cholecalciferol (Vitamin D3)','—']], note:'' },
-    { re:/AMH کم|ذخیرہ کم|FSH زیادہ/i, items:[['دوا سے ذخیرہ نہیں بڑھتا — جلد ماہرِ بانجھ پن (IVF) سے رجوع','—']], note:'' },
-    { re:/نالیاں بند|نالی بند|tubal|HSG خراب/i, items:[['لیپرو/ہسٹرو اسکوپی یا IVF — ماہر سے رجوع','—']], note:'' }
+    { re:/پرولیکٹن|prolactin/i, items:[['Cabergoline',[['Dostinex','Pfizer','امریکہ']]],['Bromocriptine',[['Parlodel','Novartis','سوئٹزرلینڈ']]]], note:'پرولیکٹن بہت زیادہ ہو تو دماغی غدود کا MRI بھی کروائیں' },
+    { re:/انڈا نہ|انڈا نہیں|اوویولیشن|ovulation|PCOS|پی سی او/i, items:[['Letrozole',[['Femara','Novartis','سوئٹزرلینڈ']]],['Clomiphene Citrate',[['Clomid','Sanofi','فرانس']]],['Metformin',[['Glucophage','Merck','جرمنی']]]], note:'Metformin صرف PCOS / انسولین مزاحمت میں۔ انڈا بننے کی دوا کے ساتھ فولیکل ٹریکنگ ضروری' },
+    { re:/پروجیسٹرون|progesterone|لیوٹیل/i, items:[['Dydrogesterone',[['Duphaston','Abbott','امریکہ']]],['Micronized Progesterone',[['Utrogestan','Besins','فرانس']]]], note:'' },
+    { re:/تھائیرائیڈ کم|ہائپو تھائیرائیڈ|hypothyroid|TSH زیادہ/i, items:[['Levothyroxine',[['Eltroxin','GSK','برطانیہ'],['Euthyrox','Merck','جرمنی']]]], note:'' },
+    { re:/تھائیرائیڈ زیادہ|ہائپر تھائیرائیڈ|hyperthyroid/i, items:[['Carbimazole',[['Neo-Mercazole','Amdipharm','برطانیہ']]]], note:'' },
+    { re:/پیشاب.*(انفیکشن|پس)|پس سیلز|UTI|urine/i, items:[['Co-amoxiclav',[['Augmentin','GSK','برطانیہ']]],['Ciprofloxacin',[['Ciproxin','Bayer','جرمنی']]]], note:'پہلے Urine C/S (کلچر) کروائیں — اینٹی بائیوٹک اسی رپورٹ کے مطابق' },
+    { re:/ویجائنل|لیکوریا|بیکٹیریل ویجائنوسس|ٹرائیکو/i, items:[['Metronidazole',[['Flagyl','Sanofi','فرانس']]],['Clotrimazole',[['Canesten','Bayer','جرمنی']]]], note:'Clotrimazole فنگس کے لیے۔ میاں بیوی دونوں کا علاج ساتھ' },
+    { re:/سیمن.*(انفیکشن|پس)|لیوکو/i, items:[['Doxycycline',[['Vibramycin','Pfizer','امریکہ']]]], note:'سیمن کلچر کے مطابق' },
+    { re:/سپرم.*(کمی|کم)|اولیگو|oligo|استھینو|حرکت کم|بناوٹ|ٹیراٹو/i, items:[['L-Carnitine + Acetyl-L-Carnitine',[['Proxeed Plus','Alfasigma','اٹلی']]],['Clomiphene Citrate',[['Clomid','Sanofi','فرانس']]]], note:'Clomiphene صرف ماہر کے مشورے سے۔ ⚠ ٹیسٹوسٹیرون کی گولی/ٹیکہ ہرگز نہیں — اس سے سپرم اور کم ہو جاتے ہیں' },
+    { re:/ٹیسٹوسٹیرون کم|low testosterone|ہائپو گونیڈ/i, items:[['hCG (injection)',[['Pregnyl','Organon','امریکہ']]]], note:'⚠ بانجھ پن میں ٹیسٹوسٹیرون خود نہ دیں — سپرم بننا رک جاتا ہے' },
+    { re:/شوگر|ذیابیطس|diabet/i, items:[['Metformin',[['Glucophage','Merck','جرمنی']]]], note:'' },
+    { re:/خون کی کمی|ہیموگلوبن|anemi/i, items:[['Iron + Folic Acid',[['Fefol','GSK','برطانیہ'],['Ferrograd-Folic','Abbott','امریکہ']]]], note:'' },
+    { re:/وٹامن ڈی|vitamin d/i, items:[['Cholecalciferol (Vitamin D3)',[]]], note:'' }
   ];
-  function medsFor(x){ return MEDS.filter(m=> m.re.test(x)); }
+  // جہاں دوا سے فائدہ نہیں — صرف مشورہ
+  const ADVICE = [
+    { re:/ازو سپرمیا|azoospermia|سپرم صفر|سپرم نہیں/i, t:'ماہرِ امراضِ مردانہ (Urologist / Andrologist) سے رجوع — وجہ کے مطابق ہارمون، سرجری یا TESA' },
+    { re:/ویریکوسیل|varicocele/i, t:'سرجری (Varicocelectomy) — یورولوجسٹ سے رجوع' },
+    { re:/AMH کم|ذخیرہ کم|FSH زیادہ/i, t:'دوا سے انڈوں کا ذخیرہ نہیں بڑھتا — جلد ماہرِ بانجھ پن (IVF) سے رجوع' },
+    { re:/نالیاں بند|نالی بند|tubal|HSG خراب/i, t:'لیپرو / ہسٹرو اسکوپی یا IVF — ماہر سے رجوع' }
+  ];
   function treatHtml(list){
     return `<ol class="bj-tl">${list.map(x=>{
-      const ms = medsFor(x);
-      return `<li><b>${esc(x)}</b>${ms.length ? `<div class="bj-meds">${ms.map(m=> m.items.map(([g, b])=> `<div class="bj-med">💊 <span dir="ltr" class="bj-en" style="font-size:.85rem;">${esc(g)}</span>${b !== '—' ? ` — <span dir="ltr" class="bj-brand">${esc(b)}</span>` : ''}</div>`).join('') + (m.note ? `<div class="bj-mnote">${esc(m.note)}</div>` : '')).join('')}</div>` : ''}</li>`;
+      const ms = MEDS.filter(m=> m.re.test(x)), ad = ADVICE.filter(a=> a.re.test(x));
+      const meds = ms.map(m=> m.items.map(([g, brands])=> `<div class="bj-med">
+          <div>💊 <span class="bj-lb">دوا (اصل نمک):</span> <b class="bj-en" dir="ltr">${esc(g)}</b></div>
+          ${brands.map(([b, co, cn])=> `<div class="bj-mrow"><span class="bj-lb">برانڈ (بازار میں نام):</span> <b class="bj-brand" dir="ltr">${esc(b)}</b></div><div class="bj-mrow"><span class="bj-lb">کمپنی:</span> <b class="bj-co" dir="ltr">${esc(co)}</b> <span class="bj-cn">(${esc(cn)})</span></div>`).join('')}
+        </div>`).join('') + (m.note ? `<div class="bj-mnote">${esc(m.note)}</div>` : '')).join('');
+      const adv = ad.map(a=> `<div class="bj-mnote">👨‍⚕️ ${esc(a.t)}</div>`).join('');
+      return `<li><b>${esc(x)}</b>${meds || adv ? `<div class="bj-meds">${meds}${adv}</div>` : ''}</li>`;
     }).join('')}</ol>
     <div class="bj-rx">⚠ یہ دوائیں عام طور پر ڈاکٹر دیتے ہیں — صرف مستند ڈاکٹر کے نسخے اور خوراک سے۔ حمل ٹھہرنے کا شبہ ہو تو کوئی دوا ڈاکٹر سے پوچھے بغیر جاری نہ رکھیں۔</div>`;
   }
@@ -478,7 +486,9 @@
   .bj-sub.ok{background:#1f9d55;} .bj-sub.bad{background:#e0524f;}
   .bj-tl{margin:4px 22px 0 0; padding:0;} .bj-tl > li{margin:6px 0;}
   .bj-meds{background:var(--card); border:1px dashed var(--border); border-radius:8px; padding:4px 8px; margin-top:3px;}
-  .bj-med{font-size:.82rem; line-height:1.8;} .bj-brand{color:#2b6cb0; font-family:Poppins, Arial, sans-serif; font-size:.8rem;}
+  .bj-med{font-size:.82rem; line-height:1.9; padding:4px 0; border-bottom:1px dotted var(--border);}
+  .bj-mrow{margin-right:22px;} .bj-lb{color:var(--muted); font-size:.75rem;}
+  .bj-brand{color:#2b6cb0; font-family:Poppins, Arial, sans-serif; font-size:.85rem;} .bj-co{color:#7b3fa0; font-family:Poppins, Arial, sans-serif; font-size:.82rem;} .bj-cn{font-size:.75rem; color:var(--muted);}
   .bj-mnote{font-size:.75rem; color:#b03a37;}
   .bj-rx{font-size:.74rem; color:#b03a37; margin-top:6px; font-weight:700;}
   .bj-box{border-radius:10px; padding:6px 8px; margin-bottom:8px;}
