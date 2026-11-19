@@ -112,8 +112,9 @@
   function card(c){
     const m = counts(c, 'm'), f = counts(c, 'f');
     return `<div class="bj-case" data-q="${esc((c.husband + ' ' + c.wife).toLowerCase())}" onclick="banjhOpen('${c.id}')">
+      <button type="button" class="bj-del" title="ڈیلیٹ" onclick="event.stopPropagation(); banjhDeleteId('${c.id}')">🗑 ڈیلیٹ</button>
       <div class="bj-case-names">👨 ${esc(c.husband)} <span style="color:var(--muted);">&</span> 👩 ${esc(c.wife)}</div>
-      <div class="bj-case-meta">مرد: <b class="ok">✔ ${m.ok}</b> <b class="bad">✖ ${m.bad}</b> · عورت: <b class="ok">✔ ${f.ok}</b> <b class="bad">✖ ${f.bad}</b> · ${fmtD(c.created)} سے</div>
+      <div class="bj-case-meta">مرد: <b class="ok">✓ ${m.ok}</b> <b class="bad">✗ ${m.bad}</b> · عورت: <b class="ok">✓ ${f.ok}</b> <b class="bad">✗ ${f.bad}</b> · ${fmtD(c.created)} سے</div>
     </div>`;
   }
   window.banjhFind = ()=>{
@@ -293,6 +294,11 @@
     if(h.trim()) CUR.husband = h.trim(); if(w.trim()) CUR.wife = w.trim();
     await put(CUR); render();
   };
+  window.banjhDeleteId = async (id)=>{
+    const c = await get(id); if(!c) return;
+    if(!confirm('"' + c.husband + ' & ' + c.wife + '" کا پورا کھاتہ (سب ٹیسٹ اور رپورٹیں) ہمیشہ کے لیے ڈیلیٹ کر دیں؟')) return;
+    await del(id); list();
+  };
   window.banjhDelete = async ()=>{
     if(!confirm('"' + CUR.husband + ' & ' + CUR.wife + '" کا پورا کھاتہ ہمیشہ کے لیے ڈیلیٹ کر دیں؟')) return;
     await del(CUR.id); list();
@@ -380,7 +386,9 @@
   .bj-new .btn{grid-column:1 / -1;}
   .bj-new input{width:100%; box-sizing:border-box;}
   .bj-case{border:1px solid var(--border); border-right:5px solid var(--gold); border-radius:12px; padding:10px 12px; margin:8px 0; background:var(--card); cursor:pointer;}
-  .bj-case-names{font-weight:700; color:var(--gold); font-size:1.05rem;}
+  .bj-case{position:relative;}
+  .bj-del{position:absolute; top:8px; left:8px; background:none; border:1px solid #e0524f; color:#e0524f; border-radius:14px; padding:2px 10px; font-family:inherit; font-size:.8rem; cursor:pointer;}
+  .bj-case-names{padding-left:80px; font-weight:700; color:var(--gold); font-size:1.05rem;}
   .bj-case-meta{font-size:.78rem; color:var(--muted); margin-top:2px;}
   .bj-case-meta .ok, .bj-ic.ok{color:#1f9d55;} .bj-case-meta .bad, .bj-ic.bad{color:#e0524f;}
   .bj-backup{display:flex; gap:8px; justify-content:center; flex-wrap:wrap; margin-top:14px;}
