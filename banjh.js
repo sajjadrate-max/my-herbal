@@ -112,7 +112,7 @@
   function card(c){
     const m = counts(c, 'm'), f = counts(c, 'f');
     return `<div class="bj-case" data-q="${esc((c.husband + ' ' + c.wife).toLowerCase())}" onclick="banjhOpen('${c.id}')">
-      <button type="button" class="bj-del" title="ڈیلیٹ" onclick="event.stopPropagation(); banjhDeleteId('${c.id}')">🗑 ڈیلیٹ</button>
+      <button type="button" class="bj-dots" aria-label="مزید" onclick="event.stopPropagation(); banjhMenu(this, '${c.id}')">⋮</button>
       <div class="bj-case-names">👨 ${esc(c.husband)} <span style="color:var(--muted);">&</span> 👩 ${esc(c.wife)}</div>
       <div class="bj-case-meta">مرد: <b class="ok">✓ ${m.ok}</b> <b class="bad">✗ ${m.bad}</b> · عورت: <b class="ok">✓ ${f.ok}</b> <b class="bad">✗ ${f.bad}</b> · ${fmtD(c.created)} سے</div>
     </div>`;
@@ -294,6 +294,24 @@
     if(h.trim()) CUR.husband = h.trim(); if(w.trim()) CUR.wife = w.trim();
     await put(CUR); render();
   };
+  // ⋮ مینیو: کھولیں / نام درست / ڈیلیٹ
+  window.banjhMenu = (btn, id)=>{
+    const old = document.querySelector('.bj-menu'); if(old){ const same = old.previousElementSibling === btn; old.remove(); if(same) return; }
+    const m = document.createElement('div'); m.className = 'bj-menu';
+    [['📂 کھاتہ کھولیں', ()=> banjhOpen(id)], ['✏ نام درست کریں', ()=> banjhRenameId(id)], ['🗑 ڈیلیٹ کریں', ()=> banjhDeleteId(id), 1]].forEach(([t, fn, red])=>{
+      const b = document.createElement('button'); b.type = 'button'; b.textContent = t; if(red) b.style.color = '#e0524f';
+      b.onclick = e=>{ e.stopPropagation(); m.remove(); fn(); }; m.appendChild(b);
+    });
+    btn.after(m);
+  };
+  document.addEventListener('click', ()=>{ const m = document.querySelector('.bj-menu'); if(m) m.remove(); });
+  window.banjhRenameId = async (id)=>{
+    const c = await get(id); if(!c) return;
+    const h = prompt('شوہر کا نام:', c.husband); if(h === null) return;
+    const w = prompt('بیوی کا نام:', c.wife); if(w === null) return;
+    if(h.trim()) c.husband = h.trim(); if(w.trim()) c.wife = w.trim();
+    await put(c); list();
+  };
   window.banjhDeleteId = async (id)=>{
     const c = await get(id); if(!c) return;
     if(!confirm('"' + c.husband + ' & ' + c.wife + '" کا پورا کھاتہ (سب ٹیسٹ اور رپورٹیں) ہمیشہ کے لیے ڈیلیٹ کر دیں؟')) return;
@@ -387,8 +405,12 @@
   .bj-new input{width:100%; box-sizing:border-box;}
   .bj-case{border:1px solid var(--border); border-right:5px solid var(--gold); border-radius:12px; padding:10px 12px; margin:8px 0; background:var(--card); cursor:pointer;}
   .bj-case{position:relative;}
-  .bj-del{position:absolute; top:8px; left:8px; background:none; border:1px solid #e0524f; color:#e0524f; border-radius:14px; padding:2px 10px; font-family:inherit; font-size:.8rem; cursor:pointer;}
-  .bj-case-names{padding-left:80px; font-weight:700; color:var(--gold); font-size:1.05rem;}
+  .bj-dots{position:absolute; top:6px; left:6px; width:32px; height:32px; border:none; background:transparent; color:var(--gold); font-size:1.5rem; line-height:1; border-radius:50%; cursor:pointer;}
+  .bj-dots:hover{background:var(--border);}
+  .bj-menu{position:absolute; top:40px; left:6px; z-index:20; background:var(--card); border:1px solid var(--border); border-radius:10px; box-shadow:0 6px 18px rgba(0,0,0,.18); display:flex; flex-direction:column; min-width:170px; overflow:hidden;}
+  .bj-menu button{background:none; border:none; border-bottom:1px solid var(--border); padding:10px 14px; text-align:right; font-family:inherit; font-size:.92rem; color:var(--text); cursor:pointer;}
+  .bj-menu button:last-child{border-bottom:none;}
+  .bj-case-names{padding-left:40px; font-weight:700; color:var(--gold); font-size:1.05rem;}
   .bj-case-meta{font-size:.78rem; color:var(--muted); margin-top:2px;}
   .bj-case-meta .ok, .bj-ic.ok{color:#1f9d55;} .bj-case-meta .bad, .bj-ic.bad{color:#e0524f;}
   .bj-backup{display:flex; gap:8px; justify-content:center; flex-wrap:wrap; margin-top:14px;}
