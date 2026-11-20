@@ -59,7 +59,9 @@ async function banjhReport(req, res) {
 6) "summary": اردو میں 1–2 جملے کہ رپورٹ میں کیا ملا اور آگے کیا کرنا ہے۔
 ہر عبارت اردو رسم الخط میں (ٹیسٹ کے انگریزی مخففات جیسے FSH، AMH، TSH ٹھیک ہیں)۔
 صرف JSON: {"results":[{"id":"semen","status":"bad","value":"...","note":"..."}],"other":[{"name":"...","value":"...","note":"..."}],"treat":["..."],"next":["fsh_m"],"summary":"..."}`;
-    const content = [{ type: 'text', text: 'ٹیسٹوں کی فہرست:\n' + tests.map(t => `${t.id} — مرحلہ ${t.stage} — ${t.name}${t.hint ? ' (' + t.hint + ')' : ''}`).join('\n')
+    // کسی خاص ٹیسٹ کے خانے سے بھیجی گئی رپورٹ: اسی ٹیسٹ کی مانی جائے، رپورٹ پر نام کچھ بھی لکھا ہو
+    const target = tests.find(t => t.id === String(b.target || ''));
+    const content = [{ type: 'text', text: (target ? `⚠ یہ رپورٹ مالک نے "${target.name}" (id: ${target.id}) کے خانے سے بھیجی ہے — اسے اسی ٹیسٹ کی رپورٹ مانیں، چاہے رپورٹ پر نام مختلف یا غلط لکھا ہو۔ results میں لازمی id "${target.id}" کے ساتھ اس کا فیصلہ (ok/bad) دیں۔ رپورٹ میں اور ٹیسٹ بھی ہوں تو ان کے بھی دیں۔\n\n` : '') + 'ٹیسٹوں کی فہرست:\n' + tests.map(t => `${t.id} — مرحلہ ${t.stage} — ${t.name}${t.hint ? ' (' + t.hint + ')' : ''}`).join('\n')
       + '\n\nپہلے کے نتیجے:\n' + (done.length ? done.map(t => `${t.id} ${t.name}: ${t.status === 'ok' ? 'ٹھیک' : 'خراب'} ${t.value}`).join('\n') : 'کوئی نہیں') + '\n\nرپورٹ کی تصویریں:' }];
     images.forEach(u => content.push({ type: 'image_url', image_url: { url: u, detail: 'high' } }));
     const r = await fetch('https://api.openai.com/v1/chat/completions', {

@@ -223,7 +223,7 @@
     const okD = done.filter(d=> d.r.status === 'ok'), badD = done.filter(d=> d.r.status === 'bad');
     const row = (d, i)=> `<div class="bj-done ${d.r.status}" onclick="${d.tap}"><span class="bj-big ${d.r.status}">${d.r.status === 'ok' ? '✓' : '✗'}</span><span class="bj-no ${d.r.status}">${i + 1}</span><span class="bj-pill ${d.r.status}">${d.r.status === 'ok' ? '✓ صحیح' : '✗ خراب'}</span>
         <div class="bj-tb"><b class="bj-en" dir="ltr">${esc(d.en)}</b>${d.ur ? ` <span class="bj-ur">— ${esc(d.ur)}</span>` : ''}
-        ${d.r.value ? `<div class="bj-val">${esc(d.r.value)}</div>` : ''}${d.r.note ? `<div class="bj-tn">${esc(d.r.note)}</div>` : ''}<div class="bj-hint">📅 ${fmtD(d.r.date || Date.now())}</div></div></div>`;
+        ${d.r.value ? `<div class="bj-val">${esc(d.r.value)}</div>` : ''}${d.r.note ? `<div class="bj-tn">${esc(d.r.note)}</div>` : ''}<div class="bj-hint">📅 ${fmtD(d.r.date || Date.now())}</div>${ALL[d.key] ? `<label class="bj-tup" onclick="event.stopPropagation()">📷 نئی رپورٹ بھیجیں<input type="file" accept="image/*" multiple hidden onchange="banjhReport('${s}', this, '${d.key}')"></label>` : ''}</div></div>`;
     let treat = (c[s].treat || []).slice();
     if(!treat.length) treat = badD.map(d=> d.r.note || (d.en + ' خراب')).filter(Boolean);
     const pendN = order.filter(id=> !(t[id] && t[id].status)).length;
@@ -241,7 +241,8 @@
         const sugarNote = (id === 'sugar_m' || id === 'sugar_f') && !st && t[uId] && t[uId].status
           ? `<div class="bj-info">ℹ پیشاب کی رپورٹ میں "Sugar: Nil" ہو تو اچھی بات ہے — مگر یہ <b>پیشاب</b> کی شوگر ہے۔ پیشاب میں شوگر تب آتی ہے جب خون کی شوگر بہت زیادہ (تقریباً 180 سے اوپر) ہو، اس لیے PCOS اور انسولین مزاحمت جیسی ہلکی خرابی اس سے پتا نہیں چلتی۔ خون کا HbA1c / شوگر ٹیسٹ الگ ضروری ہے۔</div>` : '';
         return `<div class="bj-test${st ? ' ' + st : ''}${!st && nxt.has(id) ? ' nx' : ''}" onclick="banjhTest('${s}','${id}')">${big}${icon}<div class="bj-tb">${pill}${gi === 0 ? '<span class="bj-basic">⭐ BASIC</span> ' : ''}<b class="bj-en" dir="ltr">${esc(en)}</b><div class="bj-ur">${esc(ur)}</div>
-          ${st ? `${r.value ? `<div class="bj-val">${esc(r.value)}</div>` : ''}${r.note ? `<div class="bj-tn">${esc(r.note)}</div>` : ''}` : (hint ? `<div class="bj-hint">❓ کیوں: ${esc(hint)}</div>` : '')}${sugarNote}</div></div>`;
+          ${st ? `${r.value ? `<div class="bj-val">${esc(r.value)}</div>` : ''}${r.note ? `<div class="bj-tn">${esc(r.note)}</div>` : ''}` : (hint ? `<div class="bj-hint">❓ کیوں: ${esc(hint)}</div>` : '')}${sugarNote}
+          <label class="bj-tup" onclick="event.stopPropagation()">📷 اس ٹیسٹ کی رپورٹ بھیجیں<input type="file" accept="image/*" multiple hidden onchange="banjhReport('${s}', this, '${id}')"></label></div></div>`;
       }).join('');
       if(doneN === g.items.length) return `<div class="bj-stage"><div class="bj-st done">${gi === 0 ? '⭐ ' : ''}${esc(g.st)} — ✓ سب ٹیسٹ ہو گئے (اوپر)</div></div>`;
       return `<div class="bj-stage"><div class="bj-st">${gi === 0 ? '⭐ ' : ''}${esc(g.st)}${doneN ? ` <small>(${doneN} ہو گئے — اوپر)</small>` : ''}</div>${rows}</div>`;
@@ -402,7 +403,7 @@
       img.src = u;
     });
   }
-  window.banjhReport = async (s, input)=>{
+  window.banjhReport = async (s, input, target)=>{
     const files = Array.from(input.files || []).slice(0, 3); input.value = '';
     if(!files.length) return;
     const c = CUR, st = document.getElementById('bjStatus_' + s);
@@ -416,7 +417,7 @@
     const done = Object.keys(c[s].tests).map(id=> ({ id, name: ALL[id] ? ALL[id].name : id, status: c[s].tests[id].status, value: c[s].tests[id].value }));
     let d = null;
     try{
-      const r = await fetch('/api/notify-disease?banjh=1', { method:'POST', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify({ side: s, images, tests, done }) });
+      const r = await fetch('/api/notify-disease?banjh=1', { method:'POST', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify({ side: s, images, tests, done, target: target || '' }) });
       d = await r.json().catch(()=> ({}));
       if(!r.ok || d.error){ say('⚠ ' + (d.error || ('خرابی ' + r.status)), '#e0524f'); return; }
     }catch(e){ say('⚠ انٹرنیٹ کا مسئلہ — دوبارہ کوشش کریں', '#e0524f'); return; }
@@ -439,6 +440,16 @@
       lines.push((x.status === 'ok' ? '✓ ' : x.status === 'bad' ? '✗ ' : '• ') + ln);
       if(x.status === 'ok') okL.push(ln); else if(x.status === 'bad') badL.push(ln);
     });
+    // خانے سے بھیجی رپورٹ: AI نے اس ٹیسٹ کا الگ نتیجہ نہ دیا ہو تو پوری رپورٹ کا فیصلہ اسی ٹیسٹ پر
+    if(target && ALL[target] && !(d.results || []).some(x=> x.id === target)){
+      const all = (d.results || []).concat(d.other || []).filter(x=> x.status === 'ok' || x.status === 'bad');
+      if(all.length){
+        const bad = all.filter(x=> x.status === 'bad');
+        c[s].tests[target] = { status: bad.length ? 'bad' : 'ok', value: all.map(x=> (x.name || (ALL[x.id] ? ALL[x.id].en : x.id)) + ' ' + (x.value || '') + (x.status === 'ok' ? ' ✓' : ' ✗')).join('، '), note: bad.map(x=> x.note).filter(Boolean).join('، ') || 'نارمل', date: Date.now() };
+        (d.other || []).forEach(o=>{ if(c[s].extra) delete c[s].extra[o.name]; });
+        okL.length = 0; badL.length = 0; (bad.length ? badL : okL).push(ALL[target].name + ': ' + c[s].tests[target].value);
+      }
+    }
     if(Array.isArray(d.treat)) c[s].treat = d.treat;
     c[s].next = (d.next || []).filter(id=> ALL[id] && ALL[id].side === s);
     const text = (d.summary ? d.summary + '\n' : '') + lines.join('\n')
@@ -540,6 +551,7 @@
   .bj-big.ok{color:#1f9d55;} .bj-big.bad{color:#e0524f;}
   .bj-pill{white-space:normal !important;}
   .bj-info{background:#e8f1fb; border:1px solid #2b6cb0; color:#1e4e8c; border-radius:8px; padding:4px 8px; font-size:.78rem; line-height:1.8; margin-top:4px;}
+  .bj-tup{display:inline-block; margin-top:6px; border:1px solid var(--gold); color:var(--gold); background:var(--card); border-radius:14px; padding:2px 12px; font-size:.78rem; cursor:pointer;}
   .bj-mrow{margin-right:22px;} .bj-lb{color:var(--muted); font-size:.75rem;}
   .bj-brand{color:#2b6cb0; font-family:Poppins, Arial, sans-serif; font-size:.85rem;} .bj-co{color:#7b3fa0; font-family:Poppins, Arial, sans-serif; font-size:.82rem;} .bj-cn{font-size:.75rem; color:var(--muted);}
   .bj-mnote{font-size:.75rem; color:#b03a37;}
