@@ -172,8 +172,8 @@
 
   // ---------- ایک کھاتہ ----------
   // رپورٹ میں فہرست سے باہر کے نام سے آیا ٹیسٹ ← فہرست کا ٹیسٹ (مثلاً "Urine Pus Cells" ← Urine R/E)
-  const KEYMAP = { m:[[/urine|پیشاب/i,'urine_m'],[/\bcbc\b|h(a)?emoglobin|\bhb\b|خون کا مکمل/i,'cbc_m'],[/hba1c|sugar|glucose|شوگر/i,'sugar_m'],[/prolactin|پرولیکٹن/i,'prl_m'],[/\btsh\b/i,'tsh_m'],[/testosterone|ٹیسٹوسٹیرون/i,'testo'],[/\bfsh\b/i,'fsh_m'],[/\blh\b/i,'lh_m'],[/semen|سیمن|sperm|سپرم/i,'semen']],
-                   f:[[/urine|پیشاب/i,'urine_f'],[/\bcbc\b|h(a)?emoglobin|\bhb\b|خون کا مکمل/i,'cbc_f'],[/hba1c|sugar|glucose|شوگر/i,'sugar_f'],[/prolactin|پرولیکٹن/i,'prl_f'],[/\btsh\b/i,'tsh_f'],[/\bamh\b/i,'amh'],[/progesterone|پروجیسٹرون/i,'prog21'],[/vitamin d|وٹامن ڈی/i,'vitd'],[/rubella|روبیلا/i,'rubella'],[/\bhsg\b/i,'hsg'],[/vaginal swab|\bhvs\b/i,'hvs'],[/testosterone|dhea/i,'androgen']] };
+  const KEYMAP = { m:[[/urine|پیشاب/i,'urine_m'],[/\bcbc\b|h(a)?emoglobin|\bhb\b|خون کا مکمل/i,'cbc_m'],[/hba1c|blood sugar|glucose|\bbsr\b|\bfbs\b|خون کی شوگر/i,'sugar_m'],[/prolactin|پرولیکٹن/i,'prl_m'],[/\btsh\b|thyroid stimulating/i,'tsh_m'],[/testosterone|ٹیسٹوسٹیرون/i,'testo'],[/\bfsh\b|follicle stimulating/i,'fsh_m'],[/\blh\b|luteini/i,'lh_m'],[/semen|سیمن|sperm|سپرم/i,'semen']],
+                   f:[[/urine|پیشاب/i,'urine_f'],[/\bcbc\b|h(a)?emoglobin|\bhb\b|خون کا مکمل/i,'cbc_f'],[/hba1c|blood sugar|glucose|\bbsr\b|\bfbs\b|خون کی شوگر/i,'sugar_f'],[/prolactin|پرولیکٹن/i,'prl_f'],[/\btsh\b|thyroid stimulating/i,'tsh_f'],[/\bamh\b|m[uü]ll?erian|انڈوں کا ذخیرہ/i,'amh'],[/progesterone|پروجیسٹرون/i,'prog21'],[/vitamin\s*d|25.?oh|وٹامن ڈی/i,'vitd'],[/rubella|روبیلا/i,'rubella'],[/\bhsg\b|hysterosalping/i,'hsg'],[/vaginal swab|\bhvs\b/i,'hvs'],[/testosterone|dhea|ٹیسٹوسٹیرون/i,'androgen'],[/\bfsh\b|\blh\b|estradiol|\be2\b|follicle stimulating|luteini/i,'d2'],[/ultrasound|\btvs\b|الٹراساؤنڈ|sonograph/i,'tvs']] };
   function keyFor(s, name){ const k = (KEYMAP[s] || []).find(([re])=> re.test(name)); return k && ALL[k[1]] ? k[1] : ''; }
   // پرانے ریکارڈ سے: جو ٹیسٹ رپورٹ میں آ چکے مگر فہرست میں نشان نہیں لگا، ان پر ✓/✗ لگائیں
   function migrate(c){
@@ -430,6 +430,7 @@
     });
     c[s].extra = c[s].extra || {};
     (d.other || []).forEach(x=>{
+      if(x.status !== 'ok' && x.status !== 'bad'){ const tx = (x.note || '') + ' ' + (x.value || ''); x.status = /زیادہ|کم|high|low|abnormal|خراب|انفیکشن/i.test(tx) ? 'bad' : /نارمل|normal|ٹھیک|within|صحیح/i.test(tx) ? 'ok' : ''; }
       if(x.status === 'ok' || x.status === 'bad'){
         const id = keyFor(s, x.name), rec = { status: x.status, value: x.value || '', note: x.note || '', date: Date.now() };
         if(id) c[s].tests[id] = rec; else c[s].extra[x.name] = rec;
