@@ -199,7 +199,7 @@
     const done = order.filter(id=> t[id] && t[id].status).map(id=> ({ key:id, en:ALL[id].en, ur:ALL[id].ur, r:t[id], tap:`banjhTest('${s}','${id}')` }))
       .concat(Object.keys(ex).filter(k=> ex[k].status).map(k=> ({ key:k, en:k, ur:'', r:ex[k], tap:`banjhExtra('${s}',${JSON.stringify(k).replace(/"/g, '&quot;')})` })));
     const okD = done.filter(d=> d.r.status === 'ok'), badD = done.filter(d=> d.r.status === 'bad');
-    const row = (d, i)=> `<div class="bj-done ${d.r.status}" onclick="${d.tap}"><span class="bj-no ${d.r.status}">${i + 1}</span><span class="bj-pill ${d.r.status}">${d.r.status === 'ok' ? '✓ ٹھیک' : '✗ خراب'}</span>
+    const row = (d, i)=> `<div class="bj-done ${d.r.status}" onclick="${d.tap}"><span class="bj-big ${d.r.status}">${d.r.status === 'ok' ? '✓' : '✗'}</span><span class="bj-no ${d.r.status}">${i + 1}</span><span class="bj-pill ${d.r.status}">${d.r.status === 'ok' ? '✓ صحیح — دوبارہ ضرورت نہیں' : '✗ خراب'}</span>
         <div class="bj-tb"><b class="bj-en" dir="ltr">${esc(d.en)}</b>${d.ur ? ` <span class="bj-ur">— ${esc(d.ur)}</span>` : ''}
         ${d.r.value ? `<div class="bj-val">${esc(d.r.value)}</div>` : ''}${d.r.note ? `<div class="bj-tn">${esc(d.r.note)}</div>` : ''}<div class="bj-hint">📅 ${fmtD(d.r.date || Date.now())}</div></div></div>`;
     let treat = (c[s].treat || []).slice();
@@ -213,8 +213,9 @@
         pno++;
         const r = t[id] || {}, st = r.status;
         const icon = `<span class="bj-no ${st || 'pd'}${!st && nxt.has(id) ? ' nx' : ''}">${pno}</span>`;
-        const pill = st ? `<span class="bj-pill ${st}">${st === 'ok' ? '✓ ٹھیک — ہو گیا' : '✗ خراب — علاج کے بعد دوبارہ'}</span> ` : '';
-        return `<div class="bj-test${st ? ' ' + st : ''}${!st && nxt.has(id) ? ' nx' : ''}" onclick="banjhTest('${s}','${id}')">${icon}<div class="bj-tb">${pill}${gi === 0 ? '<span class="bj-basic">⭐ BASIC</span> ' : ''}<b class="bj-en" dir="ltr">${esc(en)}</b><div class="bj-ur">${esc(ur)}</div>
+        const pill = st ? `<span class="bj-pill ${st}">${st === 'ok' ? '✓ صحیح ہے — دوبارہ ٹیسٹ کی ضرورت نہیں' : '✗ خراب — علاج کے بعد دوبارہ ٹیسٹ'}</span> ` : '';
+        const big = st ? `<span class="bj-big ${st}">${st === 'ok' ? '✓' : '✗'}</span>` : '';
+        return `<div class="bj-test${st ? ' ' + st : ''}${!st && nxt.has(id) ? ' nx' : ''}" onclick="banjhTest('${s}','${id}')">${big}${icon}<div class="bj-tb">${pill}${gi === 0 ? '<span class="bj-basic">⭐ BASIC</span> ' : ''}<b class="bj-en" dir="ltr">${esc(en)}</b><div class="bj-ur">${esc(ur)}</div>
           ${st ? `${r.value ? `<div class="bj-val">${esc(r.value)}</div>` : ''}${r.note ? `<div class="bj-tn">${esc(r.note)}</div>` : ''}` : (hint ? `<div class="bj-hint">❓ کیوں: ${esc(hint)}</div>` : '')}</div></div>`;
       }).join('');
       const all = doneN === g.items.length;
@@ -506,6 +507,10 @@
   .bj-tdet[open] > summary::before{transform:rotate(-90deg);}
   .bj-tdet[open] > summary{border-bottom:1px dashed var(--border);}
   .bj-tdet > .bj-tl, .bj-tdet > .bj-rx{margin-left:8px; margin-right:8px;} .bj-tdet > .bj-rx{padding-bottom:8px;}
+  .bj-test, .bj-done{position:relative; padding-left:48px !important;}
+  .bj-big{position:absolute; left:6px; top:50%; transform:translateY(-50%); font-size:2.4rem; font-weight:900; line-height:1; font-family:Arial, sans-serif;}
+  .bj-big.ok{color:#1f9d55;} .bj-big.bad{color:#e0524f;}
+  .bj-pill{white-space:normal !important;}
   .bj-mrow{margin-right:22px;} .bj-lb{color:var(--muted); font-size:.75rem;}
   .bj-brand{color:#2b6cb0; font-family:Poppins, Arial, sans-serif; font-size:.85rem;} .bj-co{color:#7b3fa0; font-family:Poppins, Arial, sans-serif; font-size:.82rem;} .bj-cn{font-size:.75rem; color:var(--muted);}
   .bj-mnote{font-size:.75rem; color:#b03a37;}
