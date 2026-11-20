@@ -260,8 +260,6 @@
         ${badD.map(row).join('')}
         ${treat.length ? `<details class="bj-tdet"><summary>🩺 ان بیماریوں کا علاج اور دوائیں دیکھیں (${treat.length})</summary>${treatHtml(treat)}</details>` : ''}
         <div class="bj-hint">علاج کے بعد یہی ٹیسٹ دوبارہ کروا کر رپورٹ بھیجیں — ٹھیک آئے تو سبز ✓ لگ جائے گا</div></div>` : ''}
-      ${nxt.size ? `<div class="bj-next"><div class="bj-bh">👉 ${badD.length ? 'ہو سکے تو ساتھ میں یہ ٹیسٹ بھی کروائیں' : 'آگے یہ ٹیسٹ کروائیں'}:</div><ol>${nextList}</ol></div>`
-        : `<div class="bj-next done">✓ اس وقت کوئی نیا ٹیسٹ ضروری نہیں${badD.length ? ' — پہلے اوپر والا علاج کریں' : ''}</div>`}
       <label class="btn bj-up">📷 ${s === 'm' ? 'مرد' : 'عورت'} کی رپورٹ کی تصویر بھیجیں<input type="file" accept="image/*" multiple hidden onchange="banjhReport('${s}', this)"></label>
       <div id="bjStatus_${s}" class="bj-status"></div>
       <div class="bj-bh" style="margin-top:12px; color:var(--gold);">⏳ باقی ٹیسٹ (${pendN}) — جو ابھی نہیں ہوئے، مرحلہ وار</div>
