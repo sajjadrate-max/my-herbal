@@ -237,8 +237,11 @@
         const icon = `<span class="bj-no ${st || 'pd'}${!st && nxt.has(id) ? ' nx' : ''}">${pno}</span>`;
         const pill = st ? `<span class="bj-pill ${st}">${st === 'ok' ? '✓ صحیح ہے — دوبارہ ٹیسٹ کی ضرورت نہیں' : '✗ خراب — علاج کے بعد دوبارہ ٹیسٹ'}</span> ` : '';
         const big = st ? `<span class="bj-big ${st}">${st === 'ok' ? '✓' : '✗'}</span>` : '';
+        const uId = s === 'm' ? 'urine_m' : 'urine_f';
+        const sugarNote = (id === 'sugar_m' || id === 'sugar_f') && !st && t[uId] && t[uId].status
+          ? `<div class="bj-info">ℹ پیشاب کی رپورٹ میں "Sugar: Nil" ہو تو اچھی بات ہے — مگر یہ <b>پیشاب</b> کی شوگر ہے۔ پیشاب میں شوگر تب آتی ہے جب خون کی شوگر بہت زیادہ (تقریباً 180 سے اوپر) ہو، اس لیے PCOS اور انسولین مزاحمت جیسی ہلکی خرابی اس سے پتا نہیں چلتی۔ خون کا HbA1c / شوگر ٹیسٹ الگ ضروری ہے۔</div>` : '';
         return `<div class="bj-test${st ? ' ' + st : ''}${!st && nxt.has(id) ? ' nx' : ''}" onclick="banjhTest('${s}','${id}')">${big}${icon}<div class="bj-tb">${pill}${gi === 0 ? '<span class="bj-basic">⭐ BASIC</span> ' : ''}<b class="bj-en" dir="ltr">${esc(en)}</b><div class="bj-ur">${esc(ur)}</div>
-          ${st ? `${r.value ? `<div class="bj-val">${esc(r.value)}</div>` : ''}${r.note ? `<div class="bj-tn">${esc(r.note)}</div>` : ''}` : (hint ? `<div class="bj-hint">❓ کیوں: ${esc(hint)}</div>` : '')}</div></div>`;
+          ${st ? `${r.value ? `<div class="bj-val">${esc(r.value)}</div>` : ''}${r.note ? `<div class="bj-tn">${esc(r.note)}</div>` : ''}` : (hint ? `<div class="bj-hint">❓ کیوں: ${esc(hint)}</div>` : '')}${sugarNote}</div></div>`;
       }).join('');
       const all = doneN === g.items.length;
       return `<div class="bj-stage"><div class="bj-st${all ? ' done' : ''}">${gi === 0 ? '⭐ ' : ''}${esc(g.st)}${doneN ? ` <small>(${doneN}/${g.items.length} ہو گئے)</small>` : ''}</div>${rows}</div>`;
@@ -535,6 +538,7 @@
   .bj-big{position:absolute; left:6px; top:50%; transform:translateY(-50%); font-size:2.4rem; font-weight:900; line-height:1; font-family:Arial, sans-serif;}
   .bj-big.ok{color:#1f9d55;} .bj-big.bad{color:#e0524f;}
   .bj-pill{white-space:normal !important;}
+  .bj-info{background:#e8f1fb; border:1px solid #2b6cb0; color:#1e4e8c; border-radius:8px; padding:4px 8px; font-size:.78rem; line-height:1.8; margin-top:4px;}
   .bj-mrow{margin-right:22px;} .bj-lb{color:var(--muted); font-size:.75rem;}
   .bj-brand{color:#2b6cb0; font-family:Poppins, Arial, sans-serif; font-size:.85rem;} .bj-co{color:#7b3fa0; font-family:Poppins, Arial, sans-serif; font-size:.82rem;} .bj-cn{font-size:.75rem; color:var(--muted);}
   .bj-mnote{font-size:.75rem; color:#b03a37;}
