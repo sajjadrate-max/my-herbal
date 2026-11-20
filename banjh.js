@@ -229,7 +229,7 @@
       </div>
       ${badD.length ? `<div class="bj-box bad"><div class="bj-bh">❌ خراب ٹیسٹ (${badD.length}) — پہلے ان کا علاج مکمل کریں، پھر یہی ٹیسٹ دوبارہ کروائیں</div>
         <div class="bj-chips">${badD.map(d=> `<span class="bj-chip bad">✗ ${esc(d.en)}</span>`).join('')}</div>
-        ${treat.length ? `<div class="bj-bh" style="margin-top:6px; color:var(--text);">🩺 ان بیماریوں کا علاج کریں:</div>${treatHtml(treat)}` : ''}
+        ${treat.length ? `<details class="bj-tdet"><summary>🩺 ان بیماریوں کا علاج اور دوائیں دیکھیں (${treat.length})</summary>${treatHtml(treat)}</details>` : ''}
         <div class="bj-hint">علاج کے بعد یہی ٹیسٹ دوبارہ کروا کر رپورٹ بھیجیں — ٹھیک آئے تو سبز ✓ لگ جائے گا</div></div>` : ''}
       ${nxt.size ? `<div class="bj-next"><div class="bj-bh">👉 ${badD.length ? 'ہو سکے تو ساتھ میں یہ ٹیسٹ بھی کروائیں' : 'آگے یہ ٹیسٹ کروائیں'}:</div><ol>${nextList}</ol></div>`
         : `<div class="bj-next done">✓ اس وقت کوئی نیا ٹیسٹ ضروری نہیں${badD.length ? ' — پہلے اوپر والا علاج کریں' : ''}</div>`}
@@ -290,7 +290,7 @@
           ${isRep ? `${p.summary ? `<div class="bj-lsum">${esc(p.summary)}</div>` : ''}
             ${p.ok.length ? `<div class="bj-box ok"><div class="bj-bh">✅ یہ ٹیسٹ ہو گئے اور ٹھیک ہیں — دوبارہ کروانے کی ضرورت نہیں</div>${li(p.ok)}</div>` : ''}
             ${p.bad.length ? `<div class="bj-box bad"><div class="bj-bh">❌ یہ ٹیسٹ خراب ہیں</div>${li(p.bad)}
-              ${p.treat.length ? `<div class="bj-bh" style="color:var(--text); margin-top:4px;">🩺 ان بیماریوں کا علاج کریں:</div>${treatHtml(p.treat)}` : ''}
+              ${p.treat.length ? `<details class="bj-tdet"><summary>🩺 ان بیماریوں کا علاج اور دوائیں دیکھیں (${p.treat.length})</summary>${treatHtml(p.treat)}</details>` : ''}
               <div class="bj-hint" style="font-weight:700;">علاج مکمل ہونے کے بعد یہی ٹیسٹ دوبارہ کروا کر رپورٹ دکھائیں</div></div>` : ''}
             ${p.next.length ? `<div class="bj-next"><div class="bj-bh">👉 آگے یہ ٹیسٹ کروائیں:</div>${li(p.next)}</div>` : ''}`
           : `<div style="white-space:pre-wrap;">${esc(e.text || '')}</div>`}
@@ -497,6 +497,13 @@
   .bj-one{font-size:.8rem; font-weight:700; color:#c9821b; margin-bottom:4px;}
   .bj-days{margin-right:22px; font-size:.8rem; color:#1f6f3f; font-weight:700;}
   .bj-warn{background:#fdecea; border:2px solid #e0524f; color:#b03a37; border-radius:10px; padding:6px 10px; font-size:.82rem; font-weight:700; line-height:1.9; margin-bottom:8px;}
+  .bj-tdet{margin-top:8px; border:1px solid #e0524f; border-radius:10px; background:var(--card);}
+  .bj-tdet > summary{cursor:pointer; padding:8px 10px; font-weight:700; color:var(--text); font-size:.92rem; list-style:none;}
+  .bj-tdet > summary::-webkit-details-marker{display:none;}
+  .bj-tdet > summary::before{content:'◀'; display:inline-block; margin-left:8px; color:#e0524f; transition:transform .2s;}
+  .bj-tdet[open] > summary::before{transform:rotate(-90deg);}
+  .bj-tdet[open] > summary{border-bottom:1px dashed var(--border);}
+  .bj-tdet > .bj-tl, .bj-tdet > .bj-rx{margin-left:8px; margin-right:8px;} .bj-tdet > .bj-rx{padding-bottom:8px;}
   .bj-mrow{margin-right:22px;} .bj-lb{color:var(--muted); font-size:.75rem;}
   .bj-brand{color:#2b6cb0; font-family:Poppins, Arial, sans-serif; font-size:.85rem;} .bj-co{color:#7b3fa0; font-family:Poppins, Arial, sans-serif; font-size:.82rem;} .bj-cn{font-size:.75rem; color:var(--muted);}
   .bj-mnote{font-size:.75rem; color:#b03a37;}
