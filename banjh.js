@@ -221,7 +221,7 @@
     const done = order.filter(id=> t[id] && t[id].status).map(id=> ({ key:id, en:ALL[id].en, ur:ALL[id].ur, r:t[id], tap:`banjhTest('${s}','${id}')` }))
       .concat(Object.keys(ex).filter(k=> ex[k].status).map(k=> ({ key:k, en:k, ur:'', r:ex[k], tap:`banjhExtra('${s}',${JSON.stringify(k).replace(/"/g, '&quot;')})` })));
     const okD = done.filter(d=> d.r.status === 'ok'), badD = done.filter(d=> d.r.status === 'bad');
-    const row = (d, i)=> `<div class="bj-done ${d.r.status}" onclick="${d.tap}"><span class="bj-big ${d.r.status}">${d.r.status === 'ok' ? '✓' : '✗'}</span><span class="bj-no ${d.r.status}">${i + 1}</span><span class="bj-pill ${d.r.status}">${d.r.status === 'ok' ? '✓ صحیح — دوبارہ ضرورت نہیں' : '✗ خراب'}</span>
+    const row = (d, i)=> `<div class="bj-done ${d.r.status}" onclick="${d.tap}"><span class="bj-big ${d.r.status}">${d.r.status === 'ok' ? '✓' : '✗'}</span><span class="bj-no ${d.r.status}">${i + 1}</span><span class="bj-pill ${d.r.status}">${d.r.status === 'ok' ? '✓ صحیح' : '✗ خراب'}</span>
         <div class="bj-tb"><b class="bj-en" dir="ltr">${esc(d.en)}</b>${d.ur ? ` <span class="bj-ur">— ${esc(d.ur)}</span>` : ''}
         ${d.r.value ? `<div class="bj-val">${esc(d.r.value)}</div>` : ''}${d.r.note ? `<div class="bj-tn">${esc(d.r.note)}</div>` : ''}<div class="bj-hint">📅 ${fmtD(d.r.date || Date.now())}</div></div></div>`;
     let treat = (c[s].treat || []).slice();
@@ -231,7 +231,7 @@
     // مرحلہ وار فہرست میں سب ٹیسٹ اپنی جگہ پر: ہو چکے والے سبز ✓ / سرخ ✗ کے ساتھ، باقی سرمئی نمبر کے ساتھ
     const stages = TESTS[s].map((g, gi)=>{
       const doneN = g.items.filter(([id])=> t[id] && t[id].status).length;
-      const rows = g.items.map(([id, en, ur, hint])=>{
+      const rows = g.items.filter(([id])=> !(t[id] && t[id].status)).map(([id, en, ur, hint])=>{
         pno++;
         const r = t[id] || {}, st = r.status;
         const icon = `<span class="bj-no ${st || 'pd'}${!st && nxt.has(id) ? ' nx' : ''}">${pno}</span>`;
@@ -243,27 +243,27 @@
         return `<div class="bj-test${st ? ' ' + st : ''}${!st && nxt.has(id) ? ' nx' : ''}" onclick="banjhTest('${s}','${id}')">${big}${icon}<div class="bj-tb">${pill}${gi === 0 ? '<span class="bj-basic">⭐ BASIC</span> ' : ''}<b class="bj-en" dir="ltr">${esc(en)}</b><div class="bj-ur">${esc(ur)}</div>
           ${st ? `${r.value ? `<div class="bj-val">${esc(r.value)}</div>` : ''}${r.note ? `<div class="bj-tn">${esc(r.note)}</div>` : ''}` : (hint ? `<div class="bj-hint">❓ کیوں: ${esc(hint)}</div>` : '')}${sugarNote}</div></div>`;
       }).join('');
-      const all = doneN === g.items.length;
-      return `<div class="bj-stage"><div class="bj-st${all ? ' done' : ''}">${gi === 0 ? '⭐ ' : ''}${esc(g.st)}${doneN ? ` <small>(${doneN}/${g.items.length} ہو گئے)</small>` : ''}</div>${rows}</div>`;
+      if(doneN === g.items.length) return `<div class="bj-stage"><div class="bj-st done">${gi === 0 ? '⭐ ' : ''}${esc(g.st)} — ✓ سب ٹیسٹ ہو گئے (اوپر)</div></div>`;
+      return `<div class="bj-stage"><div class="bj-st">${gi === 0 ? '⭐ ' : ''}${esc(g.st)}${doneN ? ` <small>(${doneN} ہو گئے — اوپر)</small>` : ''}</div>${rows}</div>`;
     }).join('');
     const who = s === 'm' ? c.husband : c.wife;
     const nextList = [...nxt].map(id=> `<li>${ALL[id].stage === 0 ? '⭐ ' : ''}<b class="bj-en" dir="ltr">${esc(ALL[id].en)}</b> — ${esc(ALL[id].ur)}</li>`).join('');
     return `<div class="bj-side bj-${s}">
       <h3>${SIDE[s]} — ${esc(who)}</h3>
       ${s === 'm' ? `<div class="bj-warn">⚠ اہم: بانجھ پن (سپرم کی کمی) میں ٹیسٹوسٹیرون کی گولی، ٹیکہ، جیل یا باڈی بلڈنگ کے سٹیرائیڈ ہرگز نہ دیں — اس سے دماغ سپرم بنانے کا حکم (FSH/LH) بند کر دیتا ہے اور سپرم کم یا بالکل ختم ہو جاتے ہیں۔ دوا بند کرنے کے بعد سپرم واپس آنے میں 6–12 ماہ یا زیادہ لگ سکتے ہیں، کبھی پوری طرح واپس نہیں آتے۔ مریض سے ضرور پوچھیں کہ کہیں جم/طاقت کے ٹیکے تو نہیں لے رہا۔</div>` : ''}
-      <div class="bj-box all"><div class="bj-bh">✅ مکمل ہو چکے ٹیسٹ (${done.length})</div>
-        <div class="bj-cnt"><span class="ok">✓ ٹھیک: ${okD.length}</span><span class="bad">✗ خراب: ${badD.length}</span><span class="pd">⏳ باقی: ${pendN}</span></div>
-        ${done.length ? (okD.length ? `<div class="bj-sub ok">✓ ٹھیک ٹیسٹ (${okD.length})</div>` + okD.map(row).join('') : '') + (badD.length ? `<div class="bj-sub bad">✗ خراب ٹیسٹ (${badD.length})</div>` + badD.map(row).join('') : '') : '<div class="bj-hint">ابھی کوئی ٹیسٹ نہیں ہوا — نیچے والے ٹیسٹ کروا کر رپورٹ کی تصویر بھیجیں۔</div>'}
+      <div class="bj-cnt" style="margin-bottom:8px;"><span class="ok">✓ صحیح: ${okD.length}</span><span class="bad">✗ خراب: ${badD.length}</span><span class="pd">⏳ باقی: ${pendN}</span></div>
+      <div class="bj-box ok"><div class="bj-bh">✅ صحیح ٹیسٹ (${okD.length}) — دوبارہ کروانے کی ضرورت نہیں</div>
+        ${okD.length ? okD.map(row).join('') : '<div class="bj-hint">ابھی کوئی ٹیسٹ صحیح نہیں آیا — نارمل رپورٹ بھیجیں تو یہاں سبز ✓ کے ساتھ آ جائے گا۔</div>'}
       </div>
       ${badD.length ? `<div class="bj-box bad"><div class="bj-bh">❌ خراب ٹیسٹ (${badD.length}) — پہلے ان کا علاج مکمل کریں، پھر یہی ٹیسٹ دوبارہ کروائیں</div>
-        <div class="bj-chips">${badD.map(d=> `<span class="bj-chip bad">✗ ${esc(d.en)}</span>`).join('')}</div>
+        ${badD.map(row).join('')}
         ${treat.length ? `<details class="bj-tdet"><summary>🩺 ان بیماریوں کا علاج اور دوائیں دیکھیں (${treat.length})</summary>${treatHtml(treat)}</details>` : ''}
         <div class="bj-hint">علاج کے بعد یہی ٹیسٹ دوبارہ کروا کر رپورٹ بھیجیں — ٹھیک آئے تو سبز ✓ لگ جائے گا</div></div>` : ''}
       ${nxt.size ? `<div class="bj-next"><div class="bj-bh">👉 ${badD.length ? 'ہو سکے تو ساتھ میں یہ ٹیسٹ بھی کروائیں' : 'آگے یہ ٹیسٹ کروائیں'}:</div><ol>${nextList}</ol></div>`
         : `<div class="bj-next done">✓ اس وقت کوئی نیا ٹیسٹ ضروری نہیں${badD.length ? ' — پہلے اوپر والا علاج کریں' : ''}</div>`}
       <label class="btn bj-up">📷 ${s === 'm' ? 'مرد' : 'عورت'} کی رپورٹ کی تصویر بھیجیں<input type="file" accept="image/*" multiple hidden onchange="banjhReport('${s}', this)"></label>
       <div id="bjStatus_${s}" class="bj-status"></div>
-      <div class="bj-bh" style="margin-top:12px; color:var(--gold);">📋 تمام ٹیسٹ مرحلہ وار — <span style="color:#1f9d55;">✓ ہو گئے</span> · <span style="color:#e0524f;">✗ خراب</span> · <span style="color:#8a8a8a;">⏳ باقی ${pendN}</span></div>
+      <div class="bj-bh" style="margin-top:12px; color:var(--gold);">⏳ باقی ٹیسٹ (${pendN}) — جو ابھی نہیں ہوئے، مرحلہ وار</div>
       ${stages}
     </div>`;
   }
