@@ -206,17 +206,19 @@
     if(!treat.length) treat = badD.map(d=> d.r.note || (d.en + ' خراب')).filter(Boolean);
     const pendN = order.filter(id=> !(t[id] && t[id].status)).length;
     let pno = 0;
+    // مرحلہ وار فہرست میں سب ٹیسٹ اپنی جگہ پر: ہو چکے والے سبز ✓ / سرخ ✗ کے ساتھ، باقی سرمئی نمبر کے ساتھ
     const stages = TESTS[s].map((g, gi)=>{
-      const pend = g.items.filter(([id])=> !(t[id] && t[id].status));
-      const doneN = g.items.length - pend.length;
-      if(!pend.length) return `<div class="bj-stage"><div class="bj-st done">${gi === 0 ? '⭐ ' : ''}${esc(g.st)} — ✓ سب ٹیسٹ ہو گئے (اوپر)</div></div>`;
-      const rows = pend.map(([id, en, ur, hint])=>{
+      const doneN = g.items.filter(([id])=> t[id] && t[id].status).length;
+      const rows = g.items.map(([id, en, ur, hint])=>{
         pno++;
-        const icon = `<span class="bj-no pd${nxt.has(id) ? ' nx' : ''}">${pno}</span>`;
-        return `<div class="bj-test${nxt.has(id) ? ' nx' : ''}" onclick="banjhTest('${s}','${id}')">${icon}<div class="bj-tb">${gi === 0 ? '<span class="bj-basic">⭐ BASIC</span> ' : ''}<b class="bj-en" dir="ltr">${esc(en)}</b><div class="bj-ur">${esc(ur)}</div>
-          ${hint ? `<div class="bj-hint">❓ کیوں: ${esc(hint)}</div>` : ''}</div></div>`;
+        const r = t[id] || {}, st = r.status;
+        const icon = `<span class="bj-no ${st || 'pd'}${!st && nxt.has(id) ? ' nx' : ''}">${pno}</span>`;
+        const pill = st ? `<span class="bj-pill ${st}">${st === 'ok' ? '✓ ٹھیک — ہو گیا' : '✗ خراب — علاج کے بعد دوبارہ'}</span> ` : '';
+        return `<div class="bj-test${st ? ' ' + st : ''}${!st && nxt.has(id) ? ' nx' : ''}" onclick="banjhTest('${s}','${id}')">${icon}<div class="bj-tb">${pill}${gi === 0 ? '<span class="bj-basic">⭐ BASIC</span> ' : ''}<b class="bj-en" dir="ltr">${esc(en)}</b><div class="bj-ur">${esc(ur)}</div>
+          ${st ? `${r.value ? `<div class="bj-val">${esc(r.value)}</div>` : ''}${r.note ? `<div class="bj-tn">${esc(r.note)}</div>` : ''}` : (hint ? `<div class="bj-hint">❓ کیوں: ${esc(hint)}</div>` : '')}</div></div>`;
       }).join('');
-      return `<div class="bj-stage"><div class="bj-st">${gi === 0 ? '⭐ ' : ''}${esc(g.st)}${doneN ? ` <small>(${doneN} ہو گئے — اوپر)</small>` : ''}</div>${rows}</div>`;
+      const all = doneN === g.items.length;
+      return `<div class="bj-stage"><div class="bj-st${all ? ' done' : ''}">${gi === 0 ? '⭐ ' : ''}${esc(g.st)}${doneN ? ` <small>(${doneN}/${g.items.length} ہو گئے)</small>` : ''}</div>${rows}</div>`;
     }).join('');
     const who = s === 'm' ? c.husband : c.wife;
     const nextList = [...nxt].map(id=> `<li>${ALL[id].stage === 0 ? '⭐ ' : ''}<b class="bj-en" dir="ltr">${esc(ALL[id].en)}</b> — ${esc(ALL[id].ur)}</li>`).join('');
@@ -235,7 +237,7 @@
         : `<div class="bj-next done">✓ اس وقت کوئی نیا ٹیسٹ ضروری نہیں${badD.length ? ' — پہلے اوپر والا علاج کریں' : ''}</div>`}
       <label class="btn bj-up">📷 ${s === 'm' ? 'مرد' : 'عورت'} کی رپورٹ کی تصویر بھیجیں<input type="file" accept="image/*" multiple hidden onchange="banjhReport('${s}', this)"></label>
       <div id="bjStatus_${s}" class="bj-status"></div>
-      <div class="bj-bh" style="margin-top:12px; color:var(--gold);">⏳ باقی ٹیسٹ (${pendN}) — مرحلہ وار</div>
+      <div class="bj-bh" style="margin-top:12px; color:var(--gold);">📋 تمام ٹیسٹ مرحلہ وار — <span style="color:#1f9d55;">✓ ہو گئے</span> · <span style="color:#e0524f;">✗ خراب</span> · <span style="color:#8a8a8a;">⏳ باقی ${pendN}</span></div>
       ${stages}
     </div>`;
   }
