@@ -306,7 +306,6 @@
       <div class="bj-head">👨 ${esc(c.husband)} <span style="color:var(--muted);">&</span> 👩 ${esc(c.wife)}<div class="bj-case-meta">کھاتہ: ${fmtD(c.created)} · آخری تبدیلی: ${fmtD(c.updated || c.created)}</div></div>
       <div class="bj-tabs"><button type="button" class="${TAB === 'm' ? 'on' : ''}" onclick="banjhTab('m')">👨 مرد</button><button type="button" class="${TAB === 'f' ? 'on' : ''}" onclick="banjhTab('f')">👩 عورت</button></div>
       <div class="bj-cols tab-${TAB}">${sideHtml(c, 'm')}${sideHtml(c, 'f')}</div>
-      ${logHtml(c)}
       <div style="display:flex; gap:8px; justify-content:center; flex-wrap:wrap; margin:14px 0;">
         <button type="button" class="btn secondary" onclick="banjhNote()">📝 نوٹ لکھیں</button>
         <button type="button" class="btn secondary" onclick="banjhRename()">✏ نام درست کریں</button>
