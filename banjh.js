@@ -171,8 +171,30 @@
   };
 
   // ---------- ایک کھاتہ ----------
+  // رپورٹ میں فہرست سے باہر کے نام سے آیا ٹیسٹ ← فہرست کا ٹیسٹ (مثلاً "Urine Pus Cells" ← Urine R/E)
+  const KEYMAP = { m:[[/urine|پیشاب/i,'urine_m'],[/\bcbc\b|h(a)?emoglobin|\bhb\b|خون کا مکمل/i,'cbc_m'],[/hba1c|sugar|glucose|شوگر/i,'sugar_m'],[/prolactin|پرولیکٹن/i,'prl_m'],[/\btsh\b/i,'tsh_m'],[/testosterone|ٹیسٹوسٹیرون/i,'testo'],[/\bfsh\b/i,'fsh_m'],[/\blh\b/i,'lh_m'],[/semen|سیمن|sperm|سپرم/i,'semen']],
+                   f:[[/urine|پیشاب/i,'urine_f'],[/\bcbc\b|h(a)?emoglobin|\bhb\b|خون کا مکمل/i,'cbc_f'],[/hba1c|sugar|glucose|شوگر/i,'sugar_f'],[/prolactin|پرولیکٹن/i,'prl_f'],[/\btsh\b/i,'tsh_f'],[/\bamh\b/i,'amh'],[/progesterone|پروجیسٹرون/i,'prog21'],[/vitamin d|وٹامن ڈی/i,'vitd'],[/rubella|روبیلا/i,'rubella'],[/\bhsg\b/i,'hsg'],[/vaginal swab|\bhvs\b/i,'hvs'],[/testosterone|dhea/i,'androgen']] };
+  function keyFor(s, name){ const k = (KEYMAP[s] || []).find(([re])=> re.test(name)); return k && ALL[k[1]] ? k[1] : ''; }
+  // پرانے ریکارڈ سے: جو ٹیسٹ رپورٹ میں آ چکے مگر فہرست میں نشان نہیں لگا، ان پر ✓/✗ لگائیں
+  function migrate(c){
+    let changed = false;
+    ['m','f'].forEach(s=>{
+      const t = c[s].tests, ex = c[s].extra || {};
+      Object.keys(ex).forEach(k=>{ const id = keyFor(s, k); if(id && !(t[id] && t[id].status) && ex[k].status){ t[id] = Object.assign({}, ex[k]); delete ex[k]; changed = true; } });
+      (c.log || []).filter(e=> e.side === s).forEach(e=>{
+        const p = logParse(e);
+        [['ok', p.ok], ['bad', p.bad]].forEach(([st, arr])=> arr.forEach(line=>{
+          const id = keyFor(s, line); if(!id || (t[id] && t[id].status)) return;
+          const m = line.match(/^[^:]*:\s*(.*?)(?:\s+—\s+(.*))?$/);
+          t[id] = { status: st, value: m ? m[1] : '', note: m && m[2] ? m[2] : '', date: e.t }; changed = true;
+        }));
+      });
+    });
+    return changed;
+  }
   window.banjhOpen = async (id)=>{
     const c = await get(id); if(!c) return list();
+    if(migrate(c)) await put(c);
     CUR = c;
     render();
     window.scrollTo({ top: root().getBoundingClientRect().top + window.scrollY - 70 });
@@ -405,7 +427,10 @@
     });
     c[s].extra = c[s].extra || {};
     (d.other || []).forEach(x=>{
-      if(x.status === 'ok' || x.status === 'bad') c[s].extra[x.name] = { status: x.status, value: x.value || '', note: x.note || '', date: Date.now() };
+      if(x.status === 'ok' || x.status === 'bad'){
+        const id = keyFor(s, x.name), rec = { status: x.status, value: x.value || '', note: x.note || '', date: Date.now() };
+        if(id) c[s].tests[id] = rec; else c[s].extra[x.name] = rec;
+      }
       const ln = x.name + (x.value ? ': ' + x.value : '') + (x.note ? ' — ' + x.note : '');
       lines.push((x.status === 'ok' ? '✓ ' : x.status === 'bad' ? '✗ ' : '• ') + ln);
       if(x.status === 'ok') okL.push(ln); else if(x.status === 'bad') badL.push(ln);
