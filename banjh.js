@@ -277,7 +277,7 @@
     const okD = done.filter(d=> d.r.status === 'ok'), badD = done.filter(d=> d.r.status === 'bad');
     const row = (d, i)=> `<div class="bj-done ${d.r.status}" onclick="${d.tap}"><span class="bj-big ${d.r.status}">${d.r.status === 'ok' ? '✓' : '✗'}</span><span class="bj-no ${d.r.status}">${i + 1}</span><span class="bj-pill ${d.r.status}">${d.r.status === 'ok' ? '✓ صحیح' : '✗ خراب'}</span>
         <div class="bj-tb"><b class="bj-en" dir="ltr">${esc(d.en)}</b>${d.ur ? ` <span class="bj-ur">— ${esc(d.ur)}</span>` : ''}
-        ${d.r.value ? `<div class="bj-val">${esc(d.r.value)}</div>` : ''}${d.r.note ? `<div class="bj-tn">${esc(d.r.note)}</div>` : ''}<div class="bj-hint">📅 ${fmtD(d.r.date || Date.now())}</div>${ALL[d.key] ? infoHtml(d.key) + `<label class="bj-tup" onclick="event.stopPropagation()">📷 نئی رپورٹ بھیجیں<input type="file" accept="image/*" multiple hidden onchange="banjhReport('${s}', this, '${d.key}')"></label>` : ''}</div></div>`;
+        ${d.r.value ? `<div class="bj-val">${esc(d.r.value)}</div>` : ''}${d.r.note ? `<div class="bj-tn">${esc(d.r.note)}</div>` : ''}<div class="bj-hint">📅 ${fmtD(d.r.date || Date.now())}</div>${ALL[d.key] ? reportsHtml(c, s, d.key) + infoHtml(d.key) + `<label class="bj-tup" onclick="event.stopPropagation()">📷 نئی رپورٹ بھیجیں<input type="file" accept="image/*" multiple hidden onchange="banjhReport('${s}', this, '${d.key}')"></label>` : ''}</div></div>`;
     let treat = (c[s].treat || []).slice();
     if(!treat.length) treat = badD.map(d=> d.r.note || (d.en + ' خراب')).filter(Boolean);
     const pendN = order.filter(id=> !(t[id] && t[id].status)).length;
@@ -343,6 +343,18 @@
     });
     if(pend.length) out.push({ t: Date.now(), side: '', imgs: pend, text: '' });
     return out.reverse();
+  }
+  // کسی ٹیسٹ کی بھیجی گئی رپورٹیں (تصویریں): نئی رپورٹ میں نشان (rep) سے، پرانی میں رپورٹ کی سطروں سے پہچان کر
+  function reportsFor(c, s, id){
+    const r = (c[s].tests[id] || {});
+    return logEntries(c).filter(e=> e.side === s && e.imgs && e.imgs.length && (e.t === r.rep || (()=>{ const p = logParse(e); return p.ok.concat(p.bad).some(l=> keyFor(s, l) === id); })()));
+  }
+  function reportsHtml(c, s, id){
+    const list = reportsFor(c, s, id); if(!list.length) return '';
+    const n = list.reduce((a, e)=> a + e.imgs.length, 0);
+    return `<details class="bj-tdet bj-rdet" onclick="event.stopPropagation()"><summary>📄 بھیجی گئی رپورٹ دیکھیں (${n})</summary>
+      ${list.map(e=> `<div class="bj-rd">📅 ${new Date(e.t).toLocaleString('en-GB')}</div><div class="bj-imgs">${e.imgs.map(u=> `<img src="${u}" alt="رپورٹ" class="bj-thumb" onclick="event.stopPropagation(); this.classList.toggle('big')">`).join('')}</div>`).join('')}
+      <div class="bj-hint" style="padding:0 10px 8px;">تصویر پر ٹیپ کریں تو بڑی ہو جائے گی</div></details>`;
   }
   function logParse(e){
     if(e.ok || e.bad) return e;
@@ -463,7 +475,7 @@
     if(!navigator.onLine){ say('📶 رپورٹ پڑھنے کے لیے انٹرنیٹ آن کریں', '#e0524f'); return; }
     say('⏳ رپورٹ پڑھی جا رہی ہے... (آدھا منٹ لگ سکتا ہے)');
     let images, thumbs;
-    try{ images = await Promise.all(files.map(f=> shrink(f, 1600, .82))); thumbs = await Promise.all(files.map(f=> shrink(f, 500, .6))); }
+    try{ images = await Promise.all(files.map(f=> shrink(f, 1600, .82))); thumbs = await Promise.all(files.map(f=> shrink(f, 1100, .7))); }
     catch(e){ say('⚠ ' + e.message, '#e0524f'); return; }
     const tests = TESTS[s].map((g, gi)=> g.items.map(([id, en, ur, hint])=> ({ id, name: en + ' — ' + ur, stage: gi + 1, hint }))).flat();
     const done = Object.keys(c[s].tests).map(id=> ({ id, name: ALL[id] ? ALL[id].name : id, status: c[s].tests[id].status, value: c[s].tests[id].value }));
@@ -473,11 +485,11 @@
       d = await r.json().catch(()=> ({}));
       if(!r.ok || d.error){ say('⚠ ' + (d.error || ('خرابی ' + r.status)), '#e0524f'); return; }
     }catch(e){ say('⚠ انٹرنیٹ کا مسئلہ — دوبارہ کوشش کریں', '#e0524f'); return; }
-    const lines = [], okL = [], badL = [];
+    const lines = [], okL = [], badL = [], repT = Date.now();
     (d.results || []).forEach(x=>{
       if(!ALL[x.id] || ALL[x.id].side !== s) return;
       if(x.status !== 'ok' && x.status !== 'bad') return;
-      c[s].tests[x.id] = { status: x.status, value: x.value || '', note: x.note || '', date: Date.now() };
+      c[s].tests[x.id] = { status: x.status, value: x.value || '', note: x.note || '', date: Date.now(), rep: repT };
       const ln = ALL[x.id].name + (x.value ? ': ' + x.value : '') + (x.note ? ' — ' + x.note : '');
       lines.push((x.status === 'ok' ? '✓ ' : '✗ ') + ln); (x.status === 'ok' ? okL : badL).push(ln);
     });
@@ -485,7 +497,7 @@
     (d.other || []).forEach(x=>{
       if(x.status !== 'ok' && x.status !== 'bad'){ const tx = (x.note || '') + ' ' + (x.value || ''); x.status = /زیادہ|کم|high|low|abnormal|خراب|انفیکشن/i.test(tx) ? 'bad' : /نارمل|normal|ٹھیک|within|صحیح/i.test(tx) ? 'ok' : ''; }
       if(x.status === 'ok' || x.status === 'bad'){
-        const id = keyFor(s, x.name), rec = { status: x.status, value: x.value || '', note: x.note || '', date: Date.now() };
+        const id = keyFor(s, x.name), rec = { status: x.status, value: x.value || '', note: x.note || '', date: Date.now(), rep: repT };
         if(id) c[s].tests[id] = rec; else c[s].extra[x.name] = rec;
       }
       const ln = x.name + (x.value ? ': ' + x.value : '') + (x.note ? ' — ' + x.note : '');
@@ -497,7 +509,7 @@
       const all = (d.results || []).concat(d.other || []).filter(x=> x.status === 'ok' || x.status === 'bad');
       if(all.length){
         const bad = all.filter(x=> x.status === 'bad');
-        c[s].tests[target] = { status: bad.length ? 'bad' : 'ok', value: all.map(x=> (x.name || (ALL[x.id] ? ALL[x.id].en : x.id)) + ' ' + (x.value || '') + (x.status === 'ok' ? ' ✓' : ' ✗')).join('، '), note: bad.map(x=> x.note).filter(Boolean).join('، ') || 'نارمل', date: Date.now() };
+        c[s].tests[target] = { status: bad.length ? 'bad' : 'ok', value: all.map(x=> (x.name || (ALL[x.id] ? ALL[x.id].en : x.id)) + ' ' + (x.value || '') + (x.status === 'ok' ? ' ✓' : ' ✗')).join('، '), note: bad.map(x=> x.note).filter(Boolean).join('، ') || 'نارمل', date: Date.now(), rep: repT };
         (d.other || []).forEach(o=>{ if(c[s].extra) delete c[s].extra[o.name]; });
         okL.length = 0; badL.length = 0; (bad.length ? badL : okL).push(ALL[target].name + ': ' + c[s].tests[target].value);
       }
@@ -507,7 +519,7 @@
     const text = (d.summary ? d.summary + '\n' : '') + lines.join('\n')
       + (c[s].treat.length ? '\n🩺 علاج کریں: ' + c[s].treat.join('، ') : '')
       + (c[s].next.length ? '\n👉 اگلا ٹیسٹ: ' + c[s].next.map(id=> ALL[id].name).join('، ') : '');
-    c.log.push({ t: Date.now(), side: s, imgs: thumbs, text, summary: d.summary || '', ok: okL, bad: badL, treat: c[s].treat.slice(), next: c[s].next.map(id=> ALL[id].name) });
+    c.log.push({ t: repT, side: s, imgs: thumbs, text, summary: d.summary || '', ok: okL, bad: badL, treat: c[s].treat.slice(), next: c[s].next.map(id=> ALL[id].name) });
     await put(c);
     render();
     say(lines.length ? '✅ رپورٹ پڑھ لی — نتیجہ اوپر لگ گیا' : '⚠ اس تصویر میں فہرست کا کوئی ٹیسٹ صاف نہیں پڑھا جا سکا — صاف تصویر بھیجیں یا ٹیسٹ پر ٹیپ کر کے خود لکھیں', lines.length ? 'var(--leaf)' : '#c9821b');
@@ -607,6 +619,8 @@
   .bj-idet{border-color:var(--gold) !important;} .bj-idet > summary{font-size:.82rem !important; color:var(--gold) !important; padding:5px 8px !important;}
   .bj-idet > summary::before{color:var(--gold) !important;}
   .bj-irow{font-size:.8rem; line-height:1.9; padding:2px 10px;} .bj-irow:last-child{padding-bottom:8px;} .bj-irow b{color:var(--gold-soft);}
+  .bj-rdet{border-color:#2b6cb0 !important;} .bj-rdet > summary{font-size:.82rem !important; color:#2b6cb0 !important; padding:5px 8px !important;} .bj-rdet > summary::before{color:#2b6cb0 !important;}
+  .bj-rd{font-size:.75rem; color:var(--muted); padding:4px 10px 0;} .bj-rdet .bj-imgs{padding:0 8px;}
   .bj-mrow{margin-right:22px;} .bj-lb{color:var(--muted); font-size:.75rem;}
   .bj-brand{color:#2b6cb0; font-family:Poppins, Arial, sans-serif; font-size:.85rem;} .bj-co{color:#7b3fa0; font-family:Poppins, Arial, sans-serif; font-size:.82rem;} .bj-cn{font-size:.75rem; color:var(--muted);}
   .bj-mnote{font-size:.75rem; color:#b03a37;}
