@@ -151,13 +151,55 @@
     laparoscopy: ['🔭 پیٹ میں کیمرا (آپریشن، بے ہوشی میں)', 'ماہواری کے بعد، ڈاکٹر کی تاریخ پر', 'گائناکالوجسٹ — ہسپتال میں', 'خالی پیٹ؛ ایک دن ہسپتال'],
     viral_f:   ['🩸 خون', 'IUI / IVF اور حمل سے پہلے', LAB, 'کوئی خاص تیاری نہیں']
   };
+  // ---------- نارمل حد (بالغ؛ لیب کے طریقے سے تھوڑا فرق ہو سکتا ہے — رپورٹ پر لکھی حد کو ترجیح) ----------
+  const SEMEN_N = 'مقدار 1.4 ml یا زیادہ · تعداد 16 ملین/ml یا زیادہ · کل سپرم 39 ملین+ · کل حرکت 42٪+ · آگے بڑھنے والی حرکت 30٪+ · صحیح بناوٹ 4٪+ · زندہ 54٪+ · pH 7.2+ · پس سیلز 1 ملین/ml سے کم (WHO 2021)';
+  const NORMAL = {
+    semen: SEMEN_N, semen2: SEMEN_N,
+    urine_m: 'پس سیلز 0–5 /HPF · سرخ خلیے 0–2 /HPF · شوگر Nil · البیومن Nil',
+    urine_f: 'پس سیلز 0–5 /HPF · سرخ خلیے 0–2 /HPF · شوگر Nil · البیومن Nil',
+    cbc_m: 'Hb 13–17 g/dl · WBC 4,000–11,000 · Platelets 1.5–4 لاکھ',
+    cbc_f: 'Hb 12–15.5 g/dl · WBC 4,000–11,000 · Platelets 1.5–4 لاکھ',
+    sugar_m: 'HbA1c 5.7٪ سے کم (5.7–6.4 = شوگر کی ابتدا، 6.5+ = شوگر) · Fasting 70–99 mg/dl',
+    sugar_f: 'HbA1c 5.7٪ سے کم (5.7–6.4 = شوگر کی ابتدا، 6.5+ = شوگر) · Fasting 70–99 mg/dl',
+    fsh_m: '1.5–12.4 mIU/ml (زیادہ ہو تو خصیے کی کمزوری)',
+    lh_m: '1.7–8.6 mIU/ml',
+    testo: '300–1000 ng/dl (یعنی 3–10 ng/ml) · 300 سے کم = کم',
+    prl_m: 'تقریباً 4–15 ng/ml (20 سے زیادہ = زیادہ)',
+    tsh_m: '0.4–4.0 µIU/ml',
+    us_scrotal: 'خصیے کا حجم تقریباً 15–25 ml · رگیں 3 mm سے کم (زیادہ ہوں تو ویریکوسیل)',
+    semen_cs: 'No growth (کوئی جراثیم نہیں)',
+    peu: 'پیشاب میں سپرم نہ ہوں یا بہت کم',
+    asa: 'MAR test میں 50٪ سے کم سپرم چپکے ہوں',
+    dfi: '30٪ سے کم (15٪ سے کم بہترین)',
+    karyo_m: '46,XY (نارمل)',
+    ymicro: 'کوئی Deletion نہیں',
+    viral_m: 'سب Negative / Non-reactive',
+    tvs: 'بچہ دانی میں رسولی/پولیپ نہیں · ہر بیضہ دانی میں 5–10 چھوٹے انڈے (AFC) · سسٹ نہیں (ایک بیضہ دانی میں 12+ ہوں تو PCOS کا شبہ)',
+    d2: 'FSH 3–10 mIU/ml (10 سے کم بہتر) · LH 2–10 mIU/ml (LH، FSH سے دگنا نہ ہو) · E2 25–75 pg/ml (80 سے کم)',
+    amh: '1.0–3.5 ng/ml (1 سے کم = ذخیرہ کم · 4 سے زیادہ = PCOS کا شبہ)',
+    tsh_f: '0.4–4.0 µIU/ml — حمل کی کوشش میں 2.5 سے کم بہتر',
+    prl_f: 'تقریباً 5–25 ng/ml (25 سے زیادہ = زیادہ)',
+    prog21: '10 ng/ml سے زیادہ = انڈا بنا (3–10 = کمزور / شک · 3 سے کم = انڈا نہیں بنا)',
+    hvs: 'No pathogenic growth (کوئی بیماری والا جراثیم نہیں)',
+    chlamydia: 'Negative',
+    hsg: 'دونوں نالیاں کھلی (رنگ پیٹ میں آزادانہ جائے — Free spill) · بچہ دانی کی بناوٹ نارمل',
+    rubella: 'IgG 10 IU/ml یا زیادہ = حفاظت موجود (کم ہو تو ٹیکہ)',
+    follicle: 'ایک بڑا انڈا 18–24 mm تک بن کر پھٹ جائے · بچہ دانی کی تہہ (Endometrium) 7–8 mm یا زیادہ',
+    androgen: 'Testosterone (عورت) تقریباً 15–70 ng/dl (0.15–0.7 ng/ml) · DHEA-S عمر کے مطابق تقریباً 35–430 µg/dl',
+    vitd: '30–100 ng/ml (20–29 = ناکافی · 20 سے کم = کمی)',
+    sis: 'بچہ دانی کے اندر کوئی پولیپ، رسولی یا پردہ نہیں',
+    hysteroscopy: 'بچہ دانی اندر سے نارمل، نالیوں کے منہ کھلے',
+    laparoscopy: 'اینڈومیٹریوسس یا چپکاؤ نہیں · دونوں نالیاں کھلی',
+    viral_f: 'سب Negative / Non-reactive'
+  };
   function infoHtml(id){
     const x = INFO[id]; if(!x) return '';
-    return `<details class="bj-tdet bj-idet" onclick="event.stopPropagation()"><summary>ℹ ٹیسٹ کی تفصیل — کس چیز سے، کب، کہاں</summary>
+    return `<details class="bj-tdet bj-idet" onclick="event.stopPropagation()"><summary>ℹ ٹیسٹ کی تفصیل — کس چیز سے، کب، کہاں، نارمل حد</summary>
       <div class="bj-irow"><b>کس چیز سے:</b> ${esc(x[0])}</div>
       <div class="bj-irow"><b>کب کروائیں:</b> ${esc(x[1])}</div>
       <div class="bj-irow"><b>کہاں سے:</b> ${esc(x[2])}</div>
-      <div class="bj-irow"><b>تیاری:</b> ${esc(x[3])}</div></details>`;
+      <div class="bj-irow"><b>تیاری:</b> ${esc(x[3])}</div>
+      ${NORMAL[id] ? `<div class="bj-irow bj-norm"><b>✅ نارمل حد:</b> ${esc(NORMAL[id])}<div class="bj-hint">لیب کے طریقے سے تھوڑا فرق ہو سکتا ہے — رپورٹ پر لکھی حد (Reference range) کو ترجیح دیں</div></div>` : ''}</details>`;
   }
 
   // ---------- فون میں محفوظ (IndexedDB) ----------
@@ -628,6 +670,7 @@
   .bj-rd{font-size:.75rem; color:var(--muted); padding:4px 10px 0;} .bj-rdet .bj-imgs{padding:0 8px;}
   .bj-pct{border:1px solid var(--border); border-radius:10px; padding:6px 8px; margin-bottom:8px; background:var(--card);}
   .bj-bar{display:flex; height:12px; border-radius:6px; overflow:hidden; background:#ddd; margin:6px 0 2px;} .bj-bar span{display:block; height:100%; flex:none;} .bj-bar .ok{background:#1f9d55;} .bj-bar .bad{background:#e0524f;}
+  .bj-norm{background:rgba(31,157,85,.07); border-top:1px dashed #1f9d55; margin-top:4px; padding-top:4px !important;} .bj-norm b{color:#1f9d55 !important;}
   .bj-mrow{margin-right:22px;} .bj-lb{color:var(--muted); font-size:.75rem;}
   .bj-brand{color:#2b6cb0; font-family:Poppins, Arial, sans-serif; font-size:.85rem;} .bj-co{color:#7b3fa0; font-family:Poppins, Arial, sans-serif; font-size:.82rem;} .bj-cn{font-size:.75rem; color:var(--muted);}
   .bj-mnote{font-size:.75rem; color:#b03a37;}
