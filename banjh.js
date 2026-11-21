@@ -294,8 +294,9 @@
     });
     return changed;
   }
-  window.banjhOpen = async (id)=>{
+  window.banjhOpen = async (id, fromPop)=>{
     const c = await get(id); if(!c) return list();
+    if(!fromPop){ try{ history.pushState({ hp:'banjh', sub:'bj', id }, '', location.pathname + location.search); }catch(e){} }
     if(migrate(c)) await put(c);
     CUR = c;
     render();
@@ -470,7 +471,9 @@
         <button type="button" class="btn secondary" style="color:#e0524f; border-color:#e0524f;" onclick="banjhDelete()">🗑 کھاتہ ڈیلیٹ</button>
       </div>`;
   }
-  window.banjhList = list;
+  // "تمام کھاتے" بٹن: فون کے واپسی بٹن جیسا (تاریخ میں ایک قدم پیچھے)
+  window.banjhList = ()=>{ try{ if(history.state && history.state.sub === 'bj'){ history.back(); return; } }catch(e){} list(); };
+  window.banjhOnPop = st=>{ if(st && st.sub === 'bj' && st.id){ if(!CUR || CUR.id !== st.id) banjhOpen(st.id, true); } else if(CUR) list(); };
   window.banjhTab = s=>{ TAB = s; render(); };
 
   // ٹیسٹ پر ٹیپ: خود سے نتیجہ لکھیں
@@ -540,7 +543,7 @@
     if(!files.length) return;
     const c = CUR, st = document.getElementById('bjStatus_' + s);
     const say = (t, col)=>{ const e = document.getElementById('bjStatus_' + s); if(e){ e.style.color = col || 'var(--muted)'; e.textContent = t; } };
-    if(!navigator.onLine){ say('📶 رپورٹ پڑھنے کے لیے انٹرنیٹ آن کریں', '#e0524f'); return; }
+    if(!navigator.onLine){ say('No internet 🛜 — رپورٹ پڑھنے کے لیے انٹرنیٹ آن کریں (باقی سب آف لائن چلتا ہے)', '#e0524f'); return; }
     say('⏳ رپورٹ پڑھی جا رہی ہے... (آدھا منٹ لگ سکتا ہے)');
     let images, thumbs;
     let hashes = [];
@@ -558,7 +561,7 @@
       const r = await fetch('/api/notify-disease?banjh=1', { method:'POST', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify({ side: s, images, tests, done, target: target || '' }) });
       d = await r.json().catch(()=> ({}));
       if(!r.ok || d.error){ say('⚠ ' + (d.error || ('خرابی ' + r.status)), '#e0524f'); return; }
-    }catch(e){ say('⚠ انٹرنیٹ کا مسئلہ — دوبارہ کوشش کریں', '#e0524f'); return; }
+    }catch(e){ say('No internet 🛜 — انٹرنیٹ آن کر کے دوبارہ کوشش کریں', '#e0524f'); return; }
     const lines = [], okL = [], badL = [], repT = Date.now();
     (d.results || []).forEach(x=>{
       if(!ALL[x.id] || ALL[x.id].side !== s) return;

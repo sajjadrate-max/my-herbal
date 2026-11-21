@@ -1,7 +1,7 @@
 // sw.js — My Herbal | قانونِ مفرد اعضاء
 // مقصد: ویب سائٹ انٹرنیٹ کے بغیر بھی پوری کھلے اور چلے؛ صرف AI کے جواب (/api/) کے لیے انٹرنیٹ چاہیے
 
-const CACHE_NAME = 'my-herbal-cache-v152';
+const CACHE_NAME = 'my-herbal-cache-v153';
 // کتابوں کا متن، PDF، لائبریریاں اور فونٹ الگ کیش میں — نئی ریلیز پر یہ نہیں مٹتا (ورنہ ہر اپ ڈیٹ کے بعد آف لائن کتابیں غائب)
 const DATA_CACHE = 'my-herbal-data-v1';
 const ASSETS_TO_CACHE = [
@@ -34,7 +34,7 @@ const DATA_TO_CACHE = [
   'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js',
   'https://fonts.googleapis.com/css2?family=Noto+Nastaliq+Urdu:wght@400;700&family=Amiri:wght@400;700&family=Poppins:wght@400;600;700&display=swap'
 ];
-const OFFLINE_MSG = '📶 انٹرنیٹ بند ہے — اس جواب کے لیے انٹرنیٹ آن کریں۔';
+const OFFLINE_MSG = 'No internet 🛜 — اس کام کے لیے انٹرنیٹ آن کریں (باقی ویب سائٹ آف لائن چلتی ہے)۔';
 
 // انسٹال: بنیادی فائلیں اور کتابوں کا ڈیٹا کیش کریں (ایک فائل نہ ملے تو باقی پھر بھی)
 self.addEventListener('install', (event) => {

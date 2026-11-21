@@ -802,7 +802,9 @@ window.addEventListener('offline', herbalOfflineBar);
 document.addEventListener('DOMContentLoaded', herbalOfflineBar);
 
 // ---------- PAGE NAVIGATION ----------
-function showPage(id){
+function showPage(id, fromPop){
+  // فون کا واپسی (←) بٹن: ہر صفحہ تاریخ میں درج، تاکہ واپسی پر ایپ بند ہونے کے بجائے پچھلا صفحہ کھلے
+  if(!fromPop){ try{ const cur = history.state || {}; if(cur.hp !== id || cur.sub) history.pushState({ hp: id }, '', location.pathname + location.search); }catch(e){} }
   // بھاری فہرستیں صرف اپنا صفحہ کھلنے پر بنائیں
   if(id === 'kami'){ const el = document.getElementById('deficiencySymptomList'); if(el && el.dataset.pending){ delete el.dataset.pending; herbalBuildKamiCatalog(el); } }
   if(id === 'wajah' && typeof wajahBuildCatalog === 'function') wajahBuildCatalog();
@@ -820,8 +822,31 @@ function showPage(id){
   window.scrollTo(0,0);
   // کھلا صفحہ یاد رکھیں (لنک میں #… لکھے بغیر) — Refresh پر اسی صفحے پر رہیں
   try{ sessionStorage.setItem('herbalPage', id); }catch(e){}
-  try{ if(location.hash) history.replaceState(null, '', location.pathname + location.search); }catch(e){}
+  try{ if(location.hash) history.replaceState(history.state, '', location.pathname + location.search); }catch(e){}
 }
+// واپسی بٹن: پچھلی حالت پر جائیں (صفحہ، کھلا کھاتہ، کھلا علاج)
+try{ if(!history.state || !history.state.hp) history.replaceState({ hp: 'home' }, '', location.pathname + location.search); }catch(e){}
+window.addEventListener('popstate', e=>{
+  const st = e.state || { hp: 'home' };
+  const page = document.getElementById('page-' + st.hp) ? st.hp : 'home';
+  const active = (document.querySelector('.page-section.active') || {}).id;
+  if(active !== 'page-' + page) showPage(page, true);
+  if(page === 'ilaj'){ if(st.sub === 'il' && st.n){ if(typeof ilajShow === 'function') ilajShow(st.n, false, true); } else if(typeof ilajBack === 'function') ilajBack(true); }
+  if(page === 'banjh' && typeof banjhOnPop === 'function') banjhOnPop(st);
+});
+// انٹرنیٹ بند ہو تو اوپر چھوٹی پٹی — باقی سب آف لائن چلتا ہے، صرف AI والے کام انٹرنیٹ مانگتے ہیں
+(function(){
+  function bar(){
+    let b = document.getElementById('netBar');
+    if(navigator.onLine){ if(b) b.remove(); return; }
+    if(!b){ b = document.createElement('div'); b.id = 'netBar';
+      b.style.cssText = 'position:fixed; top:0; left:0; right:0; z-index:9998; background:#e0524f; color:#fff; text-align:center; font-size:.85rem; padding:4px 8px;';
+      b.textContent = 'No internet 🛜 — ویب سائٹ آف لائن چل رہی ہے؛ صرف AI / رپورٹ پڑھنے والے کام انٹرنیٹ پر ہوں گے';
+      document.body.appendChild(b); }
+  }
+  window.addEventListener('online', bar); window.addEventListener('offline', bar);
+  document.addEventListener('DOMContentLoaded', bar);
+})();
 // Refresh / دوبارہ کھولنے پر وہی صفحہ کھولیں جو پہلے کھلا تھا
 document.addEventListener('DOMContentLoaded', ()=>{
   let id = (location.hash || '').slice(1);
@@ -8320,9 +8345,10 @@ function ilajRefreshTag(name){
   const cat = document.getElementById('ilajCatalog');
   if(cat){ delete cat.dataset.ready; ilajBuildCatalog(); }
 }
-async function ilajShow(n, keepScroll){
+async function ilajShow(n, keepScroll, fromPop){
   const out = document.getElementById('ilajResult');
   if(!out) return;
+  if(!keepScroll && !fromPop){ try{ const cur = history.state || {}; if(cur.sub === 'il') history.replaceState({ hp:'ilaj', sub:'il', n }, '', location.pathname + location.search); else history.pushState({ hp:'ilaj', sub:'il', n }, '', location.pathname + location.search); }catch(e){} }
   const data = await ilajLoad();
   if(ILAJ_SEE[n]) n = ILAJ_SEE[n];
   const d = diseaseList.find(x=> pmMizajMembers(n).includes(x.name));
@@ -8413,7 +8439,9 @@ function ilajNew(){
   if(!n) return;
   ilajShow(n).then(()=> ilajEdOpen('new'));
 }
-function ilajBack(){
+function ilajBack(fromPop){
+  // بٹن سے واپسی: تاریخ میں ایک قدم پیچھے (فون کے واپسی بٹن جیسا)
+  if(!fromPop){ try{ if(history.state && history.state.sub === 'il'){ history.back(); return; } }catch(e){} }
   const out = document.getElementById('ilajResult');
   if(out) out.innerHTML = '';
   const target = document.querySelector('#ilajCatalog details[open]') || document.getElementById('ilajCatalog');
