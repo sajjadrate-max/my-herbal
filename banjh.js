@@ -277,7 +277,7 @@
     const okD = done.filter(d=> d.r.status === 'ok'), badD = done.filter(d=> d.r.status === 'bad');
     const row = (d, i)=> `<div class="bj-done ${d.r.status}" onclick="${d.tap}"><span class="bj-big ${d.r.status}">${d.r.status === 'ok' ? '✓' : '✗'}</span><span class="bj-no ${d.r.status}">${i + 1}</span><span class="bj-pill ${d.r.status}">${d.r.status === 'ok' ? '✓ صحیح' : '✗ خراب'}</span>
         <div class="bj-tb"><b class="bj-en" dir="ltr">${esc(d.en)}</b>${d.ur ? ` <span class="bj-ur">— ${esc(d.ur)}</span>` : ''}
-        ${d.r.value ? `<div class="bj-val">${esc(d.r.value)}</div>` : ''}${d.r.note ? `<div class="bj-tn">${esc(d.r.note)}</div>` : ''}<div class="bj-hint">📅 ${fmtD(d.r.date || Date.now())}</div>${ALL[d.key] ? `<label class="bj-tup" onclick="event.stopPropagation()">📷 نئی رپورٹ بھیجیں<input type="file" accept="image/*" multiple hidden onchange="banjhReport('${s}', this, '${d.key}')"></label>` : ''}</div></div>`;
+        ${d.r.value ? `<div class="bj-val">${esc(d.r.value)}</div>` : ''}${d.r.note ? `<div class="bj-tn">${esc(d.r.note)}</div>` : ''}<div class="bj-hint">📅 ${fmtD(d.r.date || Date.now())}</div>${ALL[d.key] ? infoHtml(d.key) + `<label class="bj-tup" onclick="event.stopPropagation()">📷 نئی رپورٹ بھیجیں<input type="file" accept="image/*" multiple hidden onchange="banjhReport('${s}', this, '${d.key}')"></label>` : ''}</div></div>`;
     let treat = (c[s].treat || []).slice();
     if(!treat.length) treat = badD.map(d=> d.r.note || (d.en + ' خراب')).filter(Boolean);
     const pendN = order.filter(id=> !(t[id] && t[id].status)).length;
