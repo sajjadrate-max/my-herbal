@@ -209,7 +209,7 @@
     return `<div class="bj-case" data-q="${esc((c.husband + ' ' + c.wife).toLowerCase())}" onclick="banjhOpen('${c.id}')">
       <button type="button" class="bj-dots" aria-label="مزید" onclick="event.stopPropagation(); banjhMenu(this, '${c.id}')">⋮</button>
       <div class="bj-case-names">👨 ${esc(c.husband)} <span style="color:var(--muted);">&</span> 👩 ${esc(c.wife)}</div>
-      <div class="bj-case-meta">مرد: <b class="ok">✓ ${m.ok}</b> <b class="bad">✗ ${m.bad}</b> · عورت: <b class="ok">✓ ${f.ok}</b> <b class="bad">✗ ${f.bad}</b> · ${fmtD(c.created)} سے</div>
+      <div class="bj-case-meta">مرد: <b class="ok">✓ ${m.ok}</b> <b class="bad">✗ ${m.bad}</b>${m.ok + m.bad ? ' (' + Math.round(m.ok * 100 / (m.ok + m.bad)) + '٪ صحیح)' : ''} · عورت: <b class="ok">✓ ${f.ok}</b> <b class="bad">✗ ${f.bad}</b>${f.ok + f.bad ? ' (' + Math.round(f.ok * 100 / (f.ok + f.bad)) + '٪ صحیح)' : ''} · ${fmtD(c.created)} سے</div>
     </div>`;
   }
   window.banjhFind = ()=>{
@@ -306,7 +306,12 @@
     return `<div class="bj-side bj-${s}">
       <h3>${SIDE[s]} — ${esc(who)}</h3>
       ${s === 'm' ? `<div class="bj-warn">⚠ اہم: بانجھ پن (سپرم کی کمی) میں ٹیسٹوسٹیرون کی گولی، ٹیکہ، جیل یا باڈی بلڈنگ کے سٹیرائیڈ ہرگز نہ دیں — اس سے دماغ سپرم بنانے کا حکم (FSH/LH) بند کر دیتا ہے اور سپرم کم یا بالکل ختم ہو جاتے ہیں۔ دوا بند کرنے کے بعد سپرم واپس آنے میں 6–12 ماہ یا زیادہ لگ سکتے ہیں، کبھی پوری طرح واپس نہیں آتے۔ مریض سے ضرور پوچھیں کہ کہیں جم/طاقت کے ٹیکے تو نہیں لے رہا۔</div>` : ''}
-      <div class="bj-cnt" style="margin-bottom:8px;"><span class="ok">✓ صحیح: ${okD.length}</span><span class="bad">✗ خراب: ${badD.length}</span><span class="pd">⏳ باقی: ${pendN}</span></div>
+      ${(()=>{ const dn = okD.length + badD.length, tot = dn + pendN, po = dn ? Math.round(okD.length * 100 / dn) : 0, pb = dn ? 100 - po : 0, pd = tot ? Math.round(dn * 100 / tot) : 0;
+        return `<div class="bj-pct">
+          <div class="bj-cnt"><span class="ok">✓ صحیح: ${okD.length} (${po}٪)</span><span class="bad">✗ خراب: ${badD.length} (${pb}٪)</span><span class="pd">⏳ باقی: ${pendN}</span></div>
+          ${dn ? `<div class="bj-bar" style="background:linear-gradient(to left, #1f9d55 0 ${po}%, #e0524f ${po}% 100%);"></div>
+          <div class="bj-hint">جو ${dn} ٹیسٹ ہو چکے ان میں سے <b style="color:#1f9d55;">${po}٪ صحیح</b> اور <b style="color:#e0524f;">${pb}٪ خراب</b> · کل ${tot} میں سے ${dn} ٹیسٹ ہو گئے (${pd}٪ مکمل)</div>` : '<div class="bj-hint">ابھی کوئی ٹیسٹ نہیں ہوا</div>'}
+        </div>`; })()}
       <div class="bj-box ok"><div class="bj-bh">✅ صحیح ٹیسٹ (${okD.length}) — دوبارہ کروانے کی ضرورت نہیں</div>
         ${okD.length ? okD.map(row).join('') : '<div class="bj-hint">ابھی کوئی ٹیسٹ صحیح نہیں آیا — نارمل رپورٹ بھیجیں تو یہاں سبز ✓ کے ساتھ آ جائے گا۔</div>'}
       </div>
@@ -621,6 +626,8 @@
   .bj-irow{font-size:.8rem; line-height:1.9; padding:2px 10px;} .bj-irow:last-child{padding-bottom:8px;} .bj-irow b{color:var(--gold-soft);}
   .bj-rdet{border-color:#2b6cb0 !important;} .bj-rdet > summary{font-size:.82rem !important; color:#2b6cb0 !important; padding:5px 8px !important;} .bj-rdet > summary::before{color:#2b6cb0 !important;}
   .bj-rd{font-size:.75rem; color:var(--muted); padding:4px 10px 0;} .bj-rdet .bj-imgs{padding:0 8px;}
+  .bj-pct{border:1px solid var(--border); border-radius:10px; padding:6px 8px; margin-bottom:8px; background:var(--card);}
+  .bj-bar{display:flex; height:12px; border-radius:6px; overflow:hidden; background:#ddd; margin:6px 0 2px;} .bj-bar span{display:block; height:100%; flex:none;} .bj-bar .ok{background:#1f9d55;} .bj-bar .bad{background:#e0524f;}
   .bj-mrow{margin-right:22px;} .bj-lb{color:var(--muted); font-size:.75rem;}
   .bj-brand{color:#2b6cb0; font-family:Poppins, Arial, sans-serif; font-size:.85rem;} .bj-co{color:#7b3fa0; font-family:Poppins, Arial, sans-serif; font-size:.82rem;} .bj-cn{font-size:.75rem; color:var(--muted);}
   .bj-mnote{font-size:.75rem; color:#b03a37;}
