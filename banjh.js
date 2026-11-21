@@ -15,10 +15,10 @@
       { st:'مرحلہ 2 — ہارمون (اگر سیمن خراب ہو)', items:[
         ['semen2','Repeat Semen Analysis','دوبارہ سیمن ٹیسٹ','پہلی رپورٹ خراب ہو تو 2–3 ماہ بعد تصدیق — ایک سپرم کو بن کر تیار ہونے میں تقریباً 3 ماہ لگتے ہیں، اس لیے علاج یا بیماری کا اثر رپورٹ میں 3 ماہ بعد نظر آتا ہے'],
         ['fsh_m','FSH','سپرم بنانے والا ہارمون','زیادہ ہو تو خصیہ کمزور ہے؛ کم ہو تو دماغی غدود (پچوٹری) سے حکم نہیں آ رہا'],
-        ['lh_m','LH','ٹیسٹوسٹیرون بنانے کا حکم دینے والا ہارمون','FSH کے ساتھ دیکھا جاتا ہے کہ خرابی خصیے میں ہے یا دماغی غدود میں'],
+        ['lh_m','LH','ٹیسٹوسٹیرون بنانے کا حکم دینے والا ہارمون','FSH کے ساتھ دیکھا جاتا ہے کہ خرابی خصیے میں ہے یا دماغی غدود میں — خاص طور پر جب ٹیسٹوسٹیرون کم ہو'],
         ['testo','Total Testosterone','مردانہ ہارمون (صبح 8–10 بجے)','کم ہو تو کمزوری، خواہش کی کمی اور سپرم کم۔ نارمل تقریباً 300–1000 ng/dl۔ ⚠ کم ہو تب بھی بانجھ مرد کو ٹیسٹوسٹیرون خود نہ دیں — سپرم بننا رک جاتا ہے؛ ماہر hCG یا Clomiphene دیتا ہے'],
-        ['prl_m','Prolactin','پرولیکٹن ہارمون','زیادہ ہو تو ٹیسٹوسٹیرون کم، کمزوری اور سپرم کی کمی'],
-        ['tsh_m','TSH','تھائیرائیڈ کا ٹیسٹ','تھائیرائیڈ کی کمی/زیادتی سے سپرم اور جنسی طاقت متاثر ہوتی ہے']
+        ['prl_m','Prolactin','پرولیکٹن ہارمون','جب ٹیسٹوسٹیرون کم ہو یا خواہش کم ہو — زیادہ ہو تو کمزوری اور سپرم کی کمی'],
+        ['tsh_m','TSH','تھائیرائیڈ کا ٹیسٹ','مردوں میں معمول کا ٹیسٹ نہیں — صرف تھائیرائیڈ کی علامات (تھکن، وزن کی تبدیلی، گردن میں سوجن) ہوں تو']
       ]},
       { st:'مرحلہ 3 — وجہ کی تلاش', items:[
         ['us_scrotal','Scrotal Ultrasound / Doppler','خصیوں کا الٹراساؤنڈ / ڈوپلر','ویریکوسیل (خصیے کی رگوں کا پھولنا) — سپرم کی کمی کی عام وجہ؛ خصیے کا سائز اور رکاوٹ'],
@@ -28,8 +28,9 @@
       ]},
       { st:'مرحلہ 4 — ماہر کے ٹیسٹ', items:[
         ['dfi','Sperm DNA Fragmentation (DFI)','سپرم کے DNA کی ٹوٹ پھوٹ','رپورٹ نارمل ہو پھر بھی حمل نہ ہو، یا بار بار حمل ضائع ہو'],
-        ['karyo_m','Karyotype','کروموسوم کا ٹیسٹ','سپرم بالکل نہ ہوں (Azoospermia) یا بہت ہی کم ہوں'],
-        ['ymicro','Y-Chromosome Microdeletion','Y کروموسوم کا ٹیسٹ','Azoospermia یا شدید کمی میں — سپرم بننے کا جینیاتی مسئلہ']
+        ['karyo_m','Karyotype','کروموسوم کا ٹیسٹ','سپرم بالکل نہ ہوں (Azoospermia) یا 5 ملین/ml سے کم ہوں'],
+        ['ymicro','Y-Chromosome Microdeletion','Y کروموسوم کا ٹیسٹ','Azoospermia یا سپرم 1 ملین/ml سے کم ہوں — سپرم بننے کا جینیاتی مسئلہ'],
+        ['viral_m','HBsAg, Anti-HCV, HIV','ہیپاٹائٹس بی، سی اور HIV','IUI / IVF / ICSI سے پہلے لازمی']
       ]}
     ],
     f: [
@@ -42,10 +43,11 @@
         ['cbc_f','CBC / Hemoglobin','خون کا مکمل ٹیسٹ','خون کی کمی — حمل سے پہلے پوری ہونی چاہیے'],
         ['sugar_f','HbA1c / Blood Sugar','شوگر کا ٹیسٹ','شوگر اور انسولین کی مزاحمت PCOS کے ساتھ عام ہے'],
         ['urine_f','Urine R/E','پیشاب کا ٹیسٹ','پیشاب کی نالی کا انفیکشن (پس سیلز) — حمل سے پہلے ختم ہونا ضروری'],
-        ['prog21','Day-21 Progesterone (Mid-luteal)','انڈا بننے کی تصدیق کا ٹیسٹ','ماہواری آنے سے 7 دن پہلے (28 دن کے سائیکل میں 21واں دن)۔ 10 ng/ml سے زیادہ = انڈا بنا اور پھٹا (Ovulation)؛ کم = انڈا نہیں بن رہا']
+        ['prog21','Day-21 Progesterone (Mid-luteal)','انڈا بننے کی تصدیق کا ٹیسٹ','صرف باقاعدہ ماہواری میں — ماہواری آنے سے 7 دن پہلے (28 دن کے سائیکل میں 21واں دن)؛ بے قاعدہ ہو تو اس کی جگہ فولیکل ٹریکنگ۔ 10 ng/ml سے زیادہ = انڈا بنا اور پھٹا (Ovulation)؛ کم = انڈا نہیں بن رہا']
       ]},
       { st:'مرحلہ 2 — نالیاں اور انفیکشن (ضروری — چاہے پہلا مرحلہ ٹھیک ہو)', always:true, items:[
         ['hvs','High Vaginal Swab (HVS)','ویجائنل سواب','HSG سے پہلے انفیکشن ختم ہونا ضروری — لیکوریا، بدبو، سوزش کا جراثیم معلوم کرنا'],
+        ['chlamydia','Chlamydia test (Swab PCR / IgG)','کلیمیڈیا انفیکشن کا ٹیسٹ','نالیاں بند ہونے کی ایک بڑی وجہ — HSG سے پہلے؛ مثبت ہو تو میاں بیوی دونوں کا علاج'],
         ['hsg','HSG (Hysterosalpingography)','نالیوں کا ٹیسٹ (ماہواری کے دن 7–10)','فیلوپین نالیاں کھلی ہیں یا بند، اور بچہ دانی کے اندر کی بناوٹ'],
         ['rubella','Rubella IgG','روبیلا کا ٹیسٹ','حمل سے پہلے حفاظت — منفی ہو تو ٹیکہ لگوانا']
       ]},
@@ -57,7 +59,8 @@
       { st:'مرحلہ 4 — ماہر کے ٹیسٹ', items:[
         ['sis','Saline Sonography / 3D Ultrasound','بچہ دانی کا خاص الٹراساؤنڈ','بچہ دانی کے اندر پولیپ، پردہ (Septum) یا چپکاؤ'],
         ['hysteroscopy','Hysteroscopy','بچہ دانی کے اندر کیمرے سے معائنہ','اندر کی رکاوٹ دیکھنا اور اسی وقت ٹھیک کرنا'],
-        ['laparoscopy','Laparoscopy','پیٹ میں کیمرے سے معائنہ','اینڈومیٹریوسس، نالیوں کی رکاوٹ اور چپکاؤ']
+        ['laparoscopy','Laparoscopy','پیٹ میں کیمرے سے معائنہ','اینڈومیٹریوسس، نالیوں کی رکاوٹ اور چپکاؤ'],
+        ['viral_f','HBsAg, Anti-HCV, HIV','ہیپاٹائٹس بی، سی اور HIV','IUI / IVF / ICSI اور حمل سے پہلے لازمی']
       ]}
     ]
   };
@@ -172,8 +175,8 @@
 
   // ---------- ایک کھاتہ ----------
   // رپورٹ میں فہرست سے باہر کے نام سے آیا ٹیسٹ ← فہرست کا ٹیسٹ (مثلاً "Urine Pus Cells" ← Urine R/E)
-  const KEYMAP = { m:[[/urine|پیشاب/i,'urine_m'],[/\bcbc\b|h(a)?emoglobin|\bhb\b|خون کا مکمل/i,'cbc_m'],[/hba1c|blood sugar|glucose|\bbsr\b|\bfbs\b|خون کی شوگر/i,'sugar_m'],[/prolactin|پرولیکٹن/i,'prl_m'],[/\btsh\b|thyroid stimulating/i,'tsh_m'],[/testosterone|ٹیسٹوسٹیرون/i,'testo'],[/\bfsh\b|follicle stimulating/i,'fsh_m'],[/\blh\b|luteini/i,'lh_m'],[/semen|سیمن|sperm|سپرم/i,'semen']],
-                   f:[[/urine|پیشاب/i,'urine_f'],[/\bcbc\b|h(a)?emoglobin|\bhb\b|خون کا مکمل/i,'cbc_f'],[/hba1c|blood sugar|glucose|\bbsr\b|\bfbs\b|خون کی شوگر/i,'sugar_f'],[/prolactin|پرولیکٹن/i,'prl_f'],[/\btsh\b|thyroid stimulating/i,'tsh_f'],[/\bamh\b|m[uü]ll?erian|انڈوں کا ذخیرہ/i,'amh'],[/progesterone|پروجیسٹرون/i,'prog21'],[/vitamin\s*d|25.?oh|وٹامن ڈی/i,'vitd'],[/rubella|روبیلا/i,'rubella'],[/\bhsg\b|hysterosalping/i,'hsg'],[/vaginal swab|\bhvs\b/i,'hvs'],[/testosterone|dhea|ٹیسٹوسٹیرون/i,'androgen'],[/\bfsh\b|\blh\b|estradiol|\be2\b|follicle stimulating|luteini/i,'d2'],[/ultrasound|\btvs\b|الٹراساؤنڈ|sonograph/i,'tvs']] };
+  const KEYMAP = { m:[[/urine|پیشاب/i,'urine_m'],[/\bcbc\b|h(a)?emoglobin|\bhb\b|خون کا مکمل/i,'cbc_m'],[/hba1c|blood sugar|glucose|\bbsr\b|\bfbs\b|خون کی شوگر/i,'sugar_m'],[/prolactin|پرولیکٹن/i,'prl_m'],[/\btsh\b|thyroid stimulating/i,'tsh_m'],[/testosterone|ٹیسٹوسٹیرون/i,'testo'],[/\bfsh\b|follicle stimulating/i,'fsh_m'],[/\blh\b|luteini/i,'lh_m'],[/semen|سیمن|sperm|سپرم/i,'semen'],[/hbsag|hcv|hiv|hepatitis|ہیپاٹائٹس/i,'viral_m']],
+                   f:[[/urine|پیشاب/i,'urine_f'],[/\bcbc\b|h(a)?emoglobin|\bhb\b|خون کا مکمل/i,'cbc_f'],[/hba1c|blood sugar|glucose|\bbsr\b|\bfbs\b|خون کی شوگر/i,'sugar_f'],[/prolactin|پرولیکٹن/i,'prl_f'],[/\btsh\b|thyroid stimulating/i,'tsh_f'],[/\bamh\b|m[uü]ll?erian|انڈوں کا ذخیرہ/i,'amh'],[/progesterone|پروجیسٹرون/i,'prog21'],[/vitamin\s*d|25.?oh|وٹامن ڈی/i,'vitd'],[/rubella|روبیلا/i,'rubella'],[/\bhsg\b|hysterosalping/i,'hsg'],[/vaginal swab|\bhvs\b/i,'hvs'],[/testosterone|dhea|ٹیسٹوسٹیرون/i,'androgen'],[/\bfsh\b|\blh\b|estradiol|\be2\b|follicle stimulating|luteini/i,'d2'],[/ultrasound|\btvs\b|الٹراساؤنڈ|sonograph/i,'tvs'],[/hbsag|hcv|hiv|hepatitis|ہیپاٹائٹس/i,'viral_f'],[/chlamydia|کلیمیڈیا/i,'chlamydia']] };
   function keyFor(s, name){ const k = (KEYMAP[s] || []).find(([re])=> re.test(name)); return k && ALL[k[1]] ? k[1] : ''; }
   // پرانے ریکارڈ سے: جو ٹیسٹ رپورٹ میں آ چکے مگر فہرست میں نشان نہیں لگا، ان پر ✓/✗ لگائیں
   function migrate(c){
