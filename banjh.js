@@ -286,6 +286,12 @@
         }));
       });
     });
+    // ایک ہی رپورٹ بار بار بھیجی گئی ہو تو دہرائی ہوئی تصویریں ریکارڈ سے ہٹا دیں
+    const seenI = new Set();
+    (c.log || []).forEach(e=>{
+      if(e.img){ if(seenI.has(e.img)){ delete e.img; changed = true; } else seenI.add(e.img); }
+      if(Array.isArray(e.imgs)){ const b = e.imgs.length; e.imgs = e.imgs.filter(u=> !seenI.has(u) && seenI.add(u)); if(e.imgs.length !== b) changed = true; }
+    });
     return changed;
   }
   window.banjhOpen = async (id)=>{
@@ -368,6 +374,17 @@
     </div>`;
   }
   // فہرست سے باہر والا ٹیسٹ (رپورٹ سے آیا): نتیجہ بدلیں یا ہٹائیں
+  // پوری اسکرین پر رپورٹ: پورا صفحہ، ٹیپ سے بڑا/چھوٹا، دو انگلیوں سے زوم
+  window.banjhView = (src)=>{
+    const o = document.createElement('div'); o.className = 'bj-view';
+    o.innerHTML = `<div class="bj-vbar"><button type="button" data-z="-">➖</button><button type="button" data-z="+">➕</button><button type="button" data-z="x">✖ بند کریں</button></div><div class="bj-vbody"><img alt="رپورٹ"></div>`;
+    const img = o.querySelector('img'); img.src = src;
+    let z = 1; const set = ()=>{ img.style.width = (100 * z) + '%'; };
+    o.querySelector('.bj-vbar').addEventListener('click', e=>{ const b = e.target.closest('button'); if(!b) return;
+      if(b.dataset.z === 'x'){ o.remove(); return; } z = Math.max(1, Math.min(5, z + (b.dataset.z === '+' ? .5 : -.5))); set(); });
+    img.addEventListener('click', ()=>{ z = z > 1 ? 1 : 2.5; set(); });
+    document.body.appendChild(o); set();
+  };
   window.banjhExtra = async (s, k)=>{
     const c = CUR, ex = (c[s].extra = c[s].extra || {}), r = ex[k] || {};
     const a = prompt(k + '\n\n1 = ✓ ٹھیک\n2 = ✗ خراب\n0 = ہٹا دیں', r.status === 'ok' ? '1' : '2');
@@ -394,14 +411,18 @@
   // کسی ٹیسٹ کی بھیجی گئی رپورٹیں (تصویریں): نئی رپورٹ میں نشان (rep) سے، پرانی میں رپورٹ کی سطروں سے پہچان کر
   function reportsFor(c, s, id){
     const r = (c[s].tests[id] || {});
-    return logEntries(c).filter(e=> e.side === s && e.imgs && e.imgs.length && (e.t === r.rep || (()=>{ const p = logParse(e); return p.ok.concat(p.bad).some(l=> keyFor(s, l) === id); })()));
+    const seen = new Set();
+    let list = logEntries(c).map(e=> Object.assign({}, e, { imgs: (e.imgs || []).filter(u=> !seen.has(u) && seen.add(u)) })).filter(e=> e.side === s && e.imgs && e.imgs.length && (e.t === r.rep || (()=>{ const p = logParse(e); return p.ok.concat(p.bad).some(l=> keyFor(s, l) === id); })()));
+    // نئی (صاف) کاپی موجود ہو تو پرانی دھندلی کاپیاں نہ دکھائیں — ایک ہی رپورٹ ایک بار
+    if(list.some(e=> e.hashes)) list = list.filter(e=> e.hashes);
+    return list.filter(e=> e.imgs.length);
   }
   function reportsHtml(c, s, id){
     const list = reportsFor(c, s, id); if(!list.length) return '';
     const n = list.reduce((a, e)=> a + e.imgs.length, 0);
     return `<details class="bj-tdet bj-rdet" onclick="event.stopPropagation()"><summary>📄 بھیجی گئی رپورٹ دیکھیں (${n})</summary>
-      ${list.map(e=> `<div class="bj-rd">📅 ${new Date(e.t).toLocaleString('en-GB')}</div><div class="bj-imgs">${e.imgs.map(u=> `<img src="${u}" alt="رپورٹ" class="bj-thumb" onclick="event.stopPropagation(); this.classList.toggle('big')">`).join('')}</div>`).join('')}
-      <div class="bj-hint" style="padding:0 10px 8px;">تصویر پر ٹیپ کریں تو بڑی ہو جائے گی</div></details>`;
+      ${list.map(e=> `<div class="bj-rd">📅 ${new Date(e.t).toLocaleString('en-GB')}</div><div class="bj-imgs">${e.imgs.map(u=> `<img src="${u}" alt="رپورٹ" class="bj-thumb" onclick="event.stopPropagation(); banjhView(this.src)">`).join('')}</div>`).join('')}
+      <div class="bj-hint" style="padding:0 10px 8px;">تصویر پر ٹیپ کریں — پورا صفحہ کھل جائے گا</div></details>`;
   }
   function logParse(e){
     if(e.ok || e.bad) return e;
@@ -522,7 +543,13 @@
     if(!navigator.onLine){ say('📶 رپورٹ پڑھنے کے لیے انٹرنیٹ آن کریں', '#e0524f'); return; }
     say('⏳ رپورٹ پڑھی جا رہی ہے... (آدھا منٹ لگ سکتا ہے)');
     let images, thumbs;
-    try{ images = await Promise.all(files.map(f=> shrink(f, 1600, .82))); thumbs = await Promise.all(files.map(f=> shrink(f, 1100, .7))); }
+    let hashes = [];
+    try{
+      images = await Promise.all(files.map(f=> shrink(f, 1600, .82)));
+      // محفوظ کاپی: تقریباً اصل جیسی صاف (2400px تک) تاکہ پورا صفحہ ویسا ہی کھلے جیسا بھیجا
+      thumbs = await Promise.all(files.map(f=> shrink(f, 2400, .9)));
+      hashes = await Promise.all(files.map(async f=> { try{ const h = await crypto.subtle.digest('SHA-256', await f.arrayBuffer()); return Array.from(new Uint8Array(h)).slice(0, 12).map(b=> b.toString(16).padStart(2, '0')).join(''); }catch(e){ return ''; } }));
+    }
     catch(e){ say('⚠ ' + e.message, '#e0524f'); return; }
     const tests = TESTS[s].map((g, gi)=> g.items.map(([id, en, ur, hint])=> ({ id, name: en + ' — ' + ur, stage: gi + 1, hint }))).flat();
     const done = Object.keys(c[s].tests).map(id=> ({ id, name: ALL[id] ? ALL[id].name : id, status: c[s].tests[id].status, value: c[s].tests[id].value }));
@@ -566,7 +593,16 @@
     const text = (d.summary ? d.summary + '\n' : '') + lines.join('\n')
       + (c[s].treat.length ? '\n🩺 علاج کریں: ' + c[s].treat.join('، ') : '')
       + (c[s].next.length ? '\n👉 اگلا ٹیسٹ: ' + c[s].next.map(id=> ALL[id].name).join('، ') : '');
-    c.log.push({ t: repT, side: s, imgs: thumbs, text, summary: d.summary || '', ok: okL, bad: badL, treat: c[s].treat.slice(), next: c[s].next.map(id=> ALL[id].name) });
+    // وہی رپورٹ دوبارہ بھیجی ہو تو تصویر دوبارہ محفوظ نہ کریں (پرانی والی ہی کافی)
+    const seenH = new Set((c.log || []).flatMap(e=> e.hashes || []));
+    const keep = thumbs.map((u, i)=> !(hashes[i] && seenH.has(hashes[i])));
+    thumbs = thumbs.filter((u, i)=> keep[i]); hashes = hashes.filter((h, i)=> keep[i]);
+    if(!thumbs.length){
+      // ساری تصویریں پہلے کی ہیں: پرانی رپورٹ کو ہی اس ٹیسٹ سے جوڑ دیں
+      const old = (c.log || []).find(e=> (e.hashes || []).some(h=> seenH.has(h)) && e.side === s);
+      if(old) Object.keys(c[s].tests).forEach(k=>{ if(c[s].tests[k].rep === repT) c[s].tests[k].rep = old.t; });
+    }
+    c.log.push({ t: repT, side: s, imgs: thumbs, hashes, text, summary: d.summary || '', ok: okL, bad: badL, treat: c[s].treat.slice(), next: c[s].next.map(id=> ALL[id].name) });
     await put(c);
     render();
     say(lines.length ? '✅ رپورٹ پڑھ لی — نتیجہ اوپر لگ گیا' : '⚠ اس تصویر میں فہرست کا کوئی ٹیسٹ صاف نہیں پڑھا جا سکا — صاف تصویر بھیجیں یا ٹیسٹ پر ٹیپ کر کے خود لکھیں', lines.length ? 'var(--leaf)' : '#c9821b');
@@ -671,6 +707,9 @@
   .bj-pct{border:1px solid var(--border); border-radius:10px; padding:6px 8px; margin-bottom:8px; background:var(--card);}
   .bj-bar{display:flex; height:12px; border-radius:6px; overflow:hidden; background:#ddd; margin:6px 0 2px;} .bj-bar span{display:block; height:100%; flex:none;} .bj-bar .ok{background:#1f9d55;} .bj-bar .bad{background:#e0524f;}
   .bj-norm{background:rgba(31,157,85,.07); border-top:1px dashed #1f9d55; margin-top:4px; padding-top:4px !important;} .bj-norm b{color:#1f9d55 !important;}
+  .bj-view{position:fixed; inset:0; z-index:9999; background:#111; display:flex; flex-direction:column;}
+  .bj-vbar{display:flex; gap:8px; justify-content:center; padding:8px; background:#222;} .bj-vbar button{background:#333; color:#fff; border:1px solid #555; border-radius:16px; padding:6px 14px; font-family:inherit; font-size:.95rem;}
+  .bj-vbody{flex:1; overflow:auto; -webkit-overflow-scrolling:touch; touch-action:pan-x pan-y pinch-zoom;} .bj-vbody img{display:block; width:100%; height:auto; margin:0 auto; touch-action:pinch-zoom;}
   .bj-mrow{margin-right:22px;} .bj-lb{color:var(--muted); font-size:.75rem;}
   .bj-brand{color:#2b6cb0; font-family:Poppins, Arial, sans-serif; font-size:.85rem;} .bj-co{color:#7b3fa0; font-family:Poppins, Arial, sans-serif; font-size:.82rem;} .bj-cn{font-size:.75rem; color:var(--muted);}
   .bj-mnote{font-size:.75rem; color:#b03a37;}
