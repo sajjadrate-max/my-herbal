@@ -589,6 +589,14 @@ footer{position:fixed; left:0; right:0; bottom:0; z-index:55; text-align:center;
     <div id="pmMizajResults" style="margin-top:12px;"></div>
   </div>
 
+  <div id="upBox" style="background:var(--card); border:2px dashed var(--gold); border-radius:10px; padding:14px; margin-bottom:16px; text-align:center;">
+    <h3 style="color:var(--gold-soft); margin-bottom:6px;">📤 نئی PDF کتاب شامل کریں</h3>
+    <p style="color:var(--muted); font-size:.8rem; margin-bottom:8px;">ایک یا کئی PDF چنیں — متن پڑھ کر تلاش میں شامل ہو جائے گی۔ جو کتاب پہلے سے موجود ہو وہ دوبارہ نہیں ڈالی جاتی۔</p>
+    <label class="btn" style="cursor:pointer; display:inline-block;">📄 PDF فائل چنیں<input type="file" id="upFileInput" accept="application/pdf,.pdf" multiple hidden onchange="upHandleFiles(this.files)"></label>
+    <div id="upStatus" style="font-size:.85rem; margin-top:8px;"></div>
+    <div id="upLog" style="font-size:.82rem; margin-top:4px; text-align:right; line-height:1.9;"></div>
+  </div>
+
   <div id="pmSummary" style="color:var(--gold-soft); font-size:.95rem; text-align:center; margin:0 0 10px;"></div>
   <div id="pmResults" style="margin-bottom:16px;"></div>
 
