@@ -194,17 +194,17 @@
   };
   // ---------- لیبارٹری کو بتانے / پرچی پر لکھوانے والا نام ----------
   const LABNAME = {
-    semen:'Semen Analysis (Semen R/E)', semen2:'Semen Analysis (Repeat)', urine_m:'Urine R/E (Urine Complete Examination)', urine_f:'Urine R/E (Urine Complete Examination)',
-    cbc_m:'CBC (Complete Blood Count)', cbc_f:'CBC (Complete Blood Count)', sugar_m:'HbA1c + Fasting Blood Sugar (FBS)', sugar_f:'HbA1c + FBS — PCOS کا شک ہو تو OGTT (75g, 2 hours)',
-    fsh_m:'Serum FSH', lh_m:'Serum LH', testo:'Serum Total Testosterone (Morning)', prl_m:'Serum Prolactin', tsh_m:'Serum TSH',
-    us_scrotal:'Scrotal Ultrasound with Color Doppler', semen_cs:'Semen Culture & Sensitivity (Semen C/S)', peu:'Post-Ejaculatory Urine for Sperm', asa:'MAR Test (Anti-Sperm Antibodies)',
-    dfi:'Sperm DNA Fragmentation Index (DFI)', karyo_m:'Karyotyping (Chromosomal Analysis)', ymicro:'Y-Chromosome Microdeletion (AZF)', viral_m:'HBsAg, Anti-HCV, HIV (Viral Screening)',
-    tvs:'TVS — Transvaginal Ultrasound Pelvis with AFC', d2:'Day 2 FSH, LH, Estradiol (E2)', amh:'Serum AMH', tsh_f:'Serum TSH', prl_f:'Serum Prolactin',
-    prog21:'Day 21 Serum Progesterone', hvs:'High Vaginal Swab C/S (HVS C/S)', chlamydia:'Chlamydia trachomatis PCR (Swab) / Chlamydia IgG',
-    hsg:'HSG (Hysterosalpingography)', rubella:'Rubella IgG', follicle:'Follicular Monitoring (Follicle Tracking TVS)', androgen:'Serum Total Testosterone + DHEA-S',
-    vitd:'Vitamin D (25-OH Vitamin D)', sis:'Saline Infusion Sonography (SIS) / 3D TVS', hysteroscopy:'Diagnostic Hysteroscopy', laparoscopy:'Diagnostic Laparoscopy with Dye Test', viral_f:'HBsAg, Anti-HCV, HIV (Viral Screening)'
+    semen:'Semen Analysis', semen2:'Semen Analysis', urine_m:'Urine R/E', urine_f:'Urine R/E',
+    cbc_m:'CBC', cbc_f:'CBC', sugar_m:'HbA1c + FBS', sugar_f:'HbA1c + FBS / OGTT',
+    fsh_m:'Serum FSH', lh_m:'Serum LH', testo:'Serum Total Testosterone', prl_m:'Serum Prolactin', tsh_m:'Serum TSH',
+    us_scrotal:'Scrotal Color Doppler', semen_cs:'Semen C/S', peu:'Post-Ejaculatory Urine', asa:'MAR Test',
+    dfi:'Sperm DNA Fragmentation', karyo_m:'Karyotyping', ymicro:'Y-Chromosome Microdeletion', viral_m:'HBsAg, Anti-HCV, HIV',
+    tvs:'TVS Pelvis with AFC', d2:'Day 2 FSH, LH, E2', amh:'Serum AMH', tsh_f:'Serum TSH', prl_f:'Serum Prolactin',
+    prog21:'Day 21 Serum Progesterone', hvs:'HVS C/S', chlamydia:'Chlamydia PCR',
+    hsg:'HSG', rubella:'Rubella IgG', follicle:'Follicular Monitoring', androgen:'Serum Testosterone + DHEA-S',
+    vitd:'Vitamin D (25-OH)', sis:'Saline Infusion Sonography', hysteroscopy:'Diagnostic Hysteroscopy', laparoscopy:'Diagnostic Laparoscopy', viral_f:'HBsAg, Anti-HCV, HIV'
   };
-  const labLine = id=> LABNAME[id] ? `<div class="bj-lab">🧾 لیب کو یہ نام بتائیں: <b dir="ltr">${esc(LABNAME[id])}</b></div>` : '';
+  const labLine = id=> LABNAME[id] ? `<div class="bj-labh">🧾 لیب نام</div><div class="bj-lab" dir="ltr">${esc(LABNAME[id])}</div>` : '';
   function infoHtml(id){
     const x = INFO[id]; if(!x) return '';
     return `<details class="bj-tdet bj-idet" onclick="event.stopPropagation()"><summary>ℹ ٹیسٹ کی تفصیل — کس چیز سے، کب، کہاں، نارمل حد</summary>
@@ -726,7 +726,7 @@
   .bj-view{position:fixed; inset:0; z-index:9999; background:#111; display:flex; flex-direction:column;}
   .bj-vbar{display:flex; gap:8px; justify-content:center; padding:8px; background:#222;} .bj-vbar button{background:#333; color:#fff; border:1px solid #555; border-radius:16px; padding:6px 14px; font-family:inherit; font-size:.95rem;}
   .bj-vbody{flex:1; overflow:auto; -webkit-overflow-scrolling:touch; touch-action:pan-x pan-y pinch-zoom;} .bj-vbody img{display:block; width:100%; height:auto; margin:0 auto; touch-action:pinch-zoom;}
-  .bj-lab{font-size:.78rem; background:#fff8e6; border:1px dashed #c9821b; border-radius:8px; padding:2px 8px; margin:4px 0; color:#7a4a00;} .bj-lab b{font-family:Poppins, Arial, sans-serif; font-size:.8rem;}
+  .bj-labh{font-size:.72rem; color:#7a4a00; margin-top:4px;} .bj-lab{display:inline-block; font-family:Poppins, Arial, sans-serif; font-weight:700; font-size:.85rem; background:#fff8e6; border:1px dashed #c9821b; border-radius:8px; padding:2px 10px; margin:2px 0 4px; color:#7a4a00;}
   .bj-mrow{margin-right:22px;} .bj-lb{color:var(--muted); font-size:.75rem;}
   .bj-brand{color:#2b6cb0; font-family:Poppins, Arial, sans-serif; font-size:.85rem;} .bj-co{color:#7b3fa0; font-family:Poppins, Arial, sans-serif; font-size:.82rem;} .bj-cn{font-size:.75rem; color:var(--muted);}
   .bj-mnote{font-size:.75rem; color:#b03a37;}
