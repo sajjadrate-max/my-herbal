@@ -36,6 +36,12 @@
 .nk-star{position:absolute; top:10px; left:10px; width:36px; height:36px; border-radius:50%; border:1px solid var(--gold); background:var(--card); color:var(--gold); font-size:1.3rem; line-height:1; cursor:pointer;}
 .nk-star.on{background:#fff3c4; border-color:#c9821b;}
 .nuskha-card.nk-on{border:2px solid #c9821b;}
+.nk-det{margin-top:10px; border:1px solid var(--gold); border-radius:10px; padding:0 10px;}
+.nk-det > summary{cursor:pointer; padding:8px 0; font-weight:700; color:var(--gold); font-size:.92rem; list-style:none;}
+.nk-det > summary::-webkit-details-marker{display:none;}
+.nk-det > summary::before{content:'◀'; display:inline-block; margin-left:8px; transition:transform .2s;}
+.nk-det[open] > summary::before{transform:rotate(-90deg);}
+.nk-det[open]{padding-bottom:10px;}
 .ilaj-row.has-t{border-right:4px solid var(--leaf);}
 .ilaj-card.mv h4{padding:0 18px;}
 .ilaj-lk-recs{max-height:150px; overflow:auto; border:1px solid var(--border); border-radius:8px; padding:4px 8px; margin-top:4px; background:var(--card);}
@@ -464,6 +470,7 @@ footer{position:fixed; left:0; right:0; bottom:0; z-index:55; text-align:center;
   <h2 class="section-title">نسخے — مزاج کے مطابق مکمل حوالہ</h2>
   <div class="note">ماخذ: تشریح فارماکوپیا بالمفرد اعضاء — حکیم محمد عارف دنیا پوری۔ مکمل کتاب کے تمام چھ مزاج (اعصابی عضلاتی، عضلاتی اعصابی، عضلاتی غدی، غدی عضلاتی، غدی اعصابی، اعصابی غدی) اور خصوصی نسخے شامل ہیں — 86 نسخے۔</div>
   <input class="search" id="nuskheSearch" placeholder="کسی دوائی کا نام لکھیں، یا کسی بیماری کا نام لکھ کر دیکھیں کون کون سی ادویات اس کے لیے ہیں..." onkeyup="filterNuskhe()">
+  <div id="nkFormBox"></div>
   <div id="nuskheList"></div>
 
 </section>
@@ -3855,6 +3862,44 @@ function getNuskhaCategory(n){
   }
   return "عمومی";
 }
+// ✍ اپنے نئے نسخے: اسی فون میں محفوظ، باقی نسخوں کے ساتھ اپنے مزاج والے حصے میں
+const nkEsc = s=> String(s == null ? '' : s).replace(/[&<>"']/g, c=> ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function nkCustom(){ try{ return JSON.parse(localStorage.getItem('nuskheCustom') || '[]') || []; }catch(e){ return []; } }
+function nkLoadCustom(){
+  for(let i = nuskheData.length - 1; i >= 0; i--) if(nuskheData[i].custom) nuskheData.splice(i, 1);
+  nkCustom().forEach(c=> nuskheData.push({ custom:true, cid:c.cid, name:nkEsc(c.name), mizaj:nkEsc(c.mizaj), ingredients:nkEsc(c.ingredients), benefit:nkEsc(c.benefit), dose:nkEsc(c.dose), warning:nkEsc(c.warning) }));
+}
+function nkForm(open, c){
+  const box = document.getElementById('nkFormBox'); if(!box) return;
+  c = c || {};
+  const opts = nuskheCategoryOrder.map(m=> `<option${(c.mizaj || '').indexOf(m) === 0 ? ' selected' : ''}>${m}</option>`).join('');
+  box.innerHTML = open ? `<div class="nuskha-card" style="border:2px dashed var(--gold);">
+    <h4>${c.cid ? '✏ نسخہ تبدیل کریں' : '➕ نیا نسخہ'}</h4>
+    <input class="search" id="nkName" placeholder="نسخے کا نام" value="${nkEsc(c.name)}" style="display:block; width:100%; box-sizing:border-box; margin:6px 0;">
+    <label style="font-size:.85rem; color:var(--gold-soft);">مزاج</label>
+    <select class="search" id="nkMizaj" style="display:block; width:100%; box-sizing:border-box; margin:4px 0 6px;">${opts}</select>
+    <textarea class="search" id="nkIng" rows="2" placeholder="اجزاء (مثلاً: سونف 50 گرام + ...)" style="display:block; width:100%; box-sizing:border-box; margin:4px 0; font-family:inherit;">${nkEsc(c.ingredients)}</textarea>
+    <textarea class="search" id="nkBen" rows="3" placeholder="فوائد" style="display:block; width:100%; box-sizing:border-box; margin:4px 0; font-family:inherit;">${nkEsc(c.benefit)}</textarea>
+    <input class="search" id="nkDose" placeholder="طریقہ استعمال / خوراک" value="${nkEsc(c.dose)}" style="display:block; width:100%; box-sizing:border-box; margin:4px 0;">
+    <input class="search" id="nkWarn" placeholder="احتیاط (اگر ہو)" value="${nkEsc(c.warning)}" style="display:block; width:100%; box-sizing:border-box; margin:4px 0;">
+    <div style="display:flex; gap:8px; justify-content:center; margin-top:8px;"><button type="button" class="btn" onclick="nkSave('${c.cid || ''}')">💾 محفوظ کریں</button><button type="button" class="btn secondary" onclick="nkForm(false)">✖ بند کریں</button></div>
+  </div>` : `<div style="text-align:center; margin:10px 0;"><button type="button" class="btn" onclick="nkForm(true)">➕ نیا نسخہ شامل کریں</button></div>`;
+  if(open) box.scrollIntoView({ behavior:'smooth', block:'start' });
+}
+function nkSave(cid){
+  const v = id=> (document.getElementById(id).value || '').trim();
+  const rec = { cid: cid || ('c' + Date.now().toString(36)), name: v('nkName'), mizaj: v('nkMizaj'), ingredients: v('nkIng'), benefit: v('nkBen'), dose: v('nkDose'), warning: v('nkWarn') };
+  if(!rec.name){ alert('نسخے کا نام لکھیں'); return; }
+  const list = nkCustom().filter(x=> x.cid !== rec.cid).concat(rec);
+  try{ localStorage.setItem('nuskheCustom', JSON.stringify(list)); }catch(e){ alert('محفوظ نہیں ہو سکا'); return; }
+  nkLoadCustom(); nkForm(false); filterNuskhe();
+}
+function nkEdit(cid){ const c = nkCustom().find(x=> x.cid === cid); if(c) nkForm(true, c); }
+function nkDelete(cid){
+  const c = nkCustom().find(x=> x.cid === cid); if(!c || !confirm('"' + c.name + '" ڈیلیٹ کر دیں؟')) return;
+  try{ localStorage.setItem('nuskheCustom', JSON.stringify(nkCustom().filter(x=> x.cid !== cid))); }catch(e){}
+  nkLoadCustom(); filterNuskhe();
+}
 // ⭐ اسپیشل نسخے: ستارہ لگائیں تو سب سے اوپر — اسی فون میں یاد رہتا ہے
 function nuskheStars(){ try{ return JSON.parse(localStorage.getItem('nuskheStars') || '[]') || []; }catch(e){ return []; } }
 function nuskheStar(i){
@@ -3886,10 +3931,14 @@ function renderNuskhe(list){
         ${card(n)}
         <h4 style="padding-left:40px;">${n.name}</h4>
         <span class="tag">مزاج: ${n.mizaj}${nuskheCategoryNumbers[getNuskhaCategory(n)] ? ' — نمبر '+nuskheCategoryNumbers[getNuskhaCategory(n)]+' مزاج' : ''}</span>
+        ${n.custom ? `<span class="tag" style="background:#fff3c4; color:#7a4a00;">✍ میرا نسخہ</span>` : ''}
+        <details class="nk-det"><summary>اجزاء، فوائد، طریقہ استعمال دیکھیں</summary>
         <p style="color:var(--gold-soft); margin-top:10px;"><b>اجزاء:</b> <span style="color:var(--text);">${n.ingredients}</span></p>
-        <p style="color:var(--text); margin-top:8px;">${n.benefit}</p>
-        <p style="color:var(--gold-soft); margin-top:8px;"><b>طریقہ استعمال:</b> <span style="color:var(--text);">${n.dose || doseLookup(n.name)}</span></p>
+        <p style="color:var(--text); margin-top:8px; white-space:pre-line;">${n.benefit}</p>
+        <p style="color:var(--gold-soft); margin-top:8px;"><b>طریقہ استعمال:</b> <span style="color:var(--text);">${n.dose || (n.custom ? '' : doseLookup(n.name))}</span></p>
         ${n.warning ? `<p style="color:#e07a5f; margin-top:8px;"><b>⚠ احتیاط/نقصان:</b> <span style="color:var(--text);">${n.warning}</span></p>` : ''}
+        ${n.custom ? `<div style="display:flex; gap:8px; margin-top:10px;"><button type="button" class="btn secondary" style="padding:3px 14px; font-size:.82rem;" onclick="nkEdit('${n.cid}')">✏ تبدیل کریں</button><button type="button" class="btn secondary" style="padding:3px 14px; font-size:.82rem; color:#e0524f; border-color:#e0524f;" onclick="nkDelete('${n.cid}')">🗑 ڈیلیٹ</button></div>` : ''}
+        </details>
       </div>`).join('');
   });
   nuskheContainer.innerHTML = html;
@@ -3911,6 +3960,7 @@ function filterNuskhe(){
   };
   renderNuskhe(nuskheData.filter(n=> hasWord(n.name, q) || hasWord(n.benefit, q) || hasWord(n.ingredients, q)));
 }
+nkLoadCustom(); nkForm(false);
 renderNuskhe(nuskheData);
 
 // ---------- MARDON KAY AMRAAZ BOOK (IMAGE GALLERY) ----------
