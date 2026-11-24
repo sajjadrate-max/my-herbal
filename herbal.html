@@ -33,6 +33,9 @@
 .ilaj-menu{position:absolute; top:36px; left:6px; z-index:20; background:var(--card); border:1px solid var(--border); border-radius:10px; box-shadow:0 6px 18px rgba(0,0,0,.18); display:flex; flex-direction:column; min-width:170px; overflow:hidden;}
 .ilaj-menu button{background:none; border:none; border-bottom:1px solid var(--border); padding:10px 14px; text-align:right; font-family:inherit; font-size:.9rem; color:var(--text); cursor:pointer;}
 .ilaj-menu button:last-child{border-bottom:none;}
+.nk-star{position:absolute; top:10px; left:10px; width:36px; height:36px; border-radius:50%; border:1px solid var(--gold); background:var(--card); color:var(--gold); font-size:1.3rem; line-height:1; cursor:pointer;}
+.nk-star.on{background:#fff3c4; border-color:#c9821b;}
+.nuskha-card.nk-on{border:2px solid #c9821b;}
 .ilaj-row.has-t{border-right:4px solid var(--leaf);}
 .ilaj-card.mv h4{padding:0 18px;}
 .ilaj-lk-recs{max-height:150px; overflow:auto; border:1px solid var(--border); border-radius:8px; padding:4px 8px; margin-top:4px; background:var(--card);}
@@ -3852,18 +3855,36 @@ function getNuskhaCategory(n){
   }
   return "عمومی";
 }
+// ⭐ اسپیشل نسخے: ستارہ لگائیں تو سب سے اوپر — اسی فون میں یاد رہتا ہے
+function nuskheStars(){ try{ return JSON.parse(localStorage.getItem('nuskheStars') || '[]') || []; }catch(e){ return []; } }
+function nuskheStar(i){
+  const n = nuskheData[i]; if(!n) return;
+  let st = nuskheStars();
+  st = st.includes(n.name) ? st.filter(x=> x !== n.name) : st.concat(n.name);
+  try{ localStorage.setItem('nuskheStars', JSON.stringify(st)); }catch(e){}
+  filterNuskhe();
+}
 function renderNuskhe(list){
   const groups = {};
   nuskheCategoryOrder.forEach(c=> groups[c] = []);
-  list.forEach(n=> groups[getNuskhaCategory(n)].push(n));
+  const stars = nuskheStars();
+  const starred = list.filter(n=> stars.includes(n.name));
+  list.filter(n=> !stars.includes(n.name)).forEach(n=> groups[getNuskhaCategory(n)].push(n));
   let html = '';
-  nuskheCategoryOrder.forEach(cat=>{
-    if(groups[cat].length === 0) return;
+  const card = n=>{ const i = nuskheData.indexOf(n), on = stars.includes(n.name);
+    return `<button type="button" class="nk-star${on ? ' on' : ''}" onclick="nuskheStar(${i})" title="${on ? 'اسپیشل سے ہٹائیں' : 'اسپیشل بنائیں'}">${on ? '⭐' : '☆'}</button>`; };
+  if(starred.length){
+    html += `<h3 style="color:var(--gold); margin-top:20px;">⭐ اسپیشل / اہم نسخے (${starred.length})</h3>`;
+    groups['__star'] = starred;
+  }
+  (starred.length ? ['__star'] : []).concat(nuskheCategoryOrder).forEach(cat=>{
+    if(!groups[cat] || groups[cat].length === 0) return;
     const numLabel = nuskheCategoryNumbers[cat] ? ` (نمبر ${nuskheCategoryNumbers[cat]} مزاج)` : '';
-    html += `<h3 style="color:var(--gold); margin-top:26px;">${cat}${numLabel}</h3>`;
+    if(cat !== '__star') html += `<h3 style="color:var(--gold); margin-top:26px;">${cat}${numLabel}</h3>`;
     html += groups[cat].map(n=>`
-      <div class="nuskha-card">
-        <h4>${n.name}</h4>
+      <div class="nuskha-card${stars.includes(n.name) ? ' nk-on' : ''}" style="position:relative;">
+        ${card(n)}
+        <h4 style="padding-left:40px;">${n.name}</h4>
         <span class="tag">مزاج: ${n.mizaj}${nuskheCategoryNumbers[getNuskhaCategory(n)] ? ' — نمبر '+nuskheCategoryNumbers[getNuskhaCategory(n)]+' مزاج' : ''}</span>
         <p style="color:var(--gold-soft); margin-top:10px;"><b>اجزاء:</b> <span style="color:var(--text);">${n.ingredients}</span></p>
         <p style="color:var(--text); margin-top:8px;">${n.benefit}</p>
