@@ -13,7 +13,7 @@
         ['sugar_m','HbA1c / Blood Sugar','شوگر کا ٹیسٹ','شوگر سے کمزوری، انزال کی خرابی اور سپرم کمزور ہوتے ہیں']
       ]},
       { st:'مرحلہ 2 — ہارمون (اگر سیمن خراب ہو)', items:[
-        ['semen2','Repeat Semen Analysis','دوبارہ سیمن ٹیسٹ','پہلی رپورٹ خراب ہو تو 2–3 ماہ بعد تصدیق — ایک سپرم کو بن کر تیار ہونے میں تقریباً 3 ماہ لگتے ہیں، اس لیے علاج یا بیماری کا اثر رپورٹ میں 3 ماہ بعد نظر آتا ہے'],
+        ['semen2','Repeat Semen Analysis (2nd time)','وہی سیمن ٹیسٹ دوسری بار — صرف اگر پہلا خراب آیا','پہلی رپورٹ خراب ہو تو 2–3 ماہ بعد تصدیق — ایک سپرم کو بن کر تیار ہونے میں تقریباً 3 ماہ لگتے ہیں، اس لیے علاج یا بیماری کا اثر رپورٹ میں 3 ماہ بعد نظر آتا ہے'],
         ['fsh_m','FSH','سپرم بنانے والا ہارمون','زیادہ ہو تو خصیہ کمزور ہے؛ کم ہو تو دماغی غدود (پچوٹری) سے حکم نہیں آ رہا'],
         ['lh_m','LH','ٹیسٹوسٹیرون بنانے کا حکم دینے والا ہارمون','FSH کے ساتھ دیکھا جاتا ہے کہ خرابی خصیے میں ہے یا دماغی غدود میں — خاص طور پر جب ٹیسٹوسٹیرون کم ہو'],
         ['testo','Total Testosterone','مردانہ ہارمون (صبح 8–10 بجے)','کم ہو تو کمزوری، خواہش کی کمی اور سپرم کم۔ نارمل تقریباً 300–1000 ng/dl۔ ⚠ کم ہو تب بھی بانجھ مرد کو ٹیسٹوسٹیرون خود نہ دیں — سپرم بننا رک جاتا ہے؛ ماہر hCG یا Clomiphene دیتا ہے'],
@@ -316,11 +316,13 @@
     window.scrollTo({ top: root().getBoundingClientRect().top + window.scrollY - 70 });
   };
   // اگلا ٹیسٹ: AI نے جو کہا وہ، ورنہ پہلے مرحلے کا جو ٹیسٹ ابھی نہیں ہوا
+  // "دوبارہ سیمن" صرف تب دکھے جب پہلا سیمن خراب آیا ہو (ٹھیک ہو تو دوبارہ کی ضرورت نہیں)
+  function hiddenT(t, id){ return id === 'semen2' && !(t.semen2 && t.semen2.status) && !(t.semen && t.semen.status === 'bad'); }
   function nextFor(c, s){
     const t = c[s].tests, sug = (c[s].next || []).filter(id=> ALL[id] && !(t[id] && t[id].status));
     if(sug.length) return sug;
     for(const g of TESTS[s]){
-      const pend = g.items.filter(([id])=> !(t[id] && t[id].status));
+      const pend = g.items.filter(([id])=> !(t[id] && t[id].status) && !hiddenT(t, id));
       if(pend.length){
         // مرحلہ 2 سے آگے: صرف تب جب پچھلے مرحلے میں کچھ خراب ہو
         const gi = TESTS[s].indexOf(g);
@@ -342,12 +344,12 @@
         ${d.r.value ? `<div class="bj-val">${esc(d.r.value)}</div>` : ''}${d.r.note ? `<div class="bj-tn">${esc(d.r.note)}</div>` : ''}<div class="bj-hint">📅 ${fmtD(d.r.date || Date.now())}</div>${ALL[d.key] ? reportsHtml(c, s, d.key) + infoHtml(d.key) + `<label class="bj-tup" onclick="event.stopPropagation()">📷 نئی رپورٹ بھیجیں<input type="file" accept="image/*" multiple hidden onchange="banjhReport('${s}', this, '${d.key}')"></label>` : ''}</div></div>`;
     let treat = (c[s].treat || []).slice();
     if(!treat.length) treat = badD.map(d=> d.r.note || (d.en + ' خراب')).filter(Boolean);
-    const pendN = order.filter(id=> !(t[id] && t[id].status)).length;
+    const pendN = order.filter(id=> !(t[id] && t[id].status) && !hiddenT(t, id)).length;
     let pno = 0;
     // مرحلہ وار فہرست میں سب ٹیسٹ اپنی جگہ پر: ہو چکے والے سبز ✓ / سرخ ✗ کے ساتھ، باقی سرمئی نمبر کے ساتھ
     const stages = TESTS[s].map((g, gi)=>{
       const doneN = g.items.filter(([id])=> t[id] && t[id].status).length;
-      const rows = g.items.filter(([id])=> !(t[id] && t[id].status)).map(([id, en, ur, hint])=>{
+      const rows = g.items.filter(([id])=> !(t[id] && t[id].status) && !hiddenT(t, id)).map(([id, en, ur, hint])=>{
         pno++;
         const r = t[id] || {}, st = r.status;
         const icon = `<span class="bj-no ${st || 'pd'}${!st && nxt.has(id) ? ' nx' : ''}">${pno}</span>`;
@@ -361,7 +363,7 @@
           <button type="button" class="bj-mok" onclick="event.stopPropagation(); banjhOk('${s}','${id}')">✓ رپورٹ صحیح تھی — خود سبز ٹک کریں</button>
           <label class="bj-tup" onclick="event.stopPropagation()">📷 اس ٹیسٹ کی رپورٹ بھیجیں<input type="file" accept="image/*" multiple hidden onchange="banjhReport('${s}', this, '${id}')"></label></div></div>`;
       }).join('');
-      if(doneN === g.items.length) return `<div class="bj-stage"><div class="bj-st done">${gi === 0 ? '⭐ ' : ''}${esc(g.st)} — ✓ سب ٹیسٹ ہو گئے (اوپر)</div></div>`;
+      if(doneN === g.items.filter(([id])=> !hiddenT(t, id)).length) return `<div class="bj-stage"><div class="bj-st done">${gi === 0 ? '⭐ ' : ''}${esc(g.st)} — ✓ سب ٹیسٹ ہو گئے (اوپر)</div></div>`;
       return `<div class="bj-stage"><div class="bj-st">${gi === 0 ? '⭐ ' : ''}${esc(g.st)}${doneN ? ` <small>(${doneN} ہو گئے — اوپر)</small>` : ''}</div>${rows}</div>`;
     }).join('');
     const who = s === 'm' ? c.husband : c.wife;
