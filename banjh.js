@@ -72,14 +72,14 @@
   // ہر دوا: [اصل دوا (نمک/Generic)، [[برانڈ (بازار میں نام)، کمپنی، ملک], ...]]
   const MEDS = [
     { re:/پرولیکٹن|prolactin/i, items:[['Cabergoline',[['Dostinex','Pfizer','امریکہ']],'first','ہفتے میں 1–2 بار؛ عام طور پر کئی ماہ — 4 ہفتے بعد پرولیکٹن دوبارہ چیک؛ حمل ٹھہرتے ہی ڈاکٹر سے پوچھ کر بند'],['Bromocriptine',[['Parlodel','Novartis','سوئٹزرلینڈ']],'alt','روزانہ؛ عام طور پر کئی ماہ — 4 ہفتے بعد پرولیکٹن دوبارہ چیک']], note:'پرولیکٹن بہت زیادہ ہو تو دماغی غدود کا MRI بھی کروائیں' },
-    { re:/انڈا نہ|انڈا نہیں|اوویولیشن|ovulation|PCOS|پی سی او/i, items:[['Letrozole',[['Femara','Novartis','سوئٹزرلینڈ']],'first','ہر ماہ صرف 5 دن (ماہواری کے دن 3 سے 7)؛ زیادہ سے زیادہ 3–6 ماہ، ہر ماہ فولیکل ٹریکنگ کے ساتھ'],['Clomiphene Citrate',[['Clomid','Sanofi','فرانس']],'alt','ہر ماہ صرف 5 دن (ماہواری کے دن 2 سے 6)؛ زندگی میں کل زیادہ سے زیادہ 6 ماہ'],['Metformin',[['Glucophage','Merck','جرمنی']],'add','روزانہ، لگاتار 3–6 ماہ — پھر شوگر/انسولین دیکھ کر']], note:'Metformin صرف PCOS / انسولین مزاحمت میں۔ انڈا بننے کی دوا کے ساتھ فولیکل ٹریکنگ ضروری' },
+    { re:/انڈا نہ|انڈا نہیں|اوویولیشن|ovulation|PCOS|پی سی او/i, items:[['Letrozole',[['Femara','Novartis','سوئٹزرلینڈ']],'first','ہر ماہ صرف 5 دن (ماہواری کے دن 3 سے 7)؛ زیادہ سے زیادہ 3–6 ماہ، ہر ماہ فولیکل ٹریکنگ کے ساتھ'],['Clomiphene Citrate',[['Clomid','Sanofi','فرانس']],'alt','ہر ماہ صرف 5 دن (ماہواری کے دن 2 سے 6)؛ زندگی میں کل زیادہ سے زیادہ 6 ماہ'],['Metformin',[['Glucophage','Merck','جرمنی']],'add','روزانہ، لگاتار 3–6 ماہ — پھر شوگر/انسولین دیکھ کر']], note:'Glucophage صرف PCOS / انسولین مزاحمت میں۔ انڈا بننے کی دوا کے ساتھ فولیکل ٹریکنگ ضروری' },
     { re:/پروجیسٹرون|progesterone|لیوٹیل/i, items:[['Dydrogesterone',[['Duphaston','Abbott','امریکہ']],'first','ہر ماہ تقریباً 10 دن (ماہواری کے دن 15 سے 25) — یا ڈاکٹر کے مطابق'],['Micronized Progesterone',[['Utrogestan','Besins','فرانس']],'alt','ہر ماہ تقریباً 10–14 دن (انڈا پھٹنے کے بعد) — یا ڈاکٹر کے مطابق']], note:'' },
     { re:/تھائیرائیڈ کم|ہائپو تھائیرائیڈ|hypothyroid|TSH زیادہ/i, items:[['Levothyroxine',[['Eltroxin','GSK','برطانیہ'],['Euthyrox','Merck','جرمنی']],'first','روزانہ، لمبے عرصے تک — 6–8 ہفتے بعد TSH دوبارہ']], note:'' },
     { re:/تھائیرائیڈ زیادہ|ہائپر تھائیرائیڈ|hyperthyroid/i, items:[['Carbimazole',[['Neo-Mercazole','Amdipharm','برطانیہ']],'first','کئی ماہ — ہر 4–6 ہفتے ٹیسٹ، ماہر کی نگرانی میں']], note:'' },
     { re:/پیشاب.*(انفیکشن|پس)|پس سیلز|UTI|urine/i, items:[['Co-amoxiclav',[['Augmentin','GSK','برطانیہ']],'first','عام طور پر 5–7 دن (کورس پورا کریں)'],['Ciprofloxacin',[['Ciproxin','Bayer','جرمنی']],'alt','عام طور پر 3–7 دن — حمل کی کوشش کے مہینے میں نہ دیں']], note:'پہلے Urine C/S (کلچر) کروائیں — اینٹی بائیوٹک اسی رپورٹ کے مطابق' },
-    { re:/ویجائنل|لیکوریا|بیکٹیریل ویجائنوسس|ٹرائیکو/i, items:[['Metronidazole',[['Flagyl','Sanofi','فرانس']],'first','7 دن — دوران علاج شوہر بھی ساتھ'],['Clotrimazole',[['Canesten','Bayer','جرمنی']],'fungal','اندرونی گولی/کریم 3–6 دن']], note:'Clotrimazole فنگس کے لیے۔ میاں بیوی دونوں کا علاج ساتھ' },
+    { re:/ویجائنل|لیکوریا|بیکٹیریل ویجائنوسس|ٹرائیکو/i, items:[['Metronidazole',[['Flagyl','Sanofi','فرانس']],'first','7 دن — دوران علاج شوہر بھی ساتھ'],['Clotrimazole',[['Canesten','Bayer','جرمنی']],'fungal','اندرونی گولی/کریم 3–6 دن']], note:'Canesten فنگس کے لیے۔ میاں بیوی دونوں کا علاج ساتھ' },
     { re:/سیمن.*(انفیکشن|پس)|لیوکو/i, items:[['Doxycycline',[['Vibramycin','Pfizer','امریکہ']],'first','عام طور پر 2–4 ہفتے (سیمن کلچر کے مطابق)']], note:'سیمن کلچر کے مطابق' },
-    { re:/سپرم.*(کمی|کم)|اولیگو|oligo|استھینو|حرکت کم|بناوٹ|ٹیراٹو/i, items:[['L-Carnitine + Acetyl-L-Carnitine',[['Proxeed Plus','Alfasigma','اٹلی']],'first','روزانہ کم از کم 3 ماہ (بہتر 6 ماہ) — سپرم 3 ماہ میں تیار ہوتے ہیں'],['Clomiphene Citrate',[['Clomid','Sanofi','فرانس']],'add','3–6 ماہ — صرف ماہر کی نگرانی میں']], note:'Clomiphene صرف ماہر کے مشورے سے۔ ⚠ ٹیسٹوسٹیرون کی گولی/ٹیکہ ہرگز نہیں — اس سے سپرم اور کم ہو جاتے ہیں' },
+    { re:/سپرم.*(کمی|کم)|اولیگو|oligo|استھینو|حرکت کم|بناوٹ|ٹیراٹو/i, items:[['L-Carnitine + Acetyl-L-Carnitine',[['Proxeed Plus','Alfasigma','اٹلی']],'first','روزانہ کم از کم 3 ماہ (بہتر 6 ماہ) — سپرم 3 ماہ میں تیار ہوتے ہیں'],['Clomiphene Citrate',[['Clomid','Sanofi','فرانس']],'add','3–6 ماہ — صرف ماہر کی نگرانی میں']], note:'Clomid صرف ماہر کے مشورے سے۔ ⚠ ٹیسٹوسٹیرون کی گولی/ٹیکہ ہرگز نہیں — اس سے سپرم اور کم ہو جاتے ہیں' },
     { re:/ٹیسٹوسٹیرون کم|low testosterone|ہائپو گونیڈ/i, items:[['hCG (injection)',[['Pregnyl','Organon','امریکہ']],'first','کئی ماہ — صرف ماہر کی نگرانی میں']], note:'⚠ بانجھ پن میں ٹیسٹوسٹیرون خود نہ دیں — سپرم بننا رک جاتا ہے' },
     { re:/شوگر|ذیابیطس|diabet/i, items:[['Metformin',[['Glucophage','Merck','جرمنی']],'first','روزانہ، لمبے عرصے تک — ڈاکٹر کے مطابق']], note:'' },
     { re:/خون کی کمی|ہیموگلوبن|anemi/i, items:[['Iron + Folic Acid',[['Fefol','GSK','برطانیہ'],['Ferrograd-Folic','Abbott','امریکہ']],'first','روزانہ تقریباً 3 ماہ — 4 ہفتے بعد Hb دوبارہ']], note:'' },
@@ -93,18 +93,22 @@
     { re:/نالیاں بند|نالی بند|tubal|HSG خراب/i, t:'لیپرو / ہسٹرو اسکوپی یا IVF — ماہر سے رجوع' }
   ];
   function treatHtml(list){
+    // ایک دوا کا خانہ: صرف برانڈ، کمپنی اور دن (اصل نمک کا نام نہیں)
+    const medBox = ([g, brands, role, days], tag)=> `<div class="bj-med">${tag || ''}
+        ${brands.length ? brands.map(([b, co, cn])=> `<div class="bj-mrow">💊 <b class="bj-brand" dir="ltr">${esc(b)}</b> · <span class="bj-lb">کمپنی:</span> <b class="bj-co" dir="ltr">${esc(co)}</b> <span class="bj-cn">(${esc(cn)})</span></div>`).join('') : `<div class="bj-mrow">💊 <b class="bj-brand" dir="ltr">${esc(g)}</b></div>`}
+        ${days ? `<div class="bj-days">⏱ <span class="bj-lb">کتنے دن:</span> ${esc(days)}</div>` : ''}
+      </div>`;
     return `<ol class="bj-tl">${list.map(x=>{
       const ms = MEDS.filter(m=> m.re.test(x)), ad = ADVICE.filter(a=> a.re.test(x));
-      const ROLE = { first:'<span class="bj-role first">✅ پہلی پسند</span>', alt:'<span class="bj-role alt">↔ متبادل — پہلی کی جگہ (دونوں ساتھ نہیں)</span>', add:'<span class="bj-role add">➕ ساتھ میں — صرف ضرورت ہو تو</span>', fungal:'<span class="bj-role add">➕ صرف فنگس (سفید دہی جیسا پانی) ہو تو</span>' };
-      const meds = ms.map(m=> m.items.map(([g, brands, role, days])=> `<div class="bj-med">
-          ${role ? ROLE[role] : ''}
-          <div>💊 <span class="bj-lb">دوا (اصل نمک):</span> <b class="bj-en" dir="ltr">${esc(g)}</b></div>
-          ${brands.map(([b, co, cn])=> `<div class="bj-mrow"><span class="bj-lb">برانڈ (بازار میں نام):</span> <b class="bj-brand" dir="ltr">${esc(b)}</b></div><div class="bj-mrow"><span class="bj-lb">کمپنی:</span> <b class="bj-co" dir="ltr">${esc(co)}</b> <span class="bj-cn">(${esc(cn)})</span></div>`).join('')}
-          ${days ? `<div class="bj-days">⏱ <span class="bj-lb">کتنے دن:</span> ${esc(days)}</div>` : ''}
-        </div>`).join('') + (m.note ? `<div class="bj-mnote">${esc(m.note)}</div>` : '')).join('');
+      const meds = ms.map(m=>{
+        const main = m.items.filter(i=> i[2] !== 'alt'), alts = m.items.filter(i=> i[2] === 'alt');
+        const tag = r=> r === 'add' ? '<span class="bj-role add">➕ ساتھ میں — صرف ضرورت ہو تو</span>' : r === 'fungal' ? '<span class="bj-role add">➕ صرف فنگس (سفید دہی جیسا پانی) ہو تو</span>' : '';
+        return main.map(i=> medBox(i, tag(i[2]))).join('')
+          + (alts.length ? `<details class="bj-tdet bj-alt"><summary>اگر یہ دوا نہ ملے یا راس نہ آئے — متبادل دیکھیں (${alts.length})</summary>${alts.map(i=> medBox(i, '')).join('')}<div class="bj-hint" style="padding:0 8px 6px;">متبادل پہلی دوا کی جگہ — دونوں ساتھ نہیں</div></details>` : '')
+          + (m.note ? `<div class="bj-mnote">${esc(m.note)}</div>` : '');
+      }).join('');
       const adv = ad.map(a=> `<div class="bj-mnote">👨‍⚕️ ${esc(a.t)}</div>`).join('');
-      const many = ms.some(m=> m.items.filter(i=> i[2] === 'first' || i[2] === 'alt').length > 1);
-      return `<li><b>${esc(x)}</b>${meds || adv ? `<div class="bj-meds">${many ? '<div class="bj-one">👉 سب ایک ساتھ نہیں — "پہلی پسند" والی ایک دوا؛ وہ نہ ملے یا راس نہ آئے تو "متبادل"</div>' : ''}${meds}${adv}</div>` : ''}</li>`;
+      return `<li><b>${esc(x)}</b>${meds || adv ? `<div class="bj-meds">${meds}${adv}</div>` : ''}</li>`;
     }).join('')}</ol>
     <div class="bj-rx">⚠ یہ دوائیں عام طور پر ڈاکٹر دیتے ہیں — صرف مستند ڈاکٹر کے نسخے سے۔ دن عام اندازہ ہیں — اصل خوراک اور مدت ڈاکٹر مریض دیکھ کر طے کرے۔ حمل ٹھہرنے کا شبہ ہو تو کوئی دوا ڈاکٹر سے پوچھے بغیر جاری نہ رکھیں۔</div>`;
   }
@@ -750,6 +754,7 @@
   .bj-mok{display:block; margin-top:6px; background:#e9f7ef; color:#1f7a4d; border:1px solid #1f9d55; border-radius:14px; padding:3px 12px; font-family:inherit; font-size:.8rem; cursor:pointer;}
   .bj-man{display:inline-block; margin-right:4px; background:#fff3c4; color:#7a4a00; border:1px solid #c9821b; border-radius:10px; padding:0 8px; font-size:.72rem; font-weight:700;}
   .bj-undo{background:#fff; color:#e0524f; border:1px solid #e0524f; border-radius:10px; padding:0 8px; font-family:inherit; font-size:.72rem; cursor:pointer; margin-right:4px;}
+  .bj-alt{border-color:#8a8a8a !important; margin:6px 0;} .bj-alt > summary{font-size:.82rem !important; color:#555 !important; padding:5px 8px !important;} .bj-alt > summary::before{color:#8a8a8a !important;} .bj-alt .bj-med{padding:4px 8px;}
   .bj-mrow{margin-right:22px;} .bj-lb{color:var(--muted); font-size:.75rem;}
   .bj-brand{color:#2b6cb0; font-family:Poppins, Arial, sans-serif; font-size:.85rem;} .bj-co{color:#7b3fa0; font-family:Poppins, Arial, sans-serif; font-size:.82rem;} .bj-cn{font-size:.75rem; color:var(--muted);}
   .bj-mnote{font-size:.75rem; color:#b03a37;}
