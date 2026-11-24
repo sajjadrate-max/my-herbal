@@ -338,7 +338,7 @@
       .concat(Object.keys(ex).filter(k=> ex[k].status).map(k=> ({ key:k, en:k, ur:'', r:ex[k], tap:`banjhExtra('${s}',${JSON.stringify(k).replace(/"/g, '&quot;')})` })));
     const okD = done.filter(d=> d.r.status === 'ok'), badD = done.filter(d=> d.r.status === 'bad');
     const row = (d, i)=> `<div class="bj-done ${d.r.status}" onclick="${d.tap}"><span class="bj-big ${d.r.status}">${d.r.status === 'ok' ? '✓' : '✗'}</span><span class="bj-no ${d.r.status}">${i + 1}</span><span class="bj-pill ${d.r.status}">${d.r.status === 'ok' ? '✓ صحیح' : '✗ خراب'}</span>
-        <div class="bj-tb">${d.r.manual ? '<div><span class="bj-man">✋ آپ نے خود ٹک کیا</span></div>' : ''}<b class="bj-en" dir="ltr">${esc(d.en)}</b>${d.ur ? ` <span class="bj-ur">— ${esc(d.ur)}</span>` : ''}${ALL[d.key] ? labLine(d.key) : ''}
+        <div class="bj-tb">${d.r.manual ? `<div><span class="bj-man">✋ آپ نے خود ٹک کیا</span>${ALL[d.key] ? ` <button type="button" class="bj-undo" onclick="event.stopPropagation(); banjhUndo('${s}','${d.key}')">↩ ٹک واپس لیں</button>` : ''}</div>` : ''}<b class="bj-en" dir="ltr">${esc(d.en)}</b>${d.ur ? ` <span class="bj-ur">— ${esc(d.ur)}</span>` : ''}${ALL[d.key] ? labLine(d.key) : ''}
         ${d.r.value ? `<div class="bj-val">${esc(d.r.value)}</div>` : ''}${d.r.note ? `<div class="bj-tn">${esc(d.r.note)}</div>` : ''}<div class="bj-hint">📅 ${fmtD(d.r.date || Date.now())}</div>${ALL[d.key] ? reportsHtml(c, s, d.key) + infoHtml(d.key) + `<label class="bj-tup" onclick="event.stopPropagation()">📷 نئی رپورٹ بھیجیں<input type="file" accept="image/*" multiple hidden onchange="banjhReport('${s}', this, '${d.key}')"></label>` : ''}</div></div>`;
     let treat = (c[s].treat || []).slice();
     if(!treat.length) treat = badD.map(d=> d.r.note || (d.en + ' خراب')).filter(Boolean);
@@ -511,6 +511,13 @@
     c[s].tests[id] = { status:'ok', value: v.trim(), note:'نارمل (رپورٹ کے مطابق — خود لکھا)', date: Date.now(), manual: true };
     c[s].next = (c[s].next || []).filter(x=> x !== id);
     c.log.push({ t:Date.now(), side:s, text: ALL[id].name + ': ✓ صحیح' + (v.trim() ? ' — ' + v.trim() : '') + ' (خود ٹک کیا)' });
+    await put(c); render();
+  };
+  // غلطی سے لگا ٹک واپس: ٹیسٹ دوبارہ "باقی" میں
+  window.banjhUndo = async (s, id)=>{
+    if(!confirm(ALL[id].en + '\n\nیہ ٹک واپس لے لیں؟ ٹیسٹ دوبارہ "باقی ٹیسٹ" میں چلا جائے گا۔')) return;
+    const c = CUR; delete c[s].tests[id];
+    c.log.push({ t:Date.now(), side:s, text: ALL[id].name + ': ٹک واپس لیا (خود)' });
     await put(c); render();
   };
   window.banjhNote = async ()=>{
@@ -740,6 +747,7 @@
   .bj-labh{font-size:.72rem; color:#7a4a00; margin-top:4px;} .bj-lab{display:inline-block; font-family:Poppins, Arial, sans-serif; font-weight:700; font-size:.85rem; background:#fff8e6; border:1px dashed #c9821b; border-radius:8px; padding:2px 10px; margin:2px 0 4px; color:#7a4a00;}
   .bj-mok{display:block; margin-top:6px; background:#e9f7ef; color:#1f7a4d; border:1px solid #1f9d55; border-radius:14px; padding:3px 12px; font-family:inherit; font-size:.8rem; cursor:pointer;}
   .bj-man{display:inline-block; margin-right:4px; background:#fff3c4; color:#7a4a00; border:1px solid #c9821b; border-radius:10px; padding:0 8px; font-size:.72rem; font-weight:700;}
+  .bj-undo{background:#fff; color:#e0524f; border:1px solid #e0524f; border-radius:10px; padding:0 8px; font-family:inherit; font-size:.72rem; cursor:pointer; margin-right:4px;}
   .bj-mrow{margin-right:22px;} .bj-lb{color:var(--muted); font-size:.75rem;}
   .bj-brand{color:#2b6cb0; font-family:Poppins, Arial, sans-serif; font-size:.85rem;} .bj-co{color:#7b3fa0; font-family:Poppins, Arial, sans-serif; font-size:.82rem;} .bj-cn{font-size:.75rem; color:var(--muted);}
   .bj-mnote{font-size:.75rem; color:#b03a37;}
