@@ -87,11 +87,65 @@ async function banjhReport(req, res) {
   }
 }
 
+// ===== ڈاکٹر کے بل میں دوائی کی تبدیلی: نسخے/بل کی تصویر → ہر دوا، کمپنی، اور لوکل ہو تو اچھی کمپنی کی وہی دوا =====
+const RX_SYSTEM = `You read doctors' prescriptions and pharmacy bills from Pakistan (printed or handwritten, English/Urdu).
+For EACH medicine line you can see, return:
+- "written": the brand/name exactly as written (keep spelling)
+- "company": manufacturer if printed or if you reliably know this Pakistani brand's maker, else ""
+- "country": the country the company is from, in Urdu (e.g. "پاکستان", "فرانس", "امریکہ", "برطانیہ", "سوئٹزرلینڈ", "جرمنی", "بھارت", "چین"), "" if not known
+- "generic": the active ingredient(s) (salt). If you cannot tell with confidence, return "" — never guess.
+- "strength": e.g. "500 mg", "250 mg/5 ml"; "" if not visible and not certain
+- "form": tablet / capsule / syrup / suspension / injection / drops / cream / ointment / inhaler / sachet / other
+- "dose": dosing instructions exactly as written (e.g. "1+0+1 x 5 days"), else ""
+- "uses": 2 to 4 short Urdu points on what this generic medicine is used for / its benefits (e.g. "بخار کم کرتی ہے"), from standard medical knowledge of the generic; [] if the generic is not known
+- "status": "good" if the maker is a multinational or a large reputable Pakistani manufacturer (e.g. GSK, Abbott, Pfizer, Sanofi, Novartis, Bayer, Roche, AstraZeneca, MSD, Getz Pharma, Searle, Sami, Hilton, Martin Dow, Ferozsons, Highnoon, AGP, CCL, Bosch, PharmEvo, Barrett Hodgson, Atco, Platinum, Nabiqasim, Macter, OBS, Genix, Tabros, Wilson's, Indus, Medisure, Zafa); "local" if it is a small/local or little-known maker; "unknown" if you cannot tell the maker; "unclear" if the line itself cannot be read.
+- "reason": one short Urdu sentence why (e.g. "یہ ایک چھوٹی مقامی کمپنی کا برانڈ ہے")
+- "alternatives": ONLY when status is "local" or "unknown" AND generic is known: up to 3 brands sold in Pakistan by the reputable makers above that contain EXACTLY the same generic(s), same strength and same form. Each {"brand","company","country"} where country is the company's home country in Urdu. Never suggest a different medicine, different strength or different form. If unsure a brand exists in that strength/form, leave it out.
+Do not add, remove or change any medicine, dose or duration. Not a diagnosis.
+Return JSON: {"medicines":[...], "note": short Urdu note if the image is not a prescription/bill or is hard to read, else ""}.`;
+async function rxSwap(req, res) {
+  if (req.method !== 'POST') return res.status(405).json({ error: 'صرف POST' });
+  const apiKey = process.env.OPENAI_API_KEY;
+  if (!apiKey) return res.status(500).json({ error: 'سرور پر OPENAI_API_KEY سیٹ نہیں ہے۔' });
+  try {
+    const body = typeof req.body === 'string' ? JSON.parse(req.body) : (req.body || {});
+    const images = (Array.isArray(body.images) ? body.images : []).slice(0, 3).map(String).filter(u => /^data:image\/(jpeg|png|webp);base64,/.test(u));
+    if (!images.length) return res.status(400).json({ error: 'نسخے/بل کی تصویر موجود نہیں۔' });
+    const content = [{ type: 'text', text: 'Doctor prescription / pharmacy bill:' }];
+    images.forEach(u => content.push({ type: 'image_url', image_url: { url: u, detail: 'high' } }));
+    const r = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
+      body: JSON.stringify({ model: process.env.OPENAI_VISION_MODEL || 'gpt-4o', messages: [{ role: 'system', content: RX_SYSTEM }, { role: 'user', content }], temperature: 0, response_format: { type: 'json_object' } })
+    });
+    if (!r.ok) return res.status(502).json({ error: 'AI سے جواب نہیں ملا — دوبارہ کوشش کریں' });
+    const data = await r.json();
+    let o = {};
+    try { o = JSON.parse((data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content) || '{}'); } catch (e) { o = {}; }
+    const str = (v, n) => String(v || '').trim().slice(0, n);
+    const medicines = (Array.isArray(o.medicines) ? o.medicines : []).slice(0, 25).map(m => {
+      const status = ['good', 'local', 'unknown', 'unclear'].includes(m && m.status) ? m.status : 'unknown';
+      const generic = str(m && m.generic, 120);
+      return {
+        written: str(m && m.written, 80), company: str(m && m.company, 60), country: str(m && m.country, 40), generic,
+        strength: str(m && m.strength, 40), form: str(m && m.form, 30), dose: str(m && m.dose, 80), status, reason: str(m && m.reason, 160),
+        uses: generic ? (Array.isArray(m && m.uses) ? m.uses : []).map(u => str(u, 120)).filter(Boolean).slice(0, 4) : [],
+        alternatives: (status === 'local' || status === 'unknown') && generic
+          ? (Array.isArray(m.alternatives) ? m.alternatives : []).map(a => ({ brand: str(a && a.brand, 60), company: str(a && a.company, 60), country: str(a && a.country, 40) })).filter(a => a.brand).slice(0, 3) : []
+      };
+    }).filter(m => m.written || m.generic);
+    return res.status(200).json({ medicines, note: str(o.note, 300) });
+  } catch (err) {
+    return res.status(500).json({ error: String(err && err.message ? err.message : err).slice(0, 200) });
+  }
+}
+
 export default async function handler(req, res) {
   if (req.query && req.query.upload === '1') return uploadBookHandler(req, res);
   if (req.query && req.query.apk === '1') return apkDownload(req, res);
   if (req.query && req.query.ilaj === '1') return ilajSave(req, res);
   if (req.query && req.query.banjh === '1') return banjhReport(req, res);
+  if (req.query && req.query.rx === '1') return rxSwap(req, res);
   if (req.method !== 'POST') {
     res.setHeader('Allow', ['POST']);
     return res.status(405).json({ error: 'صرف POST request قبول ہے۔' });

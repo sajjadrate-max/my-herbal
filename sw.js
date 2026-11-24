@@ -1,13 +1,14 @@
 // sw.js — My Herbal | قانونِ مفرد اعضاء
 // مقصد: ویب سائٹ انٹرنیٹ کے بغیر بھی پوری کھلے اور چلے؛ صرف AI کے جواب (/api/) کے لیے انٹرنیٹ چاہیے
 
-const CACHE_NAME = 'my-herbal-cache-v160';
+const CACHE_NAME = 'my-herbal-cache-v161';
 // کتابوں کا متن، PDF، لائبریریاں اور فونٹ الگ کیش میں — نئی ریلیز پر یہ نہیں مٹتا (ورنہ ہر اپ ڈیٹ کے بعد آف لائن کتابیں غائب)
 const DATA_CACHE = 'my-herbal-data-v1';
 const ASSETS_TO_CACHE = [
   '/',
   '/herbal.html',
   '/banjh.js',
+  '/rxswap.js',
   '/icon-192.png',
   '/icon-512-maskable.png'
 ];
@@ -104,7 +105,7 @@ self.addEventListener('fetch', (event) => {
   }
 
   // بدلتی رہنے والی فہرستیں: ہمیشہ تازہ (نیٹ نہ ہو تو محفوظ ورژن)
-  if (url.pathname.endsWith('/books/uploads.json') || url.pathname === '/ilaj.txt' || url.pathname === '/kitab-jagah.json' || url.pathname === '/banjh.js') {
+  if (url.pathname.endsWith('/books/uploads.json') || url.pathname === '/ilaj.txt' || url.pathname === '/kitab-jagah.json' || url.pathname === '/banjh.js' || url.pathname === '/rxswap.js') {
     event.respondWith(networkFirst(event.request, DATA_CACHE));
     return;
   }

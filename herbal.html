@@ -232,6 +232,7 @@ footer{position:fixed; left:0; right:0; bottom:0; z-index:55; text-align:center;
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="/banjh.js" defer></script>
+<script src="/rxswap.js" defer></script>
 </head>
 <body>
 
@@ -245,6 +246,7 @@ footer{position:fixed; left:0; right:0; bottom:0; z-index:55; text-align:center;
     <a onclick="showPage('kami')" id="nav-kami"><span class="ni">🩺</span>وٹامن و معدنیات کی کمی</a>
     <a onclick="showPage('ilaj')" id="nav-ilaj"><span class="ni">📋</span>بیماریاں اور علاج</a>
     <a onclick="showPage('wajah')" id="nav-wajah"><span class="ni">💊</span>میڈیکل کے مطابق ادویات</a>
+    <a onclick="showPage('rxswap')" id="nav-rxswap"><span class="ni">🔁</span>ڈاکٹر کے بل میں دوائی کی تبدیلی</a>
     <a onclick="showPage('banjh')" id="nav-banjh" style="grid-column:1 / -1;"><span class="ni">👨‍👩‍👧</span>بانجھ پن — میاں بیوی کے ٹیسٹ اور علاج</a>
   </nav>
 </header>
@@ -431,6 +433,23 @@ footer{position:fixed; left:0; right:0; bottom:0; z-index:55; text-align:center;
   <div id="ilajResult" style="margin:10px 0;"></div>
   <div class="big-search-wrap"><input class="search big-search" id="ilajListFilter" type="search" placeholder="بیماری یا علامت تلاش کریں..." oninput="ilajFilterList()"><div class="big-search-count" id="ilajListFilterCount"></div></div>
   <div id="ilajCatalog" style="margin-top:8px;"></div>
+</section>
+
+<section class="page-section" id="page-rxswap">
+  <h2 class="section-title">🔁 ڈاکٹر کے بل میں دوائی کی تبدیلی</h2>
+  <div class="note">ڈاکٹر کے نسخے یا میڈیکل اسٹور کے بل کی تصویر بھیجیں۔ ہر دوا پڑھ کر بتایا جائے گا کہ وہ کس کمپنی کی ہے، اور اگر لوکل کمپنی کی ہے تو <b>اچھی کمپنی کی بالکل وہی دوا</b> (وہی اصل نام، وہی طاقت، وہی شکل) بتائی جائے گی۔ صرف کمپنی بدلتی ہے، دوا، خوراک اور مدت وہی رہتی ہے جو ڈاکٹر نے لکھی۔</div>
+  <div class="result-card" style="text-align:center;">
+    <div style="display:flex; gap:10px; justify-content:center; flex-wrap:wrap;">
+      <label class="btn" style="cursor:pointer;">📷 تصویر کھینچیں<input type="file" accept="image/*" capture="environment" style="display:none;" onchange="rxPick(this.files); this.value='';"></label>
+      <label class="btn secondary" style="cursor:pointer;">🖼 گیلری سے چنیں<input type="file" accept="image/*" multiple style="display:none;" onchange="rxPick(this.files); this.value='';"></label>
+    </div>
+    <p style="color:var(--muted); font-size:.8rem; margin-top:8px;">نسخے کی جتنی دوائیں ہوں، ہر ایک کی الگ تصویر لیں — ایک ایک کر کے کھینچتے جائیں یا گیلری سے سب ایک ساتھ چنیں (زیادہ سے زیادہ 20)۔ پھر آخر میں ایک ہی بار «دوائیں چیک کریں» دبائیں۔ تصویر روشنی میں ہو اور دوا کا نام اور mg صاف نظر آئے۔</p>
+    <p id="rxCount" style="color:var(--gold-soft); font-weight:700; margin-top:6px;"></p>
+    <div id="rxThumbs" style="display:flex; gap:8px; justify-content:center; flex-wrap:wrap; margin-top:10px;"></div>
+    <button class="btn" id="rxGoBtn" onclick="rxAnalyze()" style="display:none; margin-top:12px; border-radius:24px; padding:10px 26px;">🔍 دوائیں چیک کریں</button>
+  </div>
+  <div id="rxResult" style="margin-top:16px;"></div>
+  <p style="color:var(--muted); font-size:.78rem; background:rgba(224,82,79,.06); border:1px solid var(--border); border-radius:8px; padding:8px 10px; margin-top:12px;">⚠ تصویر کمپیوٹر (AI) پڑھتا ہے، جو غلطی کر سکتا ہے۔ نئی دوا خریدتے وقت پیکٹ پر <b>اصل دوا (generic) کا نام اور طاقت</b> ڈاکٹر کے لکھے سے ضرور ملائیں، اور فارماسسٹ یا ڈاکٹر سے تصدیق کر لیں۔ خوراک اور مدت خود نہ بدلیں۔</p>
 </section>
 
 <section class="page-section" id="page-banjh">
