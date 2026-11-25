@@ -8,29 +8,93 @@
     if(DATA) return DATA;
     const r = await fetch('/hikmat-data.json'); DATA = await r.json(); return DATA;
   }
+  // کورس میں منتقل کی گئی مزید کتابیں (جیسے فون والی) — بالکل کلاسوں کی طرح: ٹیب، فہرست، تلاش، اصل صفحات
+  const XC = {};
+  function extras(){
+    const lib = typeof herbalBooksFor === 'function' ? herbalBooksFor('hikmat') : [];
+    return lib.map(f=>{
+      const n = Math.max((f.pdfDoc && f.pdfDoc.numPages) || 0, ...(f.pages || []).map(p=> p.pageNum || 0), (f.pages || []).length);
+      let x = XC[f.fileName];
+      if(!x || x.pages !== n){
+        const text = Array.from({ length: n }, ()=> '');
+        (f.pages || []).forEach((p, i)=>{ const k = (p.pageNum || i + 1) - 1; if(k >= 0 && k < n) text[k] = p.text || ''; });
+        const t = autoToc(text);
+        x = XC[f.fileName] = { title: f.title || f.fileName.replace(/\.pdf$/i, ''), extra: true, entry: f, pages: n, text, toc: t.toc, tocMax: t.tocMax };
+      }
+      x.entry = f; return x;
+    });
+  }
+  function all(){ return (DATA || []).concat(extras()); }
+  // کتاب کے اپنے فہرست والے صفحات سے موضوعات (عنوان ----- صفحہ) نکالیں، پھر صفحہ نمبر کو PDF کے صفحے سے ملائیں
+  function autoToc(text){
+    const lim = Math.min(text.length, 20), found = []; let tocMax = 0;
+    const clean = x=> x.replace(/^\s*فہرست\s*(مضامین)?\s*/, '').replace(/^[\s—–\-:.،]+|[\s—–\-:.،]+$/g, '').replace(/\s+/g, ' ').trim();
+    for(let i = 0; i < lim; i++){
+      // ڈیش/نقطوں کی لکیر سے ٹکڑے: یا تو "عنوان 17" (نمبر آخر میں) یا "17 عنوان" (نمبر شروع میں، پچھلے عنوان کا)
+      const ch = (text[i] || '').split(/[-–—_.…ـ]{4,}/);
+      let end = 0, start = 0; ch.forEach(c=>{ if(/\d{1,3}\s*$/.test(c)) end++; if(/^\s*\d{1,3}(?!\d)/.test(c)) start++; });
+      const got = [];
+      if(end >= start) ch.forEach(c=>{ const m = c.match(/([^\d]*?)\s*[—–]?\s*(\d{1,3})\s*$/); if(m) got.push([clean(m[1]), +m[2]]); });
+      else for(let k = 1; k < ch.length; k++){ const m = ch[k].match(/^\s*(\d{1,3})(?!\d)/), prev = ch[k - 1].replace(/^\s*\d{1,3}(?!\d)/, ''); if(m) got.push([clean(prev), +m[1]]); }
+      const ok = got.filter(([ti, p])=> ti.length >= 3 && ti.length <= 90 && p > 0);
+      if(ok.length >= 3){ found.push(...ok); tocMax = i + 1; }
+    }
+    if(!found.length) return { toc: [], tocMax: 0 };
+    // چھپے ہوئے صفحہ نمبر اور PDF صفحے کا فرق: پہلے ہر صفحے کے اوپر/نیچے لکھا نمبر دیکھیں
+    const hv = {}; let hn = 0;
+    for(let k = tocMax; k < text.length; k++){
+      const t = text[k] || '', nums = (t.slice(0, 40) + ' ' + t.slice(-25)).match(/\d{1,3}/g) || [];
+      const ds = new Set(nums.map(n=> k + 1 - +n).filter(d=> Math.abs(d) <= 40)); ds.forEach(d=> hv[d] = (hv[d] || 0) + 1); hn++;
+    }
+    let off = 0, best = 0; Object.keys(hv).forEach(d=>{ if(hv[d] > best){ best = hv[d]; off = +d; } });
+    if(best < hn * 0.3){
+      // نمبر نہ ملیں تو عنوانات کو کتاب میں ڈھونڈ کر (ہر عنوان کا قریب ترین مقام)
+      const votes = {}; off = 0; best = 0;
+      found.forEach(([ti, p])=>{
+        const q = norm(ti).trim(); if(q.length < 6) return;
+        let bd = null;
+        for(let k = tocMax; k < text.length; k++) if(norm(text[k]).includes(q)){ const d = k + 1 - p; if(Math.abs(d) <= 40 && (bd === null || Math.abs(d) < Math.abs(bd))) bd = d; }
+        if(bd !== null) votes[bd] = (votes[bd] || 0) + 1;
+      });
+      Object.keys(votes).forEach(d=>{ if(votes[d] > best){ best = votes[d]; off = +d; } });
+    }
+    const toc = found.map(([ti, p])=> [ti, Math.max(1, Math.min(text.length, p + off))]);
+    return { toc, tocMax };
+  }
   function tabs(){
-    return DATA.map((c, i)=> `<button type="button" class="${i === CI ? 'on' : ''}" onclick="hkCourse(${i})">${esc(c.title)}</button>`).join('');
+    return all().map((c, i)=> `<button type="button" class="${i === CI ? 'on' : ''}" onclick="hkCourse(${i})">${esc(c.title)}</button>`).join('');
   }
   function render(){
-    const c = DATA[CI], root = $('hkRoot');
+    const C = all(); if(CI >= C.length) CI = 0;
+    const c = C[CI], root = $('hkRoot');
     root.innerHTML = `<div class="hk-tabs">${tabs()}</div>
       ${CI === 1 ? '<div class="hk-warn">⚠ اس کلاس میں ہرتال، سنکھیا، پارہ، کچلہ جیسے کشتے ہیں — یہ زہریلی دھاتیں/بوٹیاں ہیں۔ صرف ماہر حکیم کی نگرانی میں بنائیں اور دیں؛ حاملہ، بچوں، گردے/جگر کے مریضوں کو نہیں۔</div>' : ''}
       <input class="search" id="hkQ" type="search" placeholder="🔍 کورس میں کوئی لفظ تلاش کریں (مثلاً نبض، اکسیر، بانجھ پن)..." oninput="hkSearch()" style="display:block; width:100%; box-sizing:border-box; margin:8px 0;">
       <div id="hkRes"></div>
-      <details class="nk-det hk-toc"><summary>📑 فہرست — ${c.toc.length} موضوعات</summary><ol>${c.toc.map(([t, p])=> `<li onclick="hkGo(${p})"><span>${esc(t)}</span> <small>صفحہ ${p}</small></li>`).join('')}</ol></details>
+      ${c.toc.length ? `<details class="nk-det hk-toc"><summary>📑 فہرست — ${c.toc.length} موضوعات</summary><ol>${c.toc.map(([t, p])=> `<li onclick="hkGo(${p})"><span>${esc(t)}</span> <small>صفحہ ${p}</small></li>`).join('')}</ol></details>` : (c.extra ? '<p class="hk-msg" style="padding:4px;">اس کتاب میں فہرست کے صفحات نہیں ملے — اوپر تلاش سے موضوع ڈھونڈیں</p>' : '')}
+      ${c.extra ? `<p style="font-size:.78rem; color:var(--muted); text-align:center; margin:2px 0;">${/^local_/.test(c.entry.fileName) ? '📱 یہ کتاب صرف اس فون میں محفوظ ہے' : ''}</p>` : ''}
       <div class="hk-bar"><button type="button" onclick="hkGo(PAGE_PREV())">▶ پچھلا</button>
         <span>صفحہ <input id="hkPg" type="number" min="1" max="${c.pages}" value="${PAGE}" onchange="hkGo(+this.value)"> / ${c.pages}</span>
         <button type="button" onclick="hkGo(PAGE_NEXT())">اگلا ◀</button></div>
-      <div class="hk-bar small"><button type="button" onclick="hkZoom(-1)">➖</button><button type="button" onclick="hkZoom(1)">➕</button><a href="/${c.file}" target="_blank" rel="noopener">📄 پوری PDF کھولیں</a></div>
+      <div class="hk-bar small"><button type="button" onclick="hkZoom(-1)">➖</button><button type="button" onclick="hkZoom(1)">➕</button>${c.extra ? `<button type="button" onclick="hkFull()">📄 پوری PDF کھولیں</button>` : `<a href="/${c.file}" target="_blank" rel="noopener">📄 پوری PDF کھولیں</a>`}</div>
       <div id="hkView" class="hk-view"><p class="hk-msg">⏳ صفحہ کھل رہا ہے...</p></div>`;
     show();
   }
   window.PAGE_PREV = ()=> Math.max(1, PAGE - 1);
-  window.PAGE_NEXT = ()=> Math.min(DATA[CI].pages, PAGE + 1);
+  window.PAGE_NEXT = ()=> Math.min(all()[CI].pages, PAGE + 1);
   async function doc(){
-    const c = DATA[CI];
-    if(!DOCS[CI]) DOCS[CI] = pdfjsLib.getDocument({ url: '/' + c.file }).promise;
-    return DOCS[CI];
+    const c = all()[CI];
+    if(c.extra){
+      const e = c.entry;
+      if(e.pdfDoc) return e.pdfDoc;
+      const path = typeof pmResolvePdfPath === 'function' ? pmResolvePdfPath(e.fileName) : null;
+      if(!path) throw new Error('اس کتاب کی اصل PDF دستیاب نہیں');
+      const parts = (typeof PM_BUILTIN_PDF_PARTS !== 'undefined' && (PM_BUILTIN_PDF_PARTS[path] || PM_BUILTIN_PDF_PARTS[e.fileName])) || (await pmAutoParts(e.fileName));
+      e.pdfDoc = parts ? herbalMakeMultiPartPdfDoc(parts) : await pdfjsLib.getDocument({ url: herbalPdfAbs(herbalPdfUrl(path)), rangeChunkSize: 262144, disableAutoFetch: true, disableStream: true }).promise;
+      return e.pdfDoc;
+    }
+    if(!DOCS[c.file]) DOCS[c.file] = pdfjsLib.getDocument({ url: '/' + c.file }).promise;
+    return DOCS[c.file];
   }
   async function show(){
     const v = $('hkView'); if(!v || rendering) return; rendering = true;
@@ -48,21 +112,27 @@
     rendering = false;
   }
   window.hkCourse = i=>{ CI = i; PAGE = 1; ZOOM = 1; render(); };
-  window.hkGo = p=>{ const c = DATA[CI]; PAGE = Math.max(1, Math.min(c.pages, p || 1)); show(); const v = $('hkView'); if(v) v.scrollIntoView({ behavior:'smooth', block:'start' }); };
+  window.hkFull = ()=>{ const c = all()[CI]; if(c && c.extra && typeof herbalOpenLibraryPdf === 'function') herbalOpenLibraryPdf(c.entry, PAGE, '', null); };
+  // "مزید کتابیں" سے کھولیں: اسی کورس والے انداز میں اس کتاب کا ٹیب
+  window.hkOpenFile = fn=>{ const i = all().findIndex(c=> c.extra && c.entry.fileName === fn); if(i < 0 || !DATA) return; hkCourse(i); const r = $('hkRoot'); if(r) r.scrollIntoView({ behavior:'smooth', block:'start' }); };
+  // کتابیں بعد میں لوڈ ہوں / منتقل ہوں تو ٹیب دوبارہ بنیں
+  let SIG = '';
+  window.hkExtrasChanged = ()=>{ if(!DATA || !$('hkRoot')) return; const sig = all().map(c=> c.title + c.pages).join('|'); if(sig === SIG) return; SIG = sig; render(); };
+  window.hkGo = p=>{ const c = all()[CI]; PAGE = Math.max(1, Math.min(c.pages, p || 1)); show(); const v = $('hkView'); if(v) v.scrollIntoView({ behavior:'smooth', block:'start' }); };
   window.hkZoom = d=>{ ZOOM = Math.max(1, Math.min(3, ZOOM + d * 0.5)); show(); };
   window.hkSearch = ()=>{
     const q = norm(($('hkQ').value || '').trim()), out = $('hkRes');
     if(!q || q.length < 2){ out.innerHTML = ''; return; }
-    const c = DATA[CI], hits = [];
+    const c = all()[CI], hits = [];
     c.text.forEach((t, i)=>{ const n = norm(t), k = n.indexOf(q); if(k >= 0) hits.push([i + 1, t.slice(Math.max(0, k - 40), k + 80)]); });
     // فہرست والے صفحات آخر میں، اصل مضمون پہلے
-    const tocMax = CI === 0 ? 16 : 0; hits.sort((x, y)=> ((x[0] <= tocMax) - (y[0] <= tocMax)) || x[0] - y[0]);
+    const tocMax = c.extra ? c.tocMax : (CI === 0 ? 16 : 0); hits.sort((x, y)=> ((x[0] <= tocMax) - (y[0] <= tocMax)) || x[0] - y[0]);
     out.innerHTML = hits.length ? `<div class="hk-res">${hits.length} صفحات ملے:${hits.slice(0, 40).map(([p, s])=> `<div onclick="hkGo(${p})"><b>صفحہ ${p}</b> — ${esc(s)}…</div>`).join('')}</div>` : '<p class="hk-msg">کچھ نہیں ملا</p>';
   };
   window.hikmatInit = async ()=>{
     const root = $('hkRoot'); if(!root || root.dataset.ready) return;
     root.dataset.ready = '1';
-    try{ await load(); render(); }catch(e){ root.dataset.ready = ''; root.innerHTML = '<p class="hk-msg" style="color:#e0524f;">No internet 🛜 — کورس پہلی بار کھولنے کے لیے انٹرنیٹ آن کریں</p>'; }
+    try{ await load(); SIG = all().map(c=> c.title + c.pages).join('|'); render(); }catch(e){ root.dataset.ready = ''; root.innerHTML = '<p class="hk-msg" style="color:#e0524f;">No internet 🛜 — کورس پہلی بار کھولنے کے لیے انٹرنیٹ آن کریں</p>'; }
   };
   const css = document.createElement('style');
   css.textContent = `.hk-tabs{display:flex; gap:6px; flex-wrap:wrap;} .hk-tabs button{flex:1 1 45%; padding:8px; border-radius:12px; border:1px solid var(--gold); background:var(--card); color:var(--gold); font-family:inherit; font-size:.9rem; cursor:pointer;} .hk-tabs button.on{background:var(--gold); color:#fff;}

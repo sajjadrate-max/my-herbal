@@ -449,7 +449,7 @@ function rxCoFilter(){
 
 <section class="page-section" id="page-hikmat">
   <h2 class="section-title">🎓 حکمت کورس</h2>
-  <div class="note">حکیم سجاد احمد (خانپور، رحیم یار خان) کا مکمل حکمت کورس — پہلی کلاس (ترتیب کے ساتھ، 181 صفحات) اور دوسری کلاس (اسپیشل مجربات، 63 صفحات)۔ فہرست سے موضوع چنیں یا تلاش کریں — صفحہ ویسا ہی کھلے گا جیسا کتاب میں لکھا ہے۔</div>
+  <div class="note">حکیم سجاد احمد (خانپور، رحیم یار خان) کا مکمل حکمت کورس — پہلی کلاس (ترتیب کے ساتھ، 181 صفحات) اور دوسری کلاس (اسپیشل مجربات، 63 صفحات)، اور کورس میں ڈالی گئی مزید کتابیں۔ فہرست سے موضوع چنیں یا تلاش کریں — صفحہ ویسا ہی کھلے گا جیسا کتاب میں لکھا ہے۔</div>
   <div id="hkRoot"></div>
   <div id="hkBooks"></div>
 </section>
@@ -10784,8 +10784,9 @@ function hikmatRenderBookList(){
   el.innerHTML = lib.length ? `<h3 style="color:var(--gold); margin:16px 0 6px;">📚 کورس کی مزید کتابیں (${lib.length})</h3>` + lib.map((f, idx)=> `<div style="display:flex; align-items:center; justify-content:space-between; gap:8px; padding:8px 10px; border-bottom:1px solid var(--border); flex-wrap:wrap; background:var(--card);">
       <span style="flex:1; min-width:160px;"><b style="color:var(--gold); margin-left:6px;">${idx+1}۔</b> ${escapeHtmlSearch(f.title || f.fileName)}</span>
       <span style="color:var(--muted); font-size:.78rem;">${f.pages.length} صفحات${/^local_/.test(f.fileName) ? ' · صرف اس فون پر' : ''}</span>
-      <button class="btn secondary" style="padding:4px 12px; font-size:.75rem;" onclick="herbalOpenLibraryPdf(herbalFindBook('${escapeJsAttr(f.fileName)}'), 1, '', null)">📖 کھولیں</button>${herbalMoveSelect(f)}
+      <button class="btn secondary" style="padding:4px 12px; font-size:.75rem;" onclick="hkOpenFile('${escapeJsAttr(f.fileName)}')">📖 کھولیں</button>${herbalMoveSelect(f)}
     </div>`).join('') : '';
+  try{ if(typeof hkExtrasChanged === 'function') hkExtrasChanged(); }catch(e){}
 }
 function wajahRenderBookList(){
   const el = document.getElementById('wajahBookListEl');
