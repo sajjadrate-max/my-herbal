@@ -1,7 +1,7 @@
 // sw.js — My Herbal | قانونِ مفرد اعضاء
 // مقصد: ویب سائٹ انٹرنیٹ کے بغیر بھی پوری کھلے اور چلے؛ صرف AI کے جواب (/api/) کے لیے انٹرنیٹ چاہیے
 
-const CACHE_NAME = 'my-herbal-cache-v182';
+const CACHE_NAME = 'my-herbal-cache-v183';
 // کتابوں کا متن، PDF، لائبریریاں اور فونٹ الگ کیش میں — نئی ریلیز پر یہ نہیں مٹتا (ورنہ ہر اپ ڈیٹ کے بعد آف لائن کتابیں غائب)
 const DATA_CACHE = 'my-herbal-data-v1';
 const ASSETS_TO_CACHE = [
@@ -9,6 +9,7 @@ const ASSETS_TO_CACHE = [
   '/herbal.html',
   '/banjh.js',
   '/rxswap.js',
+  '/hikmat.js',
   '/icon-192.png',
   '/icon-512-maskable.png'
 ];
@@ -31,6 +32,7 @@ const DATA_TO_CACHE = [
   '/hz-data-kushta-jaat.json',
   '/ilaj.txt',
   '/kitab-jagah.json',
+  '/hikmat-data.json',
   'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js',
   'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js',
   'https://fonts.googleapis.com/css2?family=Noto+Nastaliq+Urdu:wght@400;700&family=Amiri:wght@400;700&family=Poppins:wght@400;600;700&display=swap'
@@ -105,7 +107,7 @@ self.addEventListener('fetch', (event) => {
   }
 
   // بدلتی رہنے والی فہرستیں: ہمیشہ تازہ (نیٹ نہ ہو تو محفوظ ورژن)
-  if (url.pathname.endsWith('/books/uploads.json') || url.pathname === '/ilaj.txt' || url.pathname === '/kitab-jagah.json' || url.pathname === '/banjh.js' || url.pathname === '/rxswap.js') {
+  if (url.pathname.endsWith('/books/uploads.json') || url.pathname === '/ilaj.txt' || url.pathname === '/kitab-jagah.json' || url.pathname === '/banjh.js' || url.pathname === '/rxswap.js' || url.pathname === '/hikmat.js') {
     event.respondWith(networkFirst(event.request, DATA_CACHE));
     return;
   }

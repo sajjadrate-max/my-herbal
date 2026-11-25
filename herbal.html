@@ -234,6 +234,7 @@ footer{position:fixed; left:0; right:0; bottom:0; z-index:55; text-align:center;
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="/banjh.js" defer></script>
 <script src="/rxswap.js" defer></script>
+<script src="/hikmat.js" defer></script>
 <script>
 function rxCoFilter(){
   const q = (document.getElementById('rxCoQ').value || '').trim().toLowerCase();
@@ -258,6 +259,7 @@ function rxCoFilter(){
     <a onclick="showPage('wajah')" id="nav-wajah"><span class="ni">💊</span>میڈیکل کے مطابق ادویات</a>
     <a onclick="showPage('banjh')" id="nav-banjh"><span class="ni">👨‍👩‍👧</span>بانجھ پن</a>
     <a onclick="showPage('rxswap')" id="nav-rxswap"><span class="ni">🔁</span>انگریزی ادویات کی تبدیلی</a>
+    <a onclick="showPage('hikmat')" id="nav-hikmat" style="grid-column:1 / -1;"><span class="ni">🎓</span>حکمت کورس</a>
   </nav>
 </header>
 
@@ -443,6 +445,12 @@ function rxCoFilter(){
   <div id="ilajResult" style="margin:10px 0;"></div>
   <div class="big-search-wrap"><input class="search big-search" id="ilajListFilter" type="search" placeholder="بیماری یا علامت تلاش کریں..." oninput="ilajFilterList()"><div class="big-search-count" id="ilajListFilterCount"></div></div>
   <div id="ilajCatalog" style="margin-top:8px;"></div>
+</section>
+
+<section class="page-section" id="page-hikmat">
+  <h2 class="section-title">🎓 حکمت کورس</h2>
+  <div class="note">حکیم سجاد احمد (خانپور، رحیم یار خان) کا مکمل حکمت کورس — پہلی کلاس (ترتیب کے ساتھ، 181 صفحات) اور دوسری کلاس (اسپیشل مجربات، 63 صفحات)۔ فہرست سے موضوع چنیں یا تلاش کریں — صفحہ ویسا ہی کھلے گا جیسا کتاب میں لکھا ہے۔</div>
+  <div id="hkRoot"></div>
 </section>
 
 <section class="page-section" id="page-rxswap">
@@ -859,6 +867,7 @@ function showPage(id, fromPop){
   if(id === 'wajah' && typeof wajahBuildCatalog === 'function') wajahBuildCatalog();
   if(id === 'ilaj' && typeof ilajBuildCatalog === 'function') ilajBuildCatalog();
   if(id === 'banjh' && typeof banjhInit === 'function') banjhInit();
+  if(id === 'hikmat' && typeof hikmatInit === 'function') hikmatInit();
   if(id === 'wajah' && typeof wajahRenderBookList === 'function') wajahRenderBookList();
   if(id === 'naskhesaz' && typeof qmBuildCatalog === 'function') qmBuildCatalog();
   if(id === 'pdfmulti'){ const el = document.getElementById('pmMizajOptionsList'); if(el && el.dataset.pending){ delete el.dataset.pending; pmRenderMizajOptionsList(pmMizajOptions); } }
