@@ -61,13 +61,16 @@
     const toc = found.map(([ti, p])=> [ti, Math.max(1, Math.min(text.length, p + off))]);
     return { toc, tocMax };
   }
+  const SHORT = ['پہلی کلاس', 'دوسری کلاس اسپیشل'];
   function tabs(){
-    return all().map((c, i)=> `<button type="button" class="${i === CI ? 'on' : ''}" onclick="hkCourse(${i})">${esc(c.title)}</button>`).join('');
+    const C = all(), btn = (c, i)=> `<button type="button" class="${i === CI ? 'on' : ''}" onclick="hkCourse(${i})">${esc(c.extra ? c.title : (SHORT[i] || c.title))}</button>`;
+    const base = C.map(btn).filter((_, i)=> !C[i].extra).join(''), more = C.map(btn).filter((_, i)=> C[i].extra).join('');
+    return `<div class="hk-tabs">${base}</div>` + (more ? `<h3 style="color:var(--gold); text-align:center; margin:14px 0 8px;">📚 مزید کتابیں اور لیکچر</h3><div class="hk-tabs">${more}</div>` : '');
   }
   function render(){
     const C = all(); if(CI >= C.length) CI = 0;
     const c = C[CI], root = $('hkRoot');
-    root.innerHTML = `<h3 style="color:var(--gold); text-align:center; margin:14px 0 8px; font-size:1.3rem;">🎓 حکمت کورس</h3><div class="hk-tabs">${tabs()}</div>
+    root.innerHTML = `<h3 style="color:var(--gold); text-align:center; margin:14px 0 8px; font-size:1.3rem;">🎓 حکمت کورس</h3>${tabs()}
       ${CI === 1 ? '<div class="hk-warn">⚠ اس کلاس میں ہرتال، سنکھیا، پارہ، کچلہ جیسے کشتے ہیں — یہ زہریلی دھاتیں/بوٹیاں ہیں۔ صرف ماہر حکیم کی نگرانی میں بنائیں اور دیں؛ حاملہ، بچوں، گردے/جگر کے مریضوں کو نہیں۔</div>' : ''}
       <input class="search" id="hkQ" type="search" placeholder="🔍 کورس میں کوئی لفظ تلاش کریں (مثلاً نبض، اکسیر، بانجھ پن)..." oninput="hkSearch()" style="display:block; width:100%; box-sizing:border-box; margin:8px 0;">
       <div id="hkRes"></div>
