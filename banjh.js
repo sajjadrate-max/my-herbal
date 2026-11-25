@@ -432,7 +432,7 @@
     const nextList = [...nxt].map(id=> `<li>${ALL[id].stage === 0 ? '⭐ ' : ''}<b class="bj-en" dir="ltr">${esc(ALL[id].en)}</b> — ${esc(ALL[id].ur)}</li>`).join('');
     return `<div class="bj-side bj-${s}">
       <h3>${SIDE[s]} — ${esc(who)}</h3>
-      ${s === 'm' ? `<div class="bj-warn">⚠ اہم: بانجھ پن (سپرم کی کمی) میں ٹیسٹوسٹیرون کی گولی، ٹیکہ، جیل یا باڈی بلڈنگ کے سٹیرائیڈ ہرگز نہ دیں — اس سے دماغ سپرم بنانے کا حکم (FSH/LH) بند کر دیتا ہے اور سپرم کم یا بالکل ختم ہو جاتے ہیں۔ دوا بند کرنے کے بعد سپرم واپس آنے میں 6–12 ماہ یا زیادہ لگ سکتے ہیں، کبھی پوری طرح واپس نہیں آتے۔ مریض سے ضرور پوچھیں کہ کہیں جم/طاقت کے ٹیکے تو نہیں لے رہا۔</div>` : ''}
+      ${s === 'm' ? `<details class="bj-tdet bj-wdet"><summary>⚠ اہم: ٹیسٹوسٹیرون / سٹیرائیڈ کے بارے میں ضروری ہدایت</summary><div class="bj-warn" style="margin:0 8px 8px;">⚠ اہم: بانجھ پن (سپرم کی کمی) میں ٹیسٹوسٹیرون کی گولی، ٹیکہ، جیل یا باڈی بلڈنگ کے سٹیرائیڈ ہرگز نہ دیں — اس سے دماغ سپرم بنانے کا حکم (FSH/LH) بند کر دیتا ہے اور سپرم کم یا بالکل ختم ہو جاتے ہیں۔ دوا بند کرنے کے بعد سپرم واپس آنے میں 6–12 ماہ یا زیادہ لگ سکتے ہیں، کبھی پوری طرح واپس نہیں آتے۔ مریض سے ضرور پوچھیں کہ کہیں جم/طاقت کے ٹیکے تو نہیں لے رہا۔</div></details>` : ''}
       ${(()=>{ const dn = okD.length + badD.length, tot = dn + pendN, po = dn ? Math.round(okD.length * 100 / dn) : 0, pb = dn ? 100 - po : 0, pd = tot ? Math.round(dn * 100 / tot) : 0;
         return `<div class="bj-pct">
           <div class="bj-cnt"><span class="ok">✓ صحیح: ${okD.length} (${po}٪)</span><span class="bad">✗ خراب: ${badD.length} (${pb}٪)</span><span class="pd">⏳ باقی: ${pendN}</span></div>
@@ -817,6 +817,7 @@
   .bj-okdet{border-color:#1f9d55 !important; margin-top:4px;} .bj-okdet > summary{font-size:.8rem !important; color:#1f7a4d !important; padding:4px 8px !important;} .bj-okdet > summary::before{color:#1f9d55 !important;} .bj-okin{padding:0 8px 8px;}
   .bj-fol{border:1px dashed #e0524f; border-radius:8px; padding:4px 8px; margin:4px 0; background:rgba(224,82,79,.05);} .bj-fol .bj-labh{color:#b03a37;}
   .bj-more{border-color:var(--gold) !important; margin-top:4px;} .bj-more > summary{font-size:.8rem !important; color:var(--gold) !important; padding:4px 8px !important;}
+  .bj-wdet{border-color:#e0524f !important; margin-bottom:8px;} .bj-wdet > summary{color:#b03a37 !important; font-size:.85rem !important; padding:6px 8px !important;} .bj-wdet > summary::before{color:#e0524f !important;}
   .bj-mrow{margin-right:22px;} .bj-lb{color:var(--muted); font-size:.75rem;}
   .bj-brand{color:#2b6cb0; font-family:Poppins, Arial, sans-serif; font-size:.85rem;} .bj-co{color:#7b3fa0; font-family:Poppins, Arial, sans-serif; font-size:.82rem;} .bj-cn{font-size:.75rem; color:var(--muted);}
   .bj-mnote{font-size:.75rem; color:#b03a37;}
