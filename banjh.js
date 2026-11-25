@@ -247,7 +247,9 @@
     semen:   ['Semen C/S', 'سیمن میں پس سیلز (WBC) 1 ملین/ml سے زیادہ · یا Bacteria نظر آئیں · ساتھ 2–3 ماہ بعد دوبارہ Semen Analysis'],
     hvs:     ['HVS C/S + Chlamydia PCR', 'لیکوریا بدبودار/پیلا/سبز · خارش یا جلن · پس سیلز زیادہ']
   };
-  const followLine = id=> FOLLOW[id] ? `<div class="bj-fol"><div class="bj-labh">⚠ اگر یہ رپورٹ خراب آئے تو یہ ٹیسٹ لازمی:</div><div class="bj-lab" dir="ltr">${esc(FOLLOW[id][0])}</div><div class="bj-hint">خراب کا مطلب: ${esc(FOLLOW[id][1])}</div></div>` : '';
+  const followLine = id=> FOLLOW[id] ? `<div class="bj-fol"><div class="bj-labh">⚠ اگر یہ رپورٹ خراب آئے تو یہ ٹیسٹ لازمی:</div><div class="bj-lab" dir="ltr">${esc(FOLLOW[id][0])}</div></div>` : '';
+  const followWhy = id=> FOLLOW[id] ? `<div class="bj-hint" style="color:#b03a37;">⚠ خراب کا مطلب: ${esc(FOLLOW[id][1])}</div>` : '';
+  const moreBox = (inner, label)=> `<details class="bj-tdet bj-more" onclick="event.stopPropagation()"><summary>${label || 'تفصیل، کیوں اور بٹن دیکھیں'}</summary><div class="bj-okin">${inner}</div></details>`;
   const labLine = id=> LABNAME[id] ? `<div class="bj-labh">🧾 لیب نام</div><div class="bj-lab" dir="ltr">${esc(LABNAME[id])}</div>` : '';
   function infoHtml(id){
     const x = INFO[id]; if(!x) return '';
@@ -386,11 +388,12 @@
     const okD = done.filter(d=> d.r.status === 'ok'), badD = done.filter(d=> d.r.status === 'bad');
     const row = (d, i)=>{
       const ok = d.r.status === 'ok';
-      const detail = `${ALL[d.key] ? labLine(d.key) + (d.r.status === 'bad' ? followLine(d.key) : '') : ''}
+      const head = ALL[d.key] ? labLine(d.key) + (d.r.status === 'bad' ? followLine(d.key) : '') : '';
+      const detail = `${d.r.status === 'bad' ? followWhy(d.key) : ''}
         ${d.r.value ? `<div class="bj-val">${esc(d.r.value)}</div>` : ''}${d.r.note ? `<div class="bj-tn">${esc(d.r.note)}</div>` : ''}<div class="bj-hint">📅 ${fmtD(d.r.date || Date.now())}</div>${ALL[d.key] ? reportsHtml(c, s, d.key) + infoHtml(d.key) + `<label class="bj-tup" onclick="event.stopPropagation()">📷 نئی رپورٹ بھیجیں<input type="file" accept="image/*" multiple hidden onchange="banjhReport('${s}', this, '${d.key}')"></label>` : ''}`;
       return `<div class="bj-done ${d.r.status}" onclick="${d.tap}"><span class="bj-big ${d.r.status}">${ok ? '✓' : '✗'}</span><span class="bj-no ${d.r.status}">${i + 1}</span><span class="bj-pill ${d.r.status}">${ok ? '✓ صحیح' : '✗ خراب'}</span>
         <div class="bj-tb">${d.r.manual ? `<div><span class="bj-man">✋ آپ نے خود ٹک کیا</span>${ALL[d.key] ? ` <button type="button" class="bj-undo" onclick="event.stopPropagation(); banjhUndo('${s}','${d.key}')">↩ ٹک واپس لیں</button>` : ''}</div>` : ''}<b class="bj-en" dir="ltr">${esc(d.en)}</b>${d.ur ? ` <span class="bj-ur">— ${esc(d.ur)}</span>` : ''}
-        ${ok ? `<details class="bj-tdet bj-okdet" onclick="event.stopPropagation()"><summary>تفصیل دیکھیں — ویلیو، رپورٹ، لیب نام</summary><div class="bj-okin">${detail}</div></details>` : detail}</div></div>`;
+        ${ok ? `<details class="bj-tdet bj-okdet" onclick="event.stopPropagation()"><summary>تفصیل دیکھیں — ویلیو، رپورٹ، لیب نام</summary><div class="bj-okin">${head}${detail}</div></details>` : head + moreBox(detail, 'ویلیو، رپورٹ اور تفصیل دیکھیں')}</div></div>`;
     };
     let treat = (c[s].treat || []).slice();
     if(!treat.length) treat = badD.map(d=> d.r.note || (d.en + ' خراب')).filter(Boolean);
@@ -409,9 +412,9 @@
         const sugarNote = (id === 'sugar_m' || id === 'sugar_f') && !st && t[uId] && t[uId].status
           ? `<div class="bj-info">ℹ پیشاب کی رپورٹ میں "Sugar: Nil" ہو تو اچھی بات ہے — مگر یہ <b>پیشاب</b> کی شوگر ہے۔ پیشاب میں شوگر تب آتی ہے جب خون کی شوگر بہت زیادہ (تقریباً 180 سے اوپر) ہو، اس لیے PCOS اور انسولین مزاحمت جیسی ہلکی خرابی اس سے پتا نہیں چلتی۔ خون کا HbA1c / شوگر ٹیسٹ الگ ضروری ہے۔</div>` : '';
         return `<div class="bj-test${st ? ' ' + st : ''}${!st && nxt.has(id) ? ' nx' : ''}" onclick="banjhTest('${s}','${id}')">${big}${icon}<div class="bj-tb">${pill}${gi === 0 ? '<span class="bj-basic">⭐ BASIC</span> ' : ''}<b class="bj-en" dir="ltr">${esc(en)}</b><div class="bj-ur">${esc(ur)}</div>${labLine(id)}${followLine(id)}
-          ${st ? `${r.value ? `<div class="bj-val">${esc(r.value)}</div>` : ''}${r.note ? `<div class="bj-tn">${esc(r.note)}</div>` : ''}` : (hint ? `<div class="bj-hint">❓ کیوں: ${esc(hint)}</div>` : '')}${sugarNote}${infoHtml(id)}
+          ${moreBox(`${followWhy(id)}${hint ? `<div class="bj-hint">❓ کیوں: ${esc(hint)}</div>` : ''}${sugarNote}${infoHtml(id)}
           <button type="button" class="bj-mok" onclick="event.stopPropagation(); banjhOk('${s}','${id}')">✓ رپورٹ صحیح تھی — خود سبز ٹک کریں</button>
-          <label class="bj-tup" onclick="event.stopPropagation()">📷 اس ٹیسٹ کی رپورٹ بھیجیں<input type="file" accept="image/*" multiple hidden onchange="banjhReport('${s}', this, '${id}')"></label></div></div>`;
+          <label class="bj-tup" onclick="event.stopPropagation()">📷 اس ٹیسٹ کی رپورٹ بھیجیں<input type="file" accept="image/*" multiple hidden onchange="banjhReport('${s}', this, '${id}')"></label>`)}</div></div>`;
       }).join('');
       if(doneN === g.items.filter(([id])=> !hiddenT(t, id)).length) return `<div class="bj-stage"><div class="bj-st done">${gi === 0 ? '⭐ ' : ''}${esc(g.st)} — ✓ سب ٹیسٹ ہو گئے (اوپر)</div></div>`;
       return `<div class="bj-stage"><div class="bj-st">${gi === 0 ? '⭐ ' : ''}${esc(g.st)}${doneN ? ` <small>(${doneN} ہو گئے — اوپر)</small>` : ''}</div>${rows}</div>`;
@@ -804,6 +807,7 @@
   .bj-how{margin-right:22px; font-size:.82rem; color:#1e4e8c; line-height:1.9;}
   .bj-okdet{border-color:#1f9d55 !important; margin-top:4px;} .bj-okdet > summary{font-size:.8rem !important; color:#1f7a4d !important; padding:4px 8px !important;} .bj-okdet > summary::before{color:#1f9d55 !important;} .bj-okin{padding:0 8px 8px;}
   .bj-fol{border:1px dashed #e0524f; border-radius:8px; padding:4px 8px; margin:4px 0; background:rgba(224,82,79,.05);} .bj-fol .bj-labh{color:#b03a37;}
+  .bj-more{border-color:var(--gold) !important; margin-top:4px;} .bj-more > summary{font-size:.8rem !important; color:var(--gold) !important; padding:4px 8px !important;}
   .bj-mrow{margin-right:22px;} .bj-lb{color:var(--muted); font-size:.75rem;}
   .bj-brand{color:#2b6cb0; font-family:Poppins, Arial, sans-serif; font-size:.85rem;} .bj-co{color:#7b3fa0; font-family:Poppins, Arial, sans-serif; font-size:.82rem;} .bj-cn{font-size:.75rem; color:var(--muted);}
   .bj-mnote{font-size:.75rem; color:#b03a37;}
