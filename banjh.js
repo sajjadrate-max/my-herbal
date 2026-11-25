@@ -124,10 +124,12 @@
     'Fefol':           ['کیپسول', 'ایک کیپسول', 'دن میں ایک بار', 'کھانے سے پہلے — چائے کے ساتھ نہیں', 'تقریباً 3 ماہ', '4 ہفتے بعد Hb'],
     'Ferrograd-Folic': ['گولی', 'ایک گولی', 'دن میں ایک بار — ناشتے سے پہلے', 'چائے کے ساتھ نہیں', 'تقریباً 3 ماہ', '4 ہفتے بعد Hb']
   };
-  const HOWG = { 'Cholecalciferol (Vitamin D3)': ['50,000 IU کیپسول/ساشے', 'ایک', 'ہفتے میں ایک بار', 'کھانے کے ساتھ', '8 ہفتے، پھر مہینے میں ایک', '3 ماہ بعد Vitamin D'] };
-  const howTable = h=> `<table class="bj-howt">
-      <tr><th>💊 گولی</th><td>${esc(h[0])}</td></tr>
-      <tr><th>🔢 کتنی</th><td>${esc(h[1])}</td></tr>
+  const DOSEMG = {"Dostinex": "0.25mg (آدھی گولی)", "Parlodel": "پہلا ہفتہ 1.25mg، پھر 2.5mg", "Femara": "2.5mg", "Clomid": "50mg", "Glucophage": "500mg", "Duphaston": "10mg", "Utrogestan": "200mg", "Eltroxin": "25–100mcg (TSH کے مطابق)", "Euthyrox": "25–100mcg (TSH کے مطابق)", "Neo-Mercazole": "ماہر کے مطابق", "Augmentin": "625mg", "Ciproxin": "500mg", "Flagyl": "عورت 500mg · مرد (ٹرائیکو) 2000mg ایک بار", "Canesten": "500mg (اندرونی گولی)", "Vibramycin": "100mg", "Zithromax": "1000mg (1 گرام)", "Rocephin": "500mg", "Diflucan": "150mg", "Proxeed Plus": "ایک ساشے", "Pregnyl": "ماہر کے مطابق", "Fefol": "ایک کیپسول", "Ferrograd-Folic": "ایک گولی"};
+  const HOWG = { 'Cholecalciferol (Vitamin D3)': ['50,000 IU کیپسول/ساشے (ایک بار میں 50,000 IU)', 'ایک', 'ہفتے میں ایک بار', 'کھانے کے ساتھ', '8 ہفتے، پھر مہینے میں ایک', '3 ماہ بعد Vitamin D'] };
+  const howTable = (h, mg)=> `<table class="bj-howt">
+      <tr><th>💊 گولی (پیکٹ پر)</th><td>${esc(h[0])}</td></tr>
+      ${mg ? `<tr class="bj-mg"><th>⚖ ایک بار میں کتنے mg</th><td><b>${esc(mg)}</b></td></tr>` : ''}
+      <tr><th>🔢 کتنی گولی</th><td>${esc(h[1])}</td></tr>
       <tr><th>🕐 کب / کتنی بار</th><td><b>${esc(h[2])}</b></td></tr>
       <tr><th>🍽 کھانا</th><td>${esc(h[3])}</td></tr>
       <tr><th>📅 کتنے دن</th><td><b>${esc(h[4])}</b></td></tr>
@@ -136,7 +138,7 @@
     // ایک دوا کا خانہ: صرف برانڈ، کمپنی اور دن (اصل نمک کا نام نہیں)
     const medBox = ([g, brands, role, days], tag)=> `<div class="bj-med">${tag || ''}
         ${brands.length ? brands.map(([b, co, cn])=> `<div class="bj-mrow">💊 <b class="bj-brand" dir="ltr">${esc(b)}</b> · <span class="bj-lb">کمپنی:</span> <b class="bj-co" dir="ltr">${esc(co)}</b> <span class="bj-cn">(${esc(cn)})</span></div>`).join('') : `<div class="bj-mrow">💊 <b class="bj-brand" dir="ltr">${esc(g)}</b></div>`}
-        ${(HOW[(brands[0] || [])[0]] || HOWG[g]) ? howTable(HOW[(brands[0] || [])[0]] || HOWG[g]) : (days ? `<div class="bj-days">⏱ <span class="bj-lb">کتنے دن:</span> ${esc(days)}</div>` : '')}
+        ${(HOW[(brands[0] || [])[0]] || HOWG[g]) ? howTable(HOW[(brands[0] || [])[0]] || HOWG[g], DOSEMG[(brands[0] || [])[0]]) : (days ? `<div class="bj-days">⏱ <span class="bj-lb">کتنے دن:</span> ${esc(days)}</div>` : '')}
       </div>`;
     return `<ol class="bj-tl">${list.map(x=>{
       const ms = MEDS.filter(m=> m.re.test(x)), ad = ADVICE.filter(a=> a.re.test(x));
@@ -830,6 +832,7 @@
   .bj-howt{width:100%; border-collapse:collapse; margin:4px 0; font-size:.82rem; background:#f7fbff;}
   .bj-howt th{width:34%; text-align:right; color:#1e4e8c; font-weight:700; padding:3px 6px; border:1px solid #d6e4f5; white-space:nowrap; background:#eaf2fc;}
   .bj-howt td{padding:3px 6px; border:1px solid #d6e4f5; line-height:1.8;}
+  .bj-howt tr.bj-mg td{background:#fff3c4; color:#7a4a00; font-size:.9rem;} .bj-howt tr.bj-mg th{background:#ffe9a8; color:#7a4a00;}
   .bj-mrow{margin-right:22px;} .bj-lb{color:var(--muted); font-size:.75rem;}
   .bj-brand{color:#2b6cb0; font-family:Poppins, Arial, sans-serif; font-size:.85rem;} .bj-co{color:#7b3fa0; font-family:Poppins, Arial, sans-serif; font-size:.82rem;} .bj-cn{font-size:.75rem; color:var(--muted);}
   .bj-mnote{font-size:.75rem; color:#b03a37;}
