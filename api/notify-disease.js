@@ -270,7 +270,7 @@ async function ilajSave(req, res) {
     // عارضی: کتاب کس صفحے پر دکھے (kitab-jagah.json) — بیماری کی تلاش / نسخہ سازی / میڈیکل
     if (b.jagah) {
       const fn = String(b.jagah.fileName || '').slice(0, 200), sec = String(b.jagah.sec || '');
-      if (!fn || !['pdfmulti', 'naskhesaz', 'wajah'].includes(sec)) return res.status(400).json({ error: 'غلط' });
+      if (!fn || !['pdfmulti', 'naskhesaz', 'wajah', 'hikmat'].includes(sec)) return res.status(400).json({ error: 'غلط' });
       for (let attempt = 0; attempt < 4; attempt++) {
         let map = {}, sha;
         try { const f = await upGh('/contents/kitab-jagah.json?ref=' + BRANCH); sha = f.sha; map = JSON.parse(Buffer.from(f.content, 'base64').toString('utf8')) || {}; }

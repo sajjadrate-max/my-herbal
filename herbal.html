@@ -451,6 +451,7 @@ function rxCoFilter(){
   <h2 class="section-title">🎓 حکمت کورس</h2>
   <div class="note">حکیم سجاد احمد (خانپور، رحیم یار خان) کا مکمل حکمت کورس — پہلی کلاس (ترتیب کے ساتھ، 181 صفحات) اور دوسری کلاس (اسپیشل مجربات، 63 صفحات)۔ فہرست سے موضوع چنیں یا تلاش کریں — صفحہ ویسا ہی کھلے گا جیسا کتاب میں لکھا ہے۔</div>
   <div id="hkRoot"></div>
+  <div id="hkBooks"></div>
 </section>
 
 <section class="page-section" id="page-rxswap">
@@ -867,7 +868,7 @@ function showPage(id, fromPop){
   if(id === 'wajah' && typeof wajahBuildCatalog === 'function') wajahBuildCatalog();
   if(id === 'ilaj' && typeof ilajBuildCatalog === 'function') ilajBuildCatalog();
   if(id === 'banjh' && typeof banjhInit === 'function') banjhInit();
-  if(id === 'hikmat' && typeof hikmatInit === 'function') hikmatInit();
+  if(id === 'hikmat' && typeof hikmatInit === 'function'){ hikmatInit(); try{ hikmatRenderBookList(); }catch(e){} }
   if(id === 'wajah' && typeof wajahRenderBookList === 'function') wajahRenderBookList();
   if(id === 'naskhesaz' && typeof qmBuildCatalog === 'function') qmBuildCatalog();
   if(id === 'pdfmulti'){ const el = document.getElementById('pmMizajOptionsList'); if(el && el.dataset.pending){ delete el.dataset.pending; pmRenderMizajOptionsList(pmMizajOptions); } }
@@ -10737,7 +10738,7 @@ function hzRenderBookList(){
 }
 // ===== عارضی: کتاب کو کسی بھی صفحے (بیماری کی تلاش / نسخہ سازی / میڈیکل) میں منتقل کرنا — سب ترتیب ہو جائے تو یہ حصہ ہٹا دینا ہے =====
 // جگہ: kitab-jagah.json (GitHub، سب کے لیے) + اس فون کی تبدیلیاں (localStorage) — کتاب اسی صفحے کی فہرست اور تلاش میں آتی ہے
-const HERBAL_SECTIONS = { pdfmulti:'🔍 بیماری کی تلاش', naskhesaz:'🌿 نسخہ سازی', wajah:'💊 میڈیکل' };
+const HERBAL_SECTIONS = { pdfmulti:'🔍 بیماری کی تلاش', naskhesaz:'🌿 نسخہ سازی', wajah:'💊 میڈیکل', hikmat:'🎓 حکمت کورس' };
 let HERBAL_BOOK_SEC = {};
 try{ HERBAL_BOOK_SEC = JSON.parse(localStorage.getItem('herbalBookSecLocal') || '{}') || {}; }catch(e){}
 fetch('kitab-jagah.json', { cache:'no-store' }).then(r=> r.ok ? r.json() : {}).then(d=>{
@@ -10773,6 +10774,18 @@ function herbalRenderAllBookLists(){
   try{ pmRenderBookList(); }catch(e){}
   try{ hzRenderBookList(); }catch(e){}
   try{ wajahRenderBookList(); }catch(e){}
+  try{ hikmatRenderBookList(); }catch(e){}
+}
+// حکمت کورس میں منتقل کی گئی کتابیں
+function hikmatRenderBookList(){
+  const el = document.getElementById('hkBooks');
+  if(!el) return;
+  const lib = herbalBooksFor('hikmat');
+  el.innerHTML = lib.length ? `<h3 style="color:var(--gold); margin:16px 0 6px;">📚 کورس کی مزید کتابیں (${lib.length})</h3>` + lib.map((f, idx)=> `<div style="display:flex; align-items:center; justify-content:space-between; gap:8px; padding:8px 10px; border-bottom:1px solid var(--border); flex-wrap:wrap; background:var(--card);">
+      <span style="flex:1; min-width:160px;"><b style="color:var(--gold); margin-left:6px;">${idx+1}۔</b> ${escapeHtmlSearch(f.title || f.fileName)}</span>
+      <span style="color:var(--muted); font-size:.78rem;">${f.pages.length} صفحات${/^local_/.test(f.fileName) ? ' · صرف اس فون پر' : ''}</span>
+      <button class="btn secondary" style="padding:4px 12px; font-size:.75rem;" onclick="herbalOpenLibraryPdf(herbalFindBook('${escapeJsAttr(f.fileName)}'), 1, '', null)">📖 کھولیں</button>${herbalMoveSelect(f)}
+    </div>`).join('') : '';
 }
 function wajahRenderBookList(){
   const el = document.getElementById('wajahBookListEl');
