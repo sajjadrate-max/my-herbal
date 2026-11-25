@@ -11,7 +11,11 @@
   // کورس میں منتقل کی گئی مزید کتابیں (جیسے فون والی) — بالکل کلاسوں کی طرح: ٹیب، فہرست، تلاش، اصل صفحات
   const XC = {};
   function extras(){
-    const lib = typeof herbalBooksFor === 'function' ? herbalBooksFor('hikmat') : [];
+    let lib = typeof herbalBooksFor === 'function' ? herbalBooksFor('hikmat') : [];
+    // ترتیب: شاہد منظور والا کورس سب سے اوپر، پھر لیکچر نمبر کے حساب سے (تیسرا، 5، 6، دسواں...)
+    const W = [['پہل',1],['دوسر',2],['تیسر',3],['چوتھ',4],['پانچو',5],['چھٹ',6],['ساتو',7],['آٹھو',8],['نو[اوی]',9],['دسو',10],['گیارہ',11],['بارہ',12]];
+    const rank = f=>{ const t = f.title || f.fileName; if(/شاہد\s*منظور/.test(t)) return -1; const m = t.match(/\d+/); if(m) return +m[0]; const w = W.find(([k])=> new RegExp(k).test(t.replace(/لیکچر|کلاس/g, ''))); return w ? w[1] : 999; };
+    lib = lib.slice().sort((a, b)=> rank(a) - rank(b));
     return lib.map(f=>{
       const n = Math.max((f.pdfDoc && f.pdfDoc.numPages) || 0, ...(f.pages || []).map(p=> p.pageNum || 0), (f.pages || []).length);
       let x = XC[f.fileName];
@@ -65,7 +69,7 @@
   // لمبے نام بٹن پر مختصر
   const label = t=> /شاہد\s*منظور/.test(t) ? 'کورس شاہد منظور لاہور' : t;
   function tabs(){
-    const C = all(), btn = (c, i)=> `<button type="button" class="${i === CI ? 'on' : ''}" onclick="hkCourse(${i})">${esc(c.extra ? label(c.title) : (SHORT[i] || c.title))}</button>`;
+    const C = all(), btn = (c, i)=> `<button type="button" class="${i === CI ? 'on' : ''}${c.extra && /شاہد\s*منظور/.test(c.title) ? ' full' : ''}" onclick="hkCourse(${i})">${esc(c.extra ? label(c.title) : (SHORT[i] || c.title))}</button>`;
     const base = C.map(btn).filter((_, i)=> !C[i].extra).join(''), more = C.map(btn).filter((_, i)=> C[i].extra).join('');
     return `<div class="hk-tabs">${base}</div>` + (more ? `<h3 style="color:var(--gold); text-align:center; margin:14px 0 8px;">📚 مزید کتابیں اور لیکچر</h3><div class="hk-tabs">${more}</div>` : '');
   }
@@ -140,7 +144,7 @@
     try{ await load(); SIG = all().map(c=> c.title + c.pages).join('|'); render(); }catch(e){ root.dataset.ready = ''; root.innerHTML = '<p class="hk-msg" style="color:#e0524f;">No internet 🛜 — کورس پہلی بار کھولنے کے لیے انٹرنیٹ آن کریں</p>'; }
   };
   const css = document.createElement('style');
-  css.textContent = `.hk-tabs{display:flex; gap:6px; flex-wrap:wrap;} .hk-tabs button{flex:1 1 45%; padding:8px; border-radius:12px; border:1px solid var(--gold); background:var(--card); color:var(--gold); font-family:inherit; font-size:.9rem; cursor:pointer;} .hk-tabs button.on{background:var(--gold); color:#fff;}
+  css.textContent = `.hk-tabs{display:flex; gap:6px; flex-wrap:wrap;} .hk-tabs button{flex:1 1 45%; padding:8px; border-radius:12px; border:1px solid var(--gold); background:var(--card); color:var(--gold); font-family:inherit; font-size:.9rem; cursor:pointer;} .hk-tabs button.full{flex-basis:100%;} .hk-tabs button.on{background:var(--gold); color:#fff;}
   .hk-warn{background:#fdecea; border:1px solid #e0524f; color:#b03a37; border-radius:10px; padding:6px 10px; font-size:.82rem; margin-top:8px; line-height:1.9;}
   .hk-toc ol{margin:4px 22px 6px 0; padding:0; font-size:.88rem; line-height:2;} .hk-toc li{cursor:pointer;} .hk-toc li small{color:var(--muted);}
   .hk-bar{display:flex; gap:8px; justify-content:center; align-items:center; margin:8px 0; flex-wrap:wrap;} .hk-bar button, .hk-bar a{background:var(--gold); color:#fff; border:none; border-radius:16px; padding:5px 14px; font-family:inherit; font-size:.88rem; cursor:pointer; text-decoration:none;} .hk-bar input{width:60px; text-align:center;}
