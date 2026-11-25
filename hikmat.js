@@ -62,8 +62,10 @@
     return { toc, tocMax };
   }
   const SHORT = ['پہلی کلاس', 'دوسری کلاس اسپیشل'];
+  // لمبے نام بٹن پر مختصر
+  const label = t=> /شاہد\s*منظور/.test(t) ? 'کورس شاہد منظور لاہور' : t;
   function tabs(){
-    const C = all(), btn = (c, i)=> `<button type="button" class="${i === CI ? 'on' : ''}" onclick="hkCourse(${i})">${esc(c.extra ? c.title : (SHORT[i] || c.title))}</button>`;
+    const C = all(), btn = (c, i)=> `<button type="button" class="${i === CI ? 'on' : ''}" onclick="hkCourse(${i})">${esc(c.extra ? label(c.title) : (SHORT[i] || c.title))}</button>`;
     const base = C.map(btn).filter((_, i)=> !C[i].extra).join(''), more = C.map(btn).filter((_, i)=> C[i].extra).join('');
     return `<div class="hk-tabs">${base}</div>` + (more ? `<h3 style="color:var(--gold); text-align:center; margin:14px 0 8px;">📚 مزید کتابیں اور لیکچر</h3><div class="hk-tabs">${more}</div>` : '');
   }
