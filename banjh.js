@@ -11,7 +11,8 @@
         ['urine_m','Urine R/E','پیشاب کا ٹیسٹ','پہلے یہی ٹیسٹ؛ پس سیلز زیادہ آئیں تو Urine C/S لازمی — پیشاب کی نالی کا انفیکشن، پس سیلز یا شوگر — یہ سپرم کو نقصان دیتے ہیں'],
         ['ucs_m','Urine C/S (Culture & Sensitivity)','پیشاب کا کلچر — صرف اگر Urine R/E خراب آئے','Urine R/E میں پس سیلز زیادہ ہوں تو لازمی — کون سا جراثیم ہے اور کون سی اینٹی بائیوٹک اثر کرے گی'],
         ['cbc_m','CBC','خون کا مکمل ٹیسٹ','خون کی کمی یا جسم میں انفیکشن تو نہیں'],
-        ['sugar_m','HbA1c / Blood Sugar','شوگر کا ٹیسٹ','شوگر سے کمزوری، انزال کی خرابی اور سپرم کمزور ہوتے ہیں']
+        ['sugar_m','HbA1c / Blood Sugar','شوگر کا ٹیسٹ','شوگر سے کمزوری، انزال کی خرابی اور سپرم کمزور ہوتے ہیں'],
+        ['sti_m','CT/NG/TV PCR','کلیمیڈیا، سوزاک، ٹرائیکوموناس کا ٹیسٹ (پیشاب سے)','کلیمیڈیا، سوزاک اور ٹرائیکوموناس — جنسی انفیکشن جو اکثر بغیر علامت ہوتے ہیں اور نالیاں بند کرتے ہیں؛ Urine R/E سے نہیں پکڑے جاتے · ایک میں بھی مثبت ہو تو میاں بیوی دونوں کا علاج ساتھ · بیوی کے ساتھ ایک ہی دن'],
       ]},
       { st:'مرحلہ 2 — ہارمون (اگر سیمن خراب ہو)', items:[
         ['semen2','Repeat Semen Analysis (2nd time)','وہی سیمن ٹیسٹ دوسری بار — صرف اگر پہلا خراب آیا','پہلی رپورٹ خراب ہو تو 2–3 ماہ بعد تصدیق — ایک سپرم کو بن کر تیار ہونے میں تقریباً 3 ماہ لگتے ہیں، اس لیے علاج یا بیماری کا اثر رپورٹ میں 3 ماہ بعد نظر آتا ہے'],
@@ -49,7 +50,7 @@
       ]},
       { st:'مرحلہ 2 — نالیاں اور انفیکشن (ضروری — چاہے پہلا مرحلہ ٹھیک ہو)', always:true, items:[
         ['hvs','High Vaginal Swab (HVS)','ویجائنل سواب','HSG سے پہلے انفیکشن ختم ہونا ضروری — لیکوریا، بدبو، سوزش کا جراثیم معلوم کرنا'],
-        ['chlamydia','Chlamydia test (Swab PCR / IgG)','کلیمیڈیا انفیکشن کا ٹیسٹ','نالیاں بند ہونے کی ایک بڑی وجہ — HSG سے پہلے؛ مثبت ہو تو میاں بیوی دونوں کا علاج'],
+        ['chlamydia','CT/NG/TV PCR','کلیمیڈیا، سوزاک، ٹرائیکوموناس کا ٹیسٹ (پیشاب سے)','کلیمیڈیا، سوزاک اور ٹرائیکوموناس — جنسی انفیکشن جو اکثر بغیر علامت ہوتے ہیں اور نالیاں بند کرتے ہیں؛ Urine R/E سے نہیں پکڑے جاتے · ایک میں بھی مثبت ہو تو میاں بیوی دونوں کا علاج ساتھ · HSG سے پہلے لازمی'],
         ['hsg','HSG (Hysterosalpingography)','نالیوں کا ٹیسٹ (ماہواری کے دن 7–10)','فیلوپین نالیاں کھلی ہیں یا بند، اور بچہ دانی کے اندر کی بناوٹ'],
         ['rubella','Rubella IgG','روبیلا کا ٹیسٹ','حمل سے پہلے حفاظت — منفی ہو تو ٹیکہ لگوانا']
       ]},
@@ -79,6 +80,9 @@
     { re:/تھائیرائیڈ کم|ہائپو تھائیرائیڈ|hypothyroid|TSH زیادہ/i, items:[['Levothyroxine',[['Eltroxin','GSK','برطانیہ'],['Euthyrox','Merck','جرمنی']],'first','روزانہ، لمبے عرصے تک — 6–8 ہفتے بعد TSH دوبارہ']], note:'' },
     { re:/تھائیرائیڈ زیادہ|ہائپر تھائیرائیڈ|hyperthyroid/i, items:[['Carbimazole',[['Neo-Mercazole','Amdipharm','برطانیہ']],'first','کئی ماہ — ہر 4–6 ہفتے ٹیسٹ، ماہر کی نگرانی میں']], note:'' },
     { re:/پیشاب.*(انفیکشن|پس)|پس سیلز|UTI|urine/i, items:[['Co-amoxiclav',[['Augmentin','GSK','برطانیہ']],'first','عام طور پر 5–7 دن (کورس پورا کریں)'],['Ciprofloxacin',[['Ciproxin','Bayer','جرمنی']],'alt','عام طور پر 3–7 دن — حمل کی کوشش کے مہینے میں نہ دیں']], note:'پہلے Urine C/S (کلچر) کروائیں — اینٹی بائیوٹک اسی رپورٹ کے مطابق' },
+    { re:/کلیمیڈیا|chlamydia/i, items:[['Doxycycline',[['Vibramycin','Pfizer','امریکہ']],'first','7 دن — میاں بیوی دونوں ساتھ'],['Azithromycin',[['Zithromax','Pfizer','امریکہ']],'alt','صرف ایک دن (ایک ہی بار) — حمل میں یہی']], note:'میاں بیوی دونوں کا علاج ساتھ · ختم ہونے کے 7 دن بعد تک ہمبستری نہیں · 3 ماہ بعد دوبارہ ٹیسٹ · حمل میں Vibramycin نہیں' },
+    { re:/سوزاک|gonorr/i, items:[['Ceftriaxone',[['Rocephin','Roche','سوئٹزرلینڈ']],'first','صرف ایک بار (ٹیکہ)']], note:'میاں بیوی دونوں کا علاج ساتھ · کلیمیڈیا کا ٹیسٹ نہ ہوا ہو یا مثبت ہو تو ساتھ Vibramycin 7 دن · ٹیکہ کلینک میں' },
+    { re:/فنگس|کینڈیڈا|candida|خمیری/i, items:[['Fluconazole',[['Diflucan','Pfizer','امریکہ']],'first','صرف ایک بار'],['Clotrimazole',[['Canesten','Bayer','جرمنی']],'alt','1–6 دن — حمل میں یہی']], note:'شوہر کا علاج صرف اگر اسے خارش/لالی ہو · حمل میں Diflucan نہیں' },
     { re:/ویجائنل|لیکوریا|بیکٹیریل ویجائنوسس|ٹرائیکو/i, items:[['Metronidazole',[['Flagyl','Sanofi','فرانس']],'first','7 دن — دوران علاج شوہر بھی ساتھ'],['Clotrimazole',[['Canesten','Bayer','جرمنی']],'fungal','اندرونی گولی/کریم 3–6 دن']], note:'Canesten فنگس کے لیے۔ میاں بیوی دونوں کا علاج ساتھ' },
     { re:/سیمن.*(انفیکشن|پس)|لیوکو/i, items:[['Doxycycline',[['Vibramycin','Pfizer','امریکہ']],'first','عام طور پر 2–4 ہفتے (سیمن کلچر کے مطابق)']], note:'سیمن کلچر کے مطابق' },
     { re:/سپرم.*(کمی|کم)|اولیگو|oligo|استھینو|حرکت کم|بناوٹ|ٹیراٹو/i, items:[['L-Carnitine + Acetyl-L-Carnitine',[['Proxeed Plus','Alfasigma','اٹلی']],'first','روزانہ کم از کم 3 ماہ (بہتر 6 ماہ) — سپرم 3 ماہ میں تیار ہوتے ہیں'],['Clomiphene Citrate',[['Clomid','Sanofi','فرانس']],'add','3–6 ماہ — صرف ماہر کی نگرانی میں']], note:'Clomid صرف ماہر کے مشورے سے۔ ⚠ ٹیسٹوسٹیرون کی گولی/ٹیکہ ہرگز نہیں — اس سے سپرم اور کم ہو جاتے ہیں' },
@@ -96,6 +100,9 @@
   ];
   // عام معیاری طریقۂ استعمال (پیکٹ/معیاری رہنما اصول کے مطابق) — اصل خوراک ڈاکٹر مریض دیکھ کر طے کرے
   const HOW = {
+    'Zithromax': '500mg گولی: 2 گولیاں ایک ساتھ (1 گرام)، صرف ایک بار',
+    'Rocephin': '500mg ٹیکہ: ایک ٹیکہ کولہے کے پٹھے میں، صرف ایک بار — ڈاکٹر/کلینک لگائے',
+    'Diflucan': '150mg کیپسول: ایک کیپسول، صرف ایک بار',
     'Dostinex': '0.5mg گولی: آدھی گولی (0.25mg) ہفتے میں 2 بار (مثلاً پیر اور جمعرات)، رات کھانے کے بعد · 4 ہفتے بعد پرولیکٹن دیکھ کر ڈاکٹر مقدار بڑھا یا گھٹا سکتا ہے',
     'Parlodel': '2.5mg گولی: پہلے ہفتے آدھی گولی رات کھانے کے ساتھ، پھر ایک گولی دن میں 2 بار کھانے کے ساتھ (چکر/متلی سے بچنے کے لیے آہستہ بڑھائیں)',
     'Femara': '2.5mg گولی: ایک گولی روزانہ ایک بار، صرف ماہواری کے دن 3 سے 7 تک (5 دن) · کھانے سے پہلے یا بعد',
@@ -174,7 +181,8 @@
     urine_f:   ['🧪 پیشاب', 'صبح کا پہلا پیشاب بہترین، مگر لازمی نہیں — دن کا کوئی بھی تازہ پیشاب چل جاتا ہے · ماہواری کے دنوں میں نہیں', LAB, 'پہلے آگے سے پیچھے کی طرف پانی سے صاف کریں (لیکوریا ملنے سے پس سیلز غلط زیادہ آ جاتے ہیں) · شروع کا تھوڑا پیشاب نیچے گرا دیں، درمیان والا صاف ڈبے میں · نمونہ 1 گھنٹے کے اندر لیب پہنچے'],
     prog21:    ['🩸 خون', 'ماہواری آنے سے 7 دن پہلے (28 دن کے سائیکل میں 21واں دن)', LAB, 'سائیکل لمبا ہو تو دن ڈاکٹر سے پوچھیں'],
     hvs:       ['🧫 ویجائنا سے روئی (Swab) کا نمونہ', 'ماہواری کے دنوں کے علاوہ', 'لیڈی ڈاکٹر نمونہ لے کر لیب بھیجے', '2 دن پہلے سے اندرونی دوا/دھلائی نہ کریں؛ اینٹی بائیوٹک سے پہلے'],
-    chlamydia: ['🧫 Swab (PCR) یا 🩸 خون (IgG)', 'HSG سے پہلے', LAB, 'Swab کے لیے ماہواری کے دنوں کے علاوہ'],
+    chlamydia: ['🧪 پیشاب — شروع والا (First-void)، Urine R/E والا درمیانی نہیں', 'صبح کا پہلا پیشاب، یا 2 گھنٹے روک کر · اینٹی بائیوٹک سے پہلے · رپورٹ 2–4 دن', 'بڑی لیبارٹری جس میں PCR ہو — پہلے فون کر کے پوچھ لیں', 'صفائی نہ کریں · شروع کا پہلا 20–30 ml ڈبے میں، باقی ٹوائلٹ میں · 1–2 گھنٹے میں لیب · عورت: ماہواری میں نہیں؛ شکایت ہو تو ویجائنل سواب زیادہ درست'],
+    sti_m:     ['🧪 پیشاب — شروع والا (First-void)، Urine R/E والا درمیانی نہیں', 'صبح کا پہلا پیشاب، یا 2 گھنٹے روک کر · اینٹی بائیوٹک سے پہلے · رپورٹ 2–4 دن', 'بڑی لیبارٹری جس میں PCR ہو — پہلے فون کر کے پوچھ لیں', 'صفائی نہ کریں · شروع کا پہلا 20–30 ml ڈبے میں، باقی ٹوائلٹ میں · 1–2 گھنٹے میں لیب · عورت: ماہواری میں نہیں؛ شکایت ہو تو ویجائنل سواب زیادہ درست'],
     hsg:       ['☢ ایکسرے (رنگ ڈال کر) — نالیوں کا', 'ماہواری ختم ہونے کے بعد دن 7 سے 10 (حمل کے امکان سے پہلے)', 'ریڈیالوجی سینٹر — لیڈی ڈاکٹر کے ساتھ', 'اس مہینے ماہواری کے بعد سے ہمبستری نہ کریں؛ ڈاکٹر کے کہنے پر درد کی گولی پہلے'],
     rubella:   ['🩸 خون', 'کسی بھی وقت (حمل سے پہلے)', LAB, 'کوئی خاص تیاری نہیں'],
     follicle:  ['📡 الٹراساؤنڈ (اندرونی بہتر) — کئی بار', 'ماہواری کے دن 9–10 سے شروع، ہر 2–3 دن بعد، انڈا پھٹنے تک', 'لیڈی گائناکالوجسٹ / الٹراساؤنڈ سینٹر', 'مثانہ خالی'],
@@ -217,7 +225,8 @@
     prl_f: 'تقریباً 5–25 ng/ml (25 سے زیادہ = زیادہ)',
     prog21: '10 ng/ml سے زیادہ = انڈا بنا (3–10 = کمزور / شک · 3 سے کم = انڈا نہیں بنا)',
     hvs: 'No pathogenic growth (کوئی بیماری والا جراثیم نہیں)',
-    chlamydia: 'Negative',
+    chlamydia: 'تینوں Not detected / Negative',
+    sti_m: 'تینوں Not detected / Negative',
     hsg: 'دونوں نالیاں کھلی (رنگ پیٹ میں آزادانہ جائے — Free spill) · بچہ دانی کی بناوٹ نارمل',
     rubella: 'IgG 10 IU/ml یا زیادہ = حفاظت موجود (کم ہو تو ٹیکہ)',
     follicle: 'ایک بڑا انڈا 18–24 mm تک بن کر پھٹ جائے · بچہ دانی کی تہہ (Endometrium) 7–8 mm یا زیادہ',
@@ -236,7 +245,7 @@
     us_scrotal:'Scrotal Color Doppler', semen_cs:'Semen C/S', peu:'Post-Ejaculatory Urine', asa:'MAR Test',
     dfi:'Sperm DNA Fragmentation', karyo_m:'Karyotyping', ymicro:'Y-Chromosome Microdeletion', viral_m:'HBsAg, Anti-HCV, HIV',
     tvs:'TVS Pelvis with AFC', d2:'Day 2 FSH, LH, E2', amh:'Serum AMH', tsh_f:'Serum TSH', prl_f:'Serum Prolactin',
-    prog21:'Day 21 Serum Progesterone', hvs:'HVS C/S', chlamydia:'Chlamydia PCR',
+    prog21:'Day 21 Serum Progesterone', hvs:'HVS C/S', chlamydia:'CT/NG/TV PCR (first-void urine)', sti_m:'CT/NG/TV PCR (first-void urine)',
     hsg:'HSG', rubella:'Rubella IgG', follicle:'Follicular Monitoring', androgen:'Serum Testosterone + DHEA-S',
     vitd:'Vitamin D (25-OH)', sis:'Saline Infusion Sonography', hysteroscopy:'Diagnostic Hysteroscopy', laparoscopy:'Diagnostic Laparoscopy', viral_f:'HBsAg, Anti-HCV, HIV'
   };
@@ -327,8 +336,8 @@
 
   // ---------- ایک کھاتہ ----------
   // رپورٹ میں فہرست سے باہر کے نام سے آیا ٹیسٹ ← فہرست کا ٹیسٹ (مثلاً "Urine Pus Cells" ← Urine R/E)
-  const KEYMAP = { m:[[/urine\s*(c\/s|culture)|urine.*culture|پیشاب.*کلچر/i,'ucs_m'],[/urine|پیشاب/i,'urine_m'],[/\bcbc\b|h(a)?emoglobin|\bhb\b|خون کا مکمل/i,'cbc_m'],[/hba1c|blood sugar|glucose|\bbsr\b|\bfbs\b|خون کی شوگر/i,'sugar_m'],[/prolactin|پرولیکٹن/i,'prl_m'],[/\btsh\b|thyroid stimulating/i,'tsh_m'],[/testosterone|ٹیسٹوسٹیرون/i,'testo'],[/\bfsh\b|follicle stimulating/i,'fsh_m'],[/\blh\b|luteini/i,'lh_m'],[/semen|سیمن|sperm|سپرم/i,'semen'],[/hbsag|hcv|hiv|hepatitis|ہیپاٹائٹس/i,'viral_m']],
-                   f:[[/urine\s*(c\/s|culture)|urine.*culture|پیشاب.*کلچر/i,'ucs_f'],[/urine|پیشاب/i,'urine_f'],[/\bcbc\b|h(a)?emoglobin|\bhb\b|خون کا مکمل/i,'cbc_f'],[/hba1c|blood sugar|glucose|\bbsr\b|\bfbs\b|خون کی شوگر/i,'sugar_f'],[/prolactin|پرولیکٹن/i,'prl_f'],[/\btsh\b|thyroid stimulating/i,'tsh_f'],[/\bamh\b|m[uü]ll?erian|انڈوں کا ذخیرہ/i,'amh'],[/progesterone|پروجیسٹرون/i,'prog21'],[/vitamin\s*d|25.?oh|وٹامن ڈی/i,'vitd'],[/rubella|روبیلا/i,'rubella'],[/\bhsg\b|hysterosalping/i,'hsg'],[/vaginal swab|\bhvs\b/i,'hvs'],[/testosterone|dhea|ٹیسٹوسٹیرون/i,'androgen'],[/\bfsh\b|\blh\b|estradiol|\be2\b|follicle stimulating|luteini/i,'d2'],[/ultrasound|\btvs\b|الٹراساؤنڈ|sonograph/i,'tvs'],[/hbsag|hcv|hiv|hepatitis|ہیپاٹائٹس/i,'viral_f'],[/chlamydia|کلیمیڈیا/i,'chlamydia']] };
+  const KEYMAP = { m:[[/urine\s*(c\/s|culture)|urine.*culture|پیشاب.*کلچر/i,'ucs_m'],[/urine|پیشاب/i,'urine_m'],[/\bcbc\b|h(a)?emoglobin|\bhb\b|خون کا مکمل/i,'cbc_m'],[/hba1c|blood sugar|glucose|\bbsr\b|\bfbs\b|خون کی شوگر/i,'sugar_m'],[/prolactin|پرولیکٹن/i,'prl_m'],[/\btsh\b|thyroid stimulating/i,'tsh_m'],[/testosterone|ٹیسٹوسٹیرون/i,'testo'],[/\bfsh\b|follicle stimulating/i,'fsh_m'],[/\blh\b|luteini/i,'lh_m'],[/chlamydia|gonorr|trichomonas|ct\/ng|کلیمیڈیا|سوزاک|ٹرائیکو/i,'sti_m'],[/semen|سیمن|sperm|سپرم/i,'semen'],[/hbsag|hcv|hiv|hepatitis|ہیپاٹائٹس/i,'viral_m']],
+                   f:[[/urine\s*(c\/s|culture)|urine.*culture|پیشاب.*کلچر/i,'ucs_f'],[/urine|پیشاب/i,'urine_f'],[/\bcbc\b|h(a)?emoglobin|\bhb\b|خون کا مکمل/i,'cbc_f'],[/hba1c|blood sugar|glucose|\bbsr\b|\bfbs\b|خون کی شوگر/i,'sugar_f'],[/prolactin|پرولیکٹن/i,'prl_f'],[/\btsh\b|thyroid stimulating/i,'tsh_f'],[/\bamh\b|m[uü]ll?erian|انڈوں کا ذخیرہ/i,'amh'],[/progesterone|پروجیسٹرون/i,'prog21'],[/vitamin\s*d|25.?oh|وٹامن ڈی/i,'vitd'],[/rubella|روبیلا/i,'rubella'],[/\bhsg\b|hysterosalping/i,'hsg'],[/vaginal swab|\bhvs\b/i,'hvs'],[/testosterone|dhea|ٹیسٹوسٹیرون/i,'androgen'],[/\bfsh\b|\blh\b|estradiol|\be2\b|follicle stimulating|luteini/i,'d2'],[/ultrasound|\btvs\b|الٹراساؤنڈ|sonograph/i,'tvs'],[/hbsag|hcv|hiv|hepatitis|ہیپاٹائٹس/i,'viral_f'],[/chlamydia|gonorr|trichomonas|ct\/ng|کلیمیڈیا|سوزاک|ٹرائیکو/i,'chlamydia']] };
   function keyFor(s, name){ const k = (KEYMAP[s] || []).find(([re])=> re.test(name)); return k && ALL[k[1]] ? k[1] : ''; }
   // پرانے ریکارڈ سے: جو ٹیسٹ رپورٹ میں آ چکے مگر فہرست میں نشان نہیں لگا، ان پر ✓/✗ لگائیں
   function migrate(c){
