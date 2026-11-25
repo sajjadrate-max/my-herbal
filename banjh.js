@@ -8,7 +8,8 @@
     m: [
       { st:'مرحلہ 1 — بنیادی ٹیسٹ (Basic)', items:[
         ['semen','Semen Analysis','مادہ منویہ کا ٹیسٹ','مرد کا سب سے پہلا اور اہم ٹیسٹ — سپرم کی تعداد، حرکت اور بناوٹ دیکھی جاتی ہے۔ 2 سے 5 دن پرہیز کے بعد۔ نارمل (WHO): مقدار 1.4ml+، تعداد 16 ملین/ml+، پروگریسو حرکت 30٪+، کل حرکت 42٪+، بناوٹ 4٪+، pH 7.2+۔ ⚠ سپرم کم ہوں تو ٹیسٹوسٹیرون کی گولی/ٹیکہ ہرگز نہیں — سپرم اور کم ہو جاتے ہیں'],
-        ['urine_m','Urine R/E','پیشاب کا ٹیسٹ','پیشاب کی نالی کا انفیکشن، پس سیلز یا شوگر — یہ سپرم کو نقصان دیتے ہیں'],
+        ['urine_m','Urine R/E','پیشاب کا ٹیسٹ','پہلے یہی ٹیسٹ؛ پس سیلز زیادہ آئیں تو Urine C/S لازمی — پیشاب کی نالی کا انفیکشن، پس سیلز یا شوگر — یہ سپرم کو نقصان دیتے ہیں'],
+        ['ucs_m','Urine C/S (Culture & Sensitivity)','پیشاب کا کلچر — صرف اگر Urine R/E خراب آئے','Urine R/E میں پس سیلز زیادہ ہوں تو لازمی — کون سا جراثیم ہے اور کون سی اینٹی بائیوٹک اثر کرے گی'],
         ['cbc_m','CBC','خون کا مکمل ٹیسٹ','خون کی کمی یا جسم میں انفیکشن تو نہیں'],
         ['sugar_m','HbA1c / Blood Sugar','شوگر کا ٹیسٹ','شوگر سے کمزوری، انزال کی خرابی اور سپرم کمزور ہوتے ہیں']
       ]},
@@ -42,7 +43,8 @@
         ['prl_f','Prolactin','پرولیکٹن ہارمون','زیادہ ہو تو انڈا نہیں بنتا اور ماہواری بے قاعدہ ہو جاتی ہے'],
         ['cbc_f','CBC / Hemoglobin','خون کا مکمل ٹیسٹ','خون کی کمی — حمل سے پہلے پوری ہونی چاہیے'],
         ['sugar_f','HbA1c / Blood Sugar','شوگر کا ٹیسٹ','شوگر اور انسولین کی مزاحمت PCOS کے ساتھ عام ہے'],
-        ['urine_f','Urine R/E','پیشاب کا ٹیسٹ','پیشاب کی نالی کا انفیکشن (پس سیلز) — حمل سے پہلے ختم ہونا ضروری'],
+        ['urine_f','Urine R/E','پیشاب کا ٹیسٹ','پہلے یہی ٹیسٹ؛ پس سیلز زیادہ آئیں تو Urine C/S لازمی — پیشاب کی نالی کا انفیکشن (پس سیلز) — حمل سے پہلے ختم ہونا ضروری'],
+        ['ucs_f','Urine C/S (Culture & Sensitivity)','پیشاب کا کلچر — صرف اگر Urine R/E خراب آئے','Urine R/E میں پس سیلز زیادہ ہوں تو لازمی — کون سا جراثیم ہے اور کون سی اینٹی بائیوٹک اثر کرے گی'],
         ['prog21','Day-21 Progesterone (Mid-luteal)','انڈا بننے کی تصدیق کا ٹیسٹ','صرف باقاعدہ ماہواری میں — ماہواری آنے سے 7 دن پہلے (28 دن کے سائیکل میں 21واں دن)؛ بے قاعدہ ہو تو اس کی جگہ فولیکل ٹریکنگ۔ 10 ng/ml سے زیادہ = انڈا بنا اور پھٹا (Ovulation)؛ کم = انڈا نہیں بن رہا']
       ]},
       { st:'مرحلہ 2 — نالیاں اور انفیکشن (ضروری — چاہے پہلا مرحلہ ٹھیک ہو)', always:true, items:[
@@ -167,6 +169,8 @@
     prl_f:     ['🩸 خون', 'صبح، جاگنے کے 2–3 گھنٹے بعد؛ ماہواری کے شروع کے دنوں میں بہتر', LAB, 'ٹیسٹ سے پہلے 15–20 منٹ آرام سے بیٹھیں؛ چھاتی کو نہ دبائیں'],
     cbc_f:     ['🩸 خون — اس میں شوگر شامل نہیں، شوگر الگ ٹیسٹ ہے', 'کسی بھی وقت — شوگر کے ساتھ ایک ہی سوئی/نمونے سے', LAB, 'کوئی خاص تیاری نہیں'],
     sugar_f:   ['🩸 صرف خون — شوگر کے لیے پیشاب کا ٹیسٹ ضروری نہیں', 'HbA1c کسی بھی وقت؛ Fasting Sugar صبح خالی پیٹ · PCOS کا شک ہو تو بہترین: 2 گھنٹے والا OGTT (75g گلوکوز پی کر)', LAB, 'Fasting / OGTT کے لیے 8–10 گھنٹے کچھ نہ کھائیں (پانی ٹھیک)'],
+    ucs_m:     ['🧪 پیشاب — جراثیم سے پاک (Sterile) ڈبے میں', 'صرف اگر Urine R/E خراب آئے · اینٹی بائیوٹک شروع کرنے سے پہلے · رپورٹ 2–3 دن میں', LAB, 'لیب سے Sterile ڈبہ لیں · صفائی کے بعد درمیان والا پیشاب · ڈبے کے اندر ہاتھ نہ لگائیں · 1 گھنٹے میں لیب'],
+    ucs_f:     ['🧪 پیشاب — جراثیم سے پاک (Sterile) ڈبے میں', 'صرف اگر Urine R/E خراب آئے · اینٹی بائیوٹک شروع کرنے سے پہلے · رپورٹ 2–3 دن میں', LAB, 'لیب سے Sterile ڈبہ لیں · صفائی کے بعد درمیان والا پیشاب · ڈبے کے اندر ہاتھ نہ لگائیں · 1 گھنٹے میں لیب'],
     urine_f:   ['🧪 پیشاب', 'صبح کا پہلا پیشاب بہترین، مگر لازمی نہیں — دن کا کوئی بھی تازہ پیشاب چل جاتا ہے · ماہواری کے دنوں میں نہیں', LAB, 'پہلے آگے سے پیچھے کی طرف پانی سے صاف کریں (لیکوریا ملنے سے پس سیلز غلط زیادہ آ جاتے ہیں) · شروع کا تھوڑا پیشاب نیچے گرا دیں، درمیان والا صاف ڈبے میں · نمونہ 1 گھنٹے کے اندر لیب پہنچے'],
     prog21:    ['🩸 خون', 'ماہواری آنے سے 7 دن پہلے (28 دن کے سائیکل میں 21واں دن)', LAB, 'سائیکل لمبا ہو تو دن ڈاکٹر سے پوچھیں'],
     hvs:       ['🧫 ویجائنا سے روئی (Swab) کا نمونہ', 'ماہواری کے دنوں کے علاوہ', 'لیڈی ڈاکٹر نمونہ لے کر لیب بھیجے', '2 دن پہلے سے اندرونی دوا/دھلائی نہ کریں؛ اینٹی بائیوٹک سے پہلے'],
@@ -185,6 +189,8 @@
   const SEMEN_N = 'مقدار 1.4 ml یا زیادہ · تعداد 16 ملین/ml یا زیادہ · کل سپرم 39 ملین+ · کل حرکت 42٪+ · آگے بڑھنے والی حرکت 30٪+ · صحیح بناوٹ 4٪+ · زندہ 54٪+ · pH 7.2+ · پس سیلز 1 ملین/ml سے کم (WHO 2021)';
   const NORMAL = {
     semen: SEMEN_N, semen2: SEMEN_N,
+    ucs_m: 'No growth (کوئی جراثیم نہیں) — جراثیم اُگے تو S (Sensitive) والی اینٹی بائیوٹک',
+    ucs_f: 'No growth (کوئی جراثیم نہیں) — جراثیم اُگے تو S (Sensitive) والی اینٹی بائیوٹک',
     urine_m: 'پس سیلز 0–5 /HPF · سرخ خلیے 0–2 /HPF · شوگر Nil · البیومن Nil',
     urine_f: 'پس سیلز 0–5 /HPF · سرخ خلیے 0–2 /HPF · شوگر Nil · البیومن Nil',
     cbc_m: 'Hb 13–17 g/dl · WBC 4,000–11,000 · Platelets 1.5–4 لاکھ',
@@ -224,7 +230,7 @@
   };
   // ---------- لیبارٹری کو بتانے / پرچی پر لکھوانے والا نام ----------
   const LABNAME = {
-    semen:'Semen Analysis', semen2:'Semen Analysis', urine_m:'Urine R/E', urine_f:'Urine R/E',
+    semen:'Semen Analysis', semen2:'Semen Analysis', urine_m:'Urine R/E', urine_f:'Urine R/E', ucs_m:'Urine C/S', ucs_f:'Urine C/S',
     cbc_m:'CBC', cbc_f:'CBC', sugar_m:'HbA1c + FBS', sugar_f:'HbA1c + FBS / OGTT',
     fsh_m:'Serum FSH', lh_m:'Serum LH', testo:'Serum Total Testosterone', prl_m:'Serum Prolactin', tsh_m:'Serum TSH',
     us_scrotal:'Scrotal Color Doppler', semen_cs:'Semen C/S', peu:'Post-Ejaculatory Urine', asa:'MAR Test',
@@ -311,8 +317,8 @@
 
   // ---------- ایک کھاتہ ----------
   // رپورٹ میں فہرست سے باہر کے نام سے آیا ٹیسٹ ← فہرست کا ٹیسٹ (مثلاً "Urine Pus Cells" ← Urine R/E)
-  const KEYMAP = { m:[[/urine|پیشاب/i,'urine_m'],[/\bcbc\b|h(a)?emoglobin|\bhb\b|خون کا مکمل/i,'cbc_m'],[/hba1c|blood sugar|glucose|\bbsr\b|\bfbs\b|خون کی شوگر/i,'sugar_m'],[/prolactin|پرولیکٹن/i,'prl_m'],[/\btsh\b|thyroid stimulating/i,'tsh_m'],[/testosterone|ٹیسٹوسٹیرون/i,'testo'],[/\bfsh\b|follicle stimulating/i,'fsh_m'],[/\blh\b|luteini/i,'lh_m'],[/semen|سیمن|sperm|سپرم/i,'semen'],[/hbsag|hcv|hiv|hepatitis|ہیپاٹائٹس/i,'viral_m']],
-                   f:[[/urine|پیشاب/i,'urine_f'],[/\bcbc\b|h(a)?emoglobin|\bhb\b|خون کا مکمل/i,'cbc_f'],[/hba1c|blood sugar|glucose|\bbsr\b|\bfbs\b|خون کی شوگر/i,'sugar_f'],[/prolactin|پرولیکٹن/i,'prl_f'],[/\btsh\b|thyroid stimulating/i,'tsh_f'],[/\bamh\b|m[uü]ll?erian|انڈوں کا ذخیرہ/i,'amh'],[/progesterone|پروجیسٹرون/i,'prog21'],[/vitamin\s*d|25.?oh|وٹامن ڈی/i,'vitd'],[/rubella|روبیلا/i,'rubella'],[/\bhsg\b|hysterosalping/i,'hsg'],[/vaginal swab|\bhvs\b/i,'hvs'],[/testosterone|dhea|ٹیسٹوسٹیرون/i,'androgen'],[/\bfsh\b|\blh\b|estradiol|\be2\b|follicle stimulating|luteini/i,'d2'],[/ultrasound|\btvs\b|الٹراساؤنڈ|sonograph/i,'tvs'],[/hbsag|hcv|hiv|hepatitis|ہیپاٹائٹس/i,'viral_f'],[/chlamydia|کلیمیڈیا/i,'chlamydia']] };
+  const KEYMAP = { m:[[/urine\s*(c\/s|culture)|urine.*culture|پیشاب.*کلچر/i,'ucs_m'],[/urine|پیشاب/i,'urine_m'],[/\bcbc\b|h(a)?emoglobin|\bhb\b|خون کا مکمل/i,'cbc_m'],[/hba1c|blood sugar|glucose|\bbsr\b|\bfbs\b|خون کی شوگر/i,'sugar_m'],[/prolactin|پرولیکٹن/i,'prl_m'],[/\btsh\b|thyroid stimulating/i,'tsh_m'],[/testosterone|ٹیسٹوسٹیرون/i,'testo'],[/\bfsh\b|follicle stimulating/i,'fsh_m'],[/\blh\b|luteini/i,'lh_m'],[/semen|سیمن|sperm|سپرم/i,'semen'],[/hbsag|hcv|hiv|hepatitis|ہیپاٹائٹس/i,'viral_m']],
+                   f:[[/urine\s*(c\/s|culture)|urine.*culture|پیشاب.*کلچر/i,'ucs_f'],[/urine|پیشاب/i,'urine_f'],[/\bcbc\b|h(a)?emoglobin|\bhb\b|خون کا مکمل/i,'cbc_f'],[/hba1c|blood sugar|glucose|\bbsr\b|\bfbs\b|خون کی شوگر/i,'sugar_f'],[/prolactin|پرولیکٹن/i,'prl_f'],[/\btsh\b|thyroid stimulating/i,'tsh_f'],[/\bamh\b|m[uü]ll?erian|انڈوں کا ذخیرہ/i,'amh'],[/progesterone|پروجیسٹرون/i,'prog21'],[/vitamin\s*d|25.?oh|وٹامن ڈی/i,'vitd'],[/rubella|روبیلا/i,'rubella'],[/\bhsg\b|hysterosalping/i,'hsg'],[/vaginal swab|\bhvs\b/i,'hvs'],[/testosterone|dhea|ٹیسٹوسٹیرون/i,'androgen'],[/\bfsh\b|\blh\b|estradiol|\be2\b|follicle stimulating|luteini/i,'d2'],[/ultrasound|\btvs\b|الٹراساؤنڈ|sonograph/i,'tvs'],[/hbsag|hcv|hiv|hepatitis|ہیپاٹائٹس/i,'viral_f'],[/chlamydia|کلیمیڈیا/i,'chlamydia']] };
   function keyFor(s, name){ const k = (KEYMAP[s] || []).find(([re])=> re.test(name)); return k && ALL[k[1]] ? k[1] : ''; }
   // پرانے ریکارڈ سے: جو ٹیسٹ رپورٹ میں آ چکے مگر فہرست میں نشان نہیں لگا، ان پر ✓/✗ لگائیں
   function migrate(c){
@@ -347,7 +353,8 @@
   };
   // اگلا ٹیسٹ: AI نے جو کہا وہ، ورنہ پہلے مرحلے کا جو ٹیسٹ ابھی نہیں ہوا
   // "دوبارہ سیمن" صرف تب دکھے جب پہلا سیمن خراب آیا ہو (ٹھیک ہو تو دوبارہ کی ضرورت نہیں)
-  function hiddenT(t, id){ return id === 'semen2' && !(t.semen2 && t.semen2.status) && !(t.semen && t.semen.status === 'bad'); }
+  const DEP = { semen2:'semen', ucs_m:'urine_m', ucs_f:'urine_f' };
+  function hiddenT(t, id){ const d = DEP[id]; return !!d && !(t[id] && t[id].status) && !(t[d] && t[d].status === 'bad'); }
   function nextFor(c, s){
     const t = c[s].tests, sug = (c[s].next || []).filter(id=> ALL[id] && !(t[id] && t[id].status));
     if(sug.length) return sug;
