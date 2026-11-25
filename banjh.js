@@ -443,7 +443,15 @@
     const nextList = [...nxt].map(id=> `<li>${ALL[id].stage === 0 ? '⭐ ' : ''}<b class="bj-en" dir="ltr">${esc(ALL[id].en)}</b> — ${esc(ALL[id].ur)}</li>`).join('');
     return `<div class="bj-side bj-${s}">
       <h3>${SIDE[s]} — ${esc(who)}</h3>
-      ${s === 'm' ? `<details class="bj-tdet bj-wdet"><summary>⚠ اہم: ٹیسٹوسٹیرون / سٹیرائیڈ کے بارے میں ضروری ہدایت</summary><div class="bj-warn" style="margin:0 8px 8px;">⚠ اہم: بانجھ پن (سپرم کی کمی) میں ٹیسٹوسٹیرون کی گولی، ٹیکہ، جیل یا باڈی بلڈنگ کے سٹیرائیڈ ہرگز نہ دیں — اس سے دماغ سپرم بنانے کا حکم (FSH/LH) بند کر دیتا ہے اور سپرم کم یا بالکل ختم ہو جاتے ہیں۔ دوا بند کرنے کے بعد سپرم واپس آنے میں 6–12 ماہ یا زیادہ لگ سکتے ہیں، کبھی پوری طرح واپس نہیں آتے۔ مریض سے ضرور پوچھیں کہ کہیں جم/طاقت کے ٹیکے تو نہیں لے رہا۔</div></details>` : ''}
+      ${s === 'm' ? `<details class="bj-tdet bj-wdet"><summary>⚠ اہم: ٹیسٹوسٹیرون / سٹیرائیڈ نہیں — سپرم کمزور ہوں تو کون سی دوا</summary><div class="bj-warn" style="margin:0 8px 8px;">⚠ اہم: بانجھ پن (سپرم کی کمی) میں ٹیسٹوسٹیرون کی گولی، ٹیکہ، جیل یا باڈی بلڈنگ کے سٹیرائیڈ ہرگز نہ دیں — اس سے دماغ سپرم بنانے کا حکم (FSH/LH) بند کر دیتا ہے اور سپرم کم یا بالکل ختم ہو جاتے ہیں۔ دوا بند کرنے کے بعد سپرم واپس آنے میں 6–12 ماہ یا زیادہ لگ سکتے ہیں، کبھی پوری طرح واپس نہیں آتے۔ مریض سے ضرور پوچھیں کہ کہیں جم/طاقت کے ٹیکے تو نہیں لے رہا۔</div><div class="bj-alt-tx">
+        <div class="bj-bh" style="color:#1f7a4d;">✅ ٹیسٹوسٹیرون کی جگہ — سپرم کمزور، بہت کم یا نہ ہوں تو کیا دیں (وجہ کے مطابق)</div>
+        <table class="bj-howt bj-stack">
+          <tr><th>سپرم کمزور / کم — ہارمون نارمل</th><td>💊 <b dir="ltr">Proxeed Plus</b> (Alfasigma، اٹلی) — ایک ساشے دن میں 2 بار، کم از کم 3 ماہ<br>ساتھ: <b dir="ltr">CoQ10 200mg</b> + <b dir="ltr">Vitamin E 400 IU</b> + <b dir="ltr">Zinc 25mg</b> روزانہ · گرمی، سگریٹ/نسوار، موٹاپا بند · ویریکوسیل ہو تو اس کا علاج</td></tr>
+          <tr><th>سپرم کم + Testosterone/FSH/LH کم</th><td>💉 <b dir="ltr">Pregnyl</b> (hCG، Organon) ٹیکہ — ضرورت ہو تو ساتھ <b dir="ltr">Gonal-f</b> (FSH، Merck) · یا گولی <b dir="ltr">Clomid</b> (Sanofi) — <b>صرف ماہر کی نگرانی میں</b>، 3–6 ماہ</td></tr>
+          <tr><th>Testosterone کم مگر Estradiol زیادہ (موٹاپا)</th><td>💊 <b dir="ltr">Arimidex</b> (Anastrozole، AstraZeneca) — <b>صرف ماہر کی نگرانی میں</b></td></tr>
+          <tr><th>سپرم بالکل نہیں (Azoospermia)</th><td>❗ کوئی گولی سیدھا ٹھیک نہیں کرتی — پہلے وجہ: FSH، ڈوپلر، Karyotype، Y-Microdeletion · نالی بند ہو تو سرجری · FSH/LH کم ہوں تو Pregnyl + Gonal-f سے سپرم واپس آ سکتے ہیں · ورنہ ماہرِ بانجھ پن: <b>Micro-TESE + ICSI</b> (خصیے سے سپرم نکال کر)</td></tr>
+        </table>
+        <div class="bj-rx" style="margin:4px 0 0;">⚠ یہ دوائیں صرف یورولوجسٹ / ماہرِ بانجھ پن کے نسخے سے — ٹیکے اور Clomid/Arimidex کی مقدار ماہر خون کے ٹیسٹ دیکھ کر طے کرتا ہے · 3 ماہ بعد Semen Analysis دوبارہ</div></details>` : ''}
       ${(()=>{ const dn = okD.length + badD.length, tot = dn + pendN, po = dn ? Math.round(okD.length * 100 / dn) : 0, pb = dn ? 100 - po : 0, pd = tot ? Math.round(dn * 100 / tot) : 0;
         return `<div class="bj-pct">
           <div class="bj-cnt"><span class="ok">✓ صحیح: ${okD.length} (${po}٪)</span><span class="bad">✗ خراب: ${badD.length} (${pb}٪)</span><span class="pd">⏳ باقی: ${pendN}</span></div>
@@ -833,6 +841,8 @@
   .bj-howt th{width:34%; text-align:right; color:#1e4e8c; font-weight:700; padding:3px 6px; border:1px solid #d6e4f5; white-space:nowrap; background:#eaf2fc;}
   .bj-howt td{padding:3px 6px; border:1px solid #d6e4f5; line-height:1.8;}
   .bj-howt tr.bj-mg td{background:#fff3c4; color:#7a4a00; font-size:.9rem;} .bj-howt tr.bj-mg th{background:#ffe9a8; color:#7a4a00;}
+  .bj-alt-tx{margin:0 8px 8px; padding:6px 8px; border:1px solid #1f9d55; border-radius:10px; background:#f3fbf6;}
+  .bj-stack tr, .bj-stack th, .bj-stack td{display:block; width:auto !important; white-space:normal !important;} .bj-stack th{border-bottom:none;}
   .bj-mrow{margin-right:22px;} .bj-lb{color:var(--muted); font-size:.75rem;}
   .bj-brand{color:#2b6cb0; font-family:Poppins, Arial, sans-serif; font-size:.85rem;} .bj-co{color:#7b3fa0; font-family:Poppins, Arial, sans-serif; font-size:.82rem;} .bj-cn{font-size:.75rem; color:var(--muted);}
   .bj-mnote{font-size:.75rem; color:#b03a37;}
