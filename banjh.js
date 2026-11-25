@@ -369,9 +369,14 @@
     const done = order.filter(id=> t[id] && t[id].status).map(id=> ({ key:id, en:ALL[id].en, ur:ALL[id].ur, r:t[id], tap:`banjhTest('${s}','${id}')` }))
       .concat(Object.keys(ex).filter(k=> ex[k].status).map(k=> ({ key:k, en:k, ur:'', r:ex[k], tap:`banjhExtra('${s}',${JSON.stringify(k).replace(/"/g, '&quot;')})` })));
     const okD = done.filter(d=> d.r.status === 'ok'), badD = done.filter(d=> d.r.status === 'bad');
-    const row = (d, i)=> `<div class="bj-done ${d.r.status}" onclick="${d.tap}"><span class="bj-big ${d.r.status}">${d.r.status === 'ok' ? '✓' : '✗'}</span><span class="bj-no ${d.r.status}">${i + 1}</span><span class="bj-pill ${d.r.status}">${d.r.status === 'ok' ? '✓ صحیح' : '✗ خراب'}</span>
-        <div class="bj-tb">${d.r.manual ? `<div><span class="bj-man">✋ آپ نے خود ٹک کیا</span>${ALL[d.key] ? ` <button type="button" class="bj-undo" onclick="event.stopPropagation(); banjhUndo('${s}','${d.key}')">↩ ٹک واپس لیں</button>` : ''}</div>` : ''}<b class="bj-en" dir="ltr">${esc(d.en)}</b>${d.ur ? ` <span class="bj-ur">— ${esc(d.ur)}</span>` : ''}${ALL[d.key] ? labLine(d.key) : ''}
-        ${d.r.value ? `<div class="bj-val">${esc(d.r.value)}</div>` : ''}${d.r.note ? `<div class="bj-tn">${esc(d.r.note)}</div>` : ''}<div class="bj-hint">📅 ${fmtD(d.r.date || Date.now())}</div>${ALL[d.key] ? reportsHtml(c, s, d.key) + infoHtml(d.key) + `<label class="bj-tup" onclick="event.stopPropagation()">📷 نئی رپورٹ بھیجیں<input type="file" accept="image/*" multiple hidden onchange="banjhReport('${s}', this, '${d.key}')"></label>` : ''}</div></div>`;
+    const row = (d, i)=>{
+      const ok = d.r.status === 'ok';
+      const detail = `${ALL[d.key] ? labLine(d.key) : ''}
+        ${d.r.value ? `<div class="bj-val">${esc(d.r.value)}</div>` : ''}${d.r.note ? `<div class="bj-tn">${esc(d.r.note)}</div>` : ''}<div class="bj-hint">📅 ${fmtD(d.r.date || Date.now())}</div>${ALL[d.key] ? reportsHtml(c, s, d.key) + infoHtml(d.key) + `<label class="bj-tup" onclick="event.stopPropagation()">📷 نئی رپورٹ بھیجیں<input type="file" accept="image/*" multiple hidden onchange="banjhReport('${s}', this, '${d.key}')"></label>` : ''}`;
+      return `<div class="bj-done ${d.r.status}" onclick="${d.tap}"><span class="bj-big ${d.r.status}">${ok ? '✓' : '✗'}</span><span class="bj-no ${d.r.status}">${i + 1}</span><span class="bj-pill ${d.r.status}">${ok ? '✓ صحیح' : '✗ خراب'}</span>
+        <div class="bj-tb">${d.r.manual ? `<div><span class="bj-man">✋ آپ نے خود ٹک کیا</span>${ALL[d.key] ? ` <button type="button" class="bj-undo" onclick="event.stopPropagation(); banjhUndo('${s}','${d.key}')">↩ ٹک واپس لیں</button>` : ''}</div>` : ''}<b class="bj-en" dir="ltr">${esc(d.en)}</b>${d.ur ? ` <span class="bj-ur">— ${esc(d.ur)}</span>` : ''}
+        ${ok ? `<details class="bj-tdet bj-okdet" onclick="event.stopPropagation()"><summary>تفصیل دیکھیں — ویلیو، رپورٹ، لیب نام</summary><div class="bj-okin">${detail}</div></details>` : detail}</div></div>`;
+    };
     let treat = (c[s].treat || []).slice();
     if(!treat.length) treat = badD.map(d=> d.r.note || (d.en + ' خراب')).filter(Boolean);
     const pendN = order.filter(id=> !(t[id] && t[id].status) && !hiddenT(t, id)).length;
@@ -782,6 +787,7 @@
   .bj-undo{background:#fff; color:#e0524f; border:1px solid #e0524f; border-radius:10px; padding:0 8px; font-family:inherit; font-size:.72rem; cursor:pointer; margin-right:4px;}
   .bj-alt{border-color:#8a8a8a !important; margin:6px 0;} .bj-alt > summary{font-size:.82rem !important; color:#555 !important; padding:5px 8px !important;} .bj-alt > summary::before{color:#8a8a8a !important;} .bj-alt .bj-med{padding:4px 8px;}
   .bj-how{margin-right:22px; font-size:.82rem; color:#1e4e8c; line-height:1.9;}
+  .bj-okdet{border-color:#1f9d55 !important; margin-top:4px;} .bj-okdet > summary{font-size:.8rem !important; color:#1f7a4d !important; padding:4px 8px !important;} .bj-okdet > summary::before{color:#1f9d55 !important;} .bj-okin{padding:0 8px 8px;}
   .bj-mrow{margin-right:22px;} .bj-lb{color:var(--muted); font-size:.75rem;}
   .bj-brand{color:#2b6cb0; font-family:Poppins, Arial, sans-serif; font-size:.85rem;} .bj-co{color:#7b3fa0; font-family:Poppins, Arial, sans-serif; font-size:.82rem;} .bj-cn{font-size:.75rem; color:var(--muted);}
   .bj-mnote{font-size:.75rem; color:#b03a37;}
