@@ -13,8 +13,7 @@
   function extras(){
     let lib = typeof herbalBooksFor === 'function' ? herbalBooksFor('hikmat') : [];
     // ترتیب: شاہد منظور والا کورس سب سے اوپر، پھر لیکچر نمبر کے حساب سے (تیسرا، 5، 6، دسواں...)
-    const W = [['پہل',1],['دوسر',2],['تیسر',3],['چوتھ',4],['پانچو',5],['چھٹ',6],['ساتو',7],['آٹھو',8],['نو[اوی]',9],['دسو',10],['گیارہ',11],['بارہ',12]];
-    const rank = f=>{ const t = f.title || f.fileName; if(/شاہد\s*منظور/.test(t)) return -1; const m = t.match(/\d+/); if(m) return +m[0]; const w = W.find(([k])=> new RegExp(k).test(t.replace(/لیکچر|کلاس/g, ''))); return w ? w[1] : 999; };
+    const rank = f=> rankT(f.title || f.fileName);
     lib = lib.slice().sort((a, b)=> rank(a) - rank(b));
     return lib.map(f=>{
       const n = Math.max((f.pdfDoc && f.pdfDoc.numPages) || 0, ...(f.pages || []).map(p=> p.pageNum || 0), (f.pages || []).length);
@@ -67,7 +66,9 @@
   }
   const SHORT = ['پہلی کلاس', 'دوسری کلاس اسپیشل'];
   // لمبے نام بٹن پر مختصر
-  const label = t=> /شاہد\s*منظور/.test(t) ? 'کورس شاہد منظور لاہور' : t;
+  const W = [['پہل',1],['دوسر',2],['تیسر',3],['چوتھ',4],['پانچو',5],['چھٹ',6],['ساتو',7],['آٹھو',8],['نو[اوی]',9],['دسو',10],['گیارہ',11],['بارہ',12]];
+  const rankT = t=>{ if(/شاہد\s*منظور/.test(t)) return -1; const m = t.match(/\d+/); if(m) return +m[0]; const w = W.find(([k])=> new RegExp(k).test(t.replace(/لیکچر|کلاس/g, ''))); return w ? w[1] : 999; };
+  const label = t=>{ if(/شاہد\s*منظور/.test(t)) return 'کورس شاہد منظور لاہور'; const r = rankT(t); return /لیکچر/.test(t) && r > 0 && r < 999 ? r + ' لیکچر' : t; };
   function tabs(){
     const C = all(), btn = (c, i)=> `<button type="button" class="${i === CI ? 'on' : ''}${c.extra && /شاہد\s*منظور/.test(c.title) ? ' full' : ''}" onclick="hkCourse(${i})">${esc(c.extra ? label(c.title) : (SHORT[i] || c.title))}</button>`;
     const base = C.map(btn).filter((_, i)=> !C[i].extra).join(''), more = C.map(btn).filter((_, i)=> C[i].extra).join('');
