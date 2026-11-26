@@ -419,6 +419,7 @@ function rxCoFilter(){
 <div style="font-size:.88rem; line-height:2;">
 <div class="note" style="margin:6px 0;"><b>مزاج کے بارے میں:</b> وٹامن کا مزاج (گرم خشک وغیرہ) <b>طبی سائنس میں نہیں</b> — یہ حکماء کی رائے ہے جو اُن غذاؤں کے مزاج سے لی گئی ہے جن میں وہ وٹامن زیادہ ہوتا ہے، اور کتابوں میں اس میں اختلاف ہے۔ یہاں عام رائے لکھی ہے (A، D، K، B12 گرم خشک؛ E گرم تر؛ B کمپلیکس کچھ گرم خشک کچھ گرم تر؛ C سرد تر)۔ <b>کمی کی علامات</b> طبی طور پر درست ہیں، چند تبدیلیوں کے ساتھ جو نیچے لکھی ہیں۔</div>
 <div class="note" style="margin:6px 0;"><b>آپ کی فہرست میں درستیاں:</b><br>• <b>B</b> ایک نہیں، 8 وٹامن ہیں (B1، B2، B3، B5، B6، B7، B9، B12) — زبان/منہ کے چھالے زیادہ تر B2، B3، B6، B9، B12 سے؛ ہاتھ پاؤں سن B1، B6، B12 سے؛ خون کی کمی B9 اور B12 سے۔<br>• <b>E</b> کی کمی سے بانجھ پن انسانوں میں ثابت نہیں (جانوروں میں ہے)؛ جلد خشک اور بال کمزور بھی پکی علامت نہیں۔ اصل علامات: پٹھوں کی کمزوری، توازن خراب، سن ہونا۔<br>• <b>D</b> میں بڑوں کے لیے: کمر/ہڈیوں کا درد اور سیڑھی چڑھنے میں پٹھوں کی کمزوری سب سے عام۔<br>• <b>A</b> میں: آنکھ کی سفیدی پر سفید جھاگ جیسے دھبے بھی۔</div>
+<input class="search" id="vitQ" type="search" placeholder="🔍 وٹامن، معدن یا علامت تلاش کریں (مثلاً بال گرنا، B12، آئرن، کڑل)..." oninput="vitFilter()" style="display:block; width:100%; box-sizing:border-box; margin:10px 0 4px;"><div id="vitQn" style="font-size:.78rem; color:var(--muted); text-align:center;"></div>
 <details class="nk-det"><summary>🅰️ وٹامن A <small style="color:var(--muted); font-weight:400;">— مزاج: گرم خشک</small></summary>
 <p><b>کمی کی علامات:</b> رات کو کم نظر آنا (رتوندھا)؛ آنکھوں کی خشکی، جلن، آنکھ کی سفیدی پر جھاگ جیسے دھبے؛ جلد خشک، کھردری، بازوؤں پر دانے؛ بار بار انفیکشن (خاص کر سانس اور دست)؛ بچوں کی بڑھوتری رک جانا</p><p><b>کن چیزوں میں:</b> کلیجی، انڈے کی زردی، دیسی گھی، مکھن، دودھ؛ گاجر، کدو، پالک، آم، پپیتا</p><p><b>ٹیسٹ:</b> Serum Vitamin A (Retinol) — کم ہی کروایا جاتا ہے</p><p style="color:#b03a37;"><b>⚠ دھیان:</b> زیادہ مقدار زہریلی ہے (سر درد، جگر خراب)۔ حمل میں زیادہ خوراک سے بچے کو نقصان — گولی صرف ڈاکٹر کے کہنے پر</p></details><details class="nk-det"><summary>🅱️ وٹامن B1 (تھایامین) <small style="color:var(--muted); font-weight:400;">— مزاج: گرم خشک</small></summary>
 <p><b>کمی کی علامات:</b> بھوک کم، تھکن، چڑچڑاپن؛ ہاتھ پاؤں میں جلن یا سن ہونا؛ پنڈلیوں میں درد؛ شدید کمی میں دل کی دھڑکن تیز، پاؤں سوجنا (بیری بیری)</p><p><b>کن چیزوں میں:</b> ثابت اناج، چھلکے والا آٹا، دالیں، چنے، مونگ پھلی، گوشت</p><p><b>ٹیسٹ:</b> Thiamine (B1) level</p><p style="color:#b03a37;"><b>⚠ دھیان:</b> زیادہ شراب، صرف سفید چاول/میدہ کھانے والوں میں کمی عام</p></details><details class="nk-det"><summary>🅱️ وٹامن B2 (رائبوفلاوین) <small style="color:var(--muted); font-weight:400;">— مزاج: گرم تر</small></summary>
@@ -11389,6 +11390,19 @@ if('serviceWorker' in navigator && herbalCanLoadSiteFiles()){
   document.addEventListener('visibilitychange', ()=>{ if(document.visibilityState === 'hidden') send(true); });
   window.addEventListener('pagehide', ()=> send(true));
 })();
+</script>
+<script>
+// وٹامن/معدنیات کی تفصیل میں تلاش — جس خانے میں لفظ ملے وہ کھل جائے، باقی چھپ جائیں
+function vitFilter(){
+  const n = t=> String(t || '').toLowerCase().replace(/[\u064B-\u065F\u0670]/g, '').replace(/ي/g, 'ی').replace(/ك/g, 'ک').replace(/\s+/g, ' ');
+  const q = n(document.getElementById('vitQ').value.trim()), box = document.getElementById('vitDetail');
+  let c = 0;
+  box.querySelectorAll('details details, #vitDetail > div > details').forEach(d=>{
+    const hit = !q || n(d.textContent).includes(q);
+    d.style.display = hit ? '' : 'none'; d.open = !!q && hit; if(q && hit) c++;
+  });
+  document.getElementById('vitQn').textContent = q ? (c ? c + ' ملے' : 'کچھ نہیں ملا') : '';
+}
 </script>
 </body>
 </html>
