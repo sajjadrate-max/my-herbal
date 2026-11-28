@@ -148,9 +148,17 @@
       'L-Carnitine + Acetyl-L-Carnitine': 'Spore-X (Getz Pharma)، Proxeed Plus (اٹلی — بہت مہنگی)',
       'hCG (injection)': 'Presage، Pubergen'
     };
+    // ہر برانڈ صاف خانوں میں: دوا کا نام / کمپنی / کہاں ملتی ہے
+    const brandCard = (b, co, cn)=> `<table class="bj-bt"><tr><th>💊 دوا کا نام</th><td><b class="bj-brand" dir="ltr">${esc(b)}</b></td></tr>
+        ${co ? `<tr><th>🏭 کمپنی</th><td><b class="bj-co" dir="ltr">${esc(co)}</b>${/پاکستانی کمپنی/.test(cn || '') ? ' <small>(پاکستانی کمپنی)</small>' : ''}</td></tr>` : ''}
+        ${cn ? `<tr><th>🛒 ملتی ہے؟</th><td>${esc(String(cn).replace(/^پاکستانی کمپنی\s*—\s*/, ''))}</td></tr>` : ''}</table>`;
+    const pkAlts = g=> (PKB[g] || '').split(/\s*،\s*(?![^()]*\))/).filter(Boolean).map(x=>{
+      const m = x.match(/^(.+?)\s*\(([^)—]+?)(?:\s*—\s*([^)]*))?\)\s*$/);
+      return m ? [m[1], m[2], m[3] || ''] : [x, '', ''];
+    });
     const medBox = ([g, brands, role, days], tag)=> `<div class="bj-med">${tag || ''}
-        ${brands.length ? brands.map(([b, co, cn])=> `<div class="bj-mrow">💊 <b class="bj-brand" dir="ltr">${esc(b)}</b> · <span class="bj-lb">کمپنی:</span> <b class="bj-co" dir="ltr">${esc(co)}</b> <span class="bj-cn">(${esc(cn)})</span></div>`).join('') : `<div class="bj-mrow">💊 <b class="bj-brand" dir="ltr">${esc(g)}</b></div>`}
-        ${PKB[g] ? `<div class="bj-mrow" style="background:#e8f6ee; border-radius:8px; padding:4px 8px; margin:4px 0;">🔁 <b style="color:#1e7a46;">یہ نہ ملے تو یہی دوا ان ناموں سے:</b> <span dir="ltr">${esc(PKB[g])}</span></div>` : ''}
+        ${brands.length ? brands.map(([b, co, cn])=> brandCard(b, co, cn)).join('') : brandCard(g, '', '')}
+        ${PKB[g] ? `<div class="bj-altp"><div class="bj-altt">🔁 اوپر والی نہ ملے تو یہی دوا ان ناموں سے بھی ملتی ہے:</div><table class="bj-bt alt"><tr><th>دوا کا نام</th><th>کمپنی</th></tr>${pkAlts(g).map(([b, co, n])=> `<tr><td><b dir="ltr">${esc(b)}</b>${n ? `<div class="bj-an">${esc(n)}</div>` : ''}</td><td dir="ltr">${esc(co || '—')}</td></tr>`).join('')}</table></div>` : ''}
         ${(HOW[(brands[0] || [])[0]] || HOWG[g]) ? howTable(HOW[(brands[0] || [])[0]] || HOWG[g], DOSEMG[(brands[0] || [])[0]]) : (days ? `<div class="bj-days">⏱ <span class="bj-lb">کتنے دن:</span> ${esc(days)}</div>` : '')}
       </div>`;
     return `<ol class="bj-tl">${list.map(x=>{
@@ -794,6 +802,9 @@
   .bj-m{border-top:4px solid #2b6cb0;} .bj-f{border-top:4px solid #c05680;}
   .bj-next{background:rgba(201,130,27,.12); border:1px solid #c9821b; border-radius:10px; padding:6px 10px; font-size:.88rem; margin-bottom:6px;}
   .bj-next.done{background:rgba(31,157,85,.1); border-color:#1f9d55; color:#1f9d55;}
+  .bj-bt{width:100%; border-collapse:collapse; margin:4px 0; font-size:.88rem; background:#fff;} .bj-bt th, .bj-bt td{border:1px solid #d7e3f4; padding:4px 8px; text-align:right;} .bj-bt th{background:#eef4fc; color:#2a5ea8; white-space:nowrap; width:1%;} .bj-bt .bj-brand{font-size:1.05rem;}
+  .bj-bt.alt th{width:auto; text-align:center;} .bj-bt.alt td{text-align:center;} .bj-an{font-size:.75rem; color:#b03a37;}
+  .bj-gen{font-size:.8rem; color:var(--muted); margin:2px 0 4px;} .bj-altp{background:#e8f6ee; border-radius:8px; padding:4px 6px; margin:6px 0;} .bj-altt{color:#1e7a46; font-weight:700; font-size:.85rem; margin-bottom:2px;}
   .bj-treat{background:rgba(224,82,79,.08); border:1px solid #e0524f; border-radius:10px; padding:6px 10px; font-size:.88rem; margin-bottom:6px;}
   .bj-treat ul{margin:4px 18px 0 0; padding:0;}
   .bj-up{display:block; text-align:center; margin:8px 0; cursor:pointer;}
