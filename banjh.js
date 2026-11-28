@@ -8,8 +8,8 @@
     m: [
       { st:'مرحلہ 1 — بنیادی ٹیسٹ (Basic)', items:[
         ['semen','Semen Analysis','مادہ منویہ کا ٹیسٹ','مرد کا سب سے پہلا اور اہم ٹیسٹ — سپرم کی تعداد، حرکت اور بناوٹ دیکھی جاتی ہے۔ 2 سے 5 دن پرہیز کے بعد۔ نارمل (WHO): مقدار 1.4ml+، تعداد 16 ملین/ml+، پروگریسو حرکت 30٪+، کل حرکت 42٪+، بناوٹ 4٪+، pH 7.2+۔ ⚠ سپرم کم ہوں تو ٹیسٹوسٹیرون کی گولی/ٹیکہ ہرگز نہیں — سپرم اور کم ہو جاتے ہیں'],
-        ['urine_m','Urine R/E','پیشاب کا ٹیسٹ','پہلے یہی ٹیسٹ؛ پس سیلز زیادہ آئیں تو Urine C/S لازمی — پیشاب کی نالی کا انفیکشن، پس سیلز یا شوگر — یہ سپرم کو نقصان دیتے ہیں'],
-        ['ucs_m','Urine C/S (Culture & Sensitivity)','پیشاب کا کلچر — صرف اگر Urine R/E خراب آئے','Urine R/E میں پس سیلز زیادہ ہوں تو لازمی — کون سا جراثیم ہے اور کون سی اینٹی بائیوٹک اثر کرے گی'],
+        ['urine_m','Urine Complete Examination','پیشاب کا ٹیسٹ (کچھ لیب Urine Complete Examination یا Urine D/R بھی لکھتی ہیں)','پہلے یہی ٹیسٹ؛ پس سیلز زیادہ آئیں تو Urine C/S لازمی — پیشاب کی نالی کا انفیکشن، پس سیلز یا شوگر — یہ سپرم کو نقصان دیتے ہیں'],
+        ['ucs_m','Urine C/S (Culture & Sensitivity)','پیشاب کا کلچر — صرف اگر Urine Complete Examination خراب آئے','Urine Complete Examination میں پس سیلز زیادہ ہوں تو لازمی — کون سا جراثیم ہے اور کون سی اینٹی بائیوٹک اثر کرے گی'],
         ['cbc_m','CBC','خون کا مکمل ٹیسٹ','خون کی کمی یا جسم میں انفیکشن تو نہیں'],
         ['sugar_m','HbA1c / Blood Sugar','شوگر کا ٹیسٹ','شوگر سے کمزوری، انزال کی خرابی اور سپرم کمزور ہوتے ہیں'],
       ]},
@@ -44,12 +44,12 @@
         ['prl_f','Prolactin','پرولیکٹن ہارمون','زیادہ ہو تو انڈا نہیں بنتا اور ماہواری بے قاعدہ ہو جاتی ہے'],
         ['cbc_f','CBC / Hemoglobin','خون کا مکمل ٹیسٹ','خون کی کمی — حمل سے پہلے پوری ہونی چاہیے'],
         ['sugar_f','HbA1c / Blood Sugar','شوگر کا ٹیسٹ','شوگر اور انسولین کی مزاحمت PCOS کے ساتھ عام ہے'],
-        ['urine_f','Urine R/E','پیشاب کا ٹیسٹ','پہلے یہی ٹیسٹ؛ پس سیلز زیادہ آئیں تو Urine C/S لازمی — پیشاب کی نالی کا انفیکشن (پس سیلز) — حمل سے پہلے ختم ہونا ضروری'],
-        ['ucs_f','Urine C/S (Culture & Sensitivity)','پیشاب کا کلچر — صرف اگر Urine R/E خراب آئے','Urine R/E میں پس سیلز زیادہ ہوں تو لازمی — کون سا جراثیم ہے اور کون سی اینٹی بائیوٹک اثر کرے گی'],
+        ['urine_f','Urine Complete Examination','پیشاب کا ٹیسٹ (کچھ لیب Urine Complete Examination یا Urine D/R بھی لکھتی ہیں)','پہلے یہی ٹیسٹ؛ پس سیلز زیادہ آئیں تو Urine C/S لازمی — پیشاب کی نالی کا انفیکشن (پس سیلز) — حمل سے پہلے ختم ہونا ضروری'],
+        ['ucs_f','Urine C/S (Culture & Sensitivity)','پیشاب کا کلچر — صرف اگر Urine Complete Examination خراب آئے','Urine Complete Examination میں پس سیلز زیادہ ہوں تو لازمی — کون سا جراثیم ہے اور کون سی اینٹی بائیوٹک اثر کرے گی'],
         ['prog21','Day-21 Progesterone (Mid-luteal)','انڈا بننے کی تصدیق کا ٹیسٹ','صرف باقاعدہ ماہواری میں — ماہواری آنے سے 7 دن پہلے (28 دن کے سائیکل میں 21واں دن)؛ بے قاعدہ ہو تو اس کی جگہ فولیکل ٹریکنگ۔ 10 ng/ml سے زیادہ = انڈا بنا اور پھٹا (Ovulation)؛ کم = انڈا نہیں بن رہا']
       ]},
       { st:'مرحلہ 2 — نالیاں اور انفیکشن (ضروری — چاہے پہلا مرحلہ ٹھیک ہو)', always:true, items:[
-        ['chlamydia','Chlamydia & Gonorrhea PCR (CTNG)','کلیمیڈیا، سوزاک، ٹرائیکوموناس کا ٹیسٹ (پیشاب سے)','کلیمیڈیا، سوزاک اور ٹرائیکوموناس — جنسی انفیکشن جو اکثر بغیر علامت ہوتے ہیں اور نالیاں بند کرتے ہیں؛ Urine R/E سے نہیں پکڑے جاتے · ایک میں بھی مثبت ہو تو میاں بیوی دونوں کا علاج ساتھ · HSG سے پہلے لازمی'],
+        ['chlamydia','Chlamydia & Gonorrhea PCR (CTNG)','کلیمیڈیا، سوزاک، ٹرائیکوموناس کا ٹیسٹ (پیشاب سے)','کلیمیڈیا، سوزاک اور ٹرائیکوموناس — جنسی انفیکشن جو اکثر بغیر علامت ہوتے ہیں اور نالیاں بند کرتے ہیں؛ Urine Complete Examination سے نہیں پکڑے جاتے · ایک میں بھی مثبت ہو تو میاں بیوی دونوں کا علاج ساتھ · HSG سے پہلے لازمی'],
         ['hvs','High Vaginal Swab (HVS)','ویجائنل سواب — صرف اگر لیکوریا، بدبو، خارش یا جلن ہو','الگ ٹیسٹ: یہ فنگس اور بدبو والا انفیکشن (Bacterial Vaginosis) پکڑتا ہے جو PCR نہیں پکڑتا · کوئی شکایت نہ ہو تو ضرورت نہیں · HSG سے پہلے انفیکشن ختم ہونا ضروری — لیکوریا، بدبو، سوزش کا جراثیم معلوم کرنا'],
         ['hsg','HSG (Hysterosalpingography)','نالیوں کا ٹیسٹ (ماہواری کے دن 7–10)','فیلوپین نالیاں کھلی ہیں یا بند، اور بچہ دانی کے اندر کی بناوٹ'],
         ['rubella','Rubella IgG','روبیلا کا ٹیسٹ','حمل سے پہلے حفاظت — منفی ہو تو ٹیکہ لگوانا']
@@ -198,13 +198,13 @@
     prl_f:     ['🩸 خون', 'صبح، جاگنے کے 2–3 گھنٹے بعد؛ ماہواری کے شروع کے دنوں میں بہتر', LAB, 'ٹیسٹ سے پہلے 15–20 منٹ آرام سے بیٹھیں؛ چھاتی کو نہ دبائیں'],
     cbc_f:     ['🩸 خون — اس میں شوگر شامل نہیں، شوگر الگ ٹیسٹ ہے', 'کسی بھی وقت — شوگر کے ساتھ ایک ہی سوئی/نمونے سے', LAB, 'کوئی خاص تیاری نہیں'],
     sugar_f:   ['🩸 صرف خون — شوگر کے لیے پیشاب کا ٹیسٹ ضروری نہیں', 'HbA1c کسی بھی وقت؛ Fasting Sugar صبح خالی پیٹ · PCOS کا شک ہو تو بہترین: 2 گھنٹے والا OGTT (75g گلوکوز پی کر)', LAB, 'Fasting / OGTT کے لیے 8–10 گھنٹے کچھ نہ کھائیں (پانی ٹھیک)'],
-    ucs_m:     ['🧪 پیشاب — جراثیم سے پاک (Sterile) ڈبے میں', 'صرف اگر Urine R/E خراب آئے · اینٹی بائیوٹک شروع کرنے سے پہلے · رپورٹ 2–3 دن میں', LAB, 'لیب سے Sterile ڈبہ لیں · صفائی کے بعد درمیان والا پیشاب · ڈبے کے اندر ہاتھ نہ لگائیں · 1 گھنٹے میں لیب'],
-    ucs_f:     ['🧪 پیشاب — جراثیم سے پاک (Sterile) ڈبے میں', 'صرف اگر Urine R/E خراب آئے · اینٹی بائیوٹک شروع کرنے سے پہلے · رپورٹ 2–3 دن میں', LAB, 'لیب سے Sterile ڈبہ لیں · صفائی کے بعد درمیان والا پیشاب · ڈبے کے اندر ہاتھ نہ لگائیں · 1 گھنٹے میں لیب'],
+    ucs_m:     ['🧪 پیشاب — جراثیم سے پاک (Sterile) ڈبے میں', 'صرف اگر Urine Complete Examination خراب آئے · اینٹی بائیوٹک شروع کرنے سے پہلے · رپورٹ 2–3 دن میں', LAB, 'لیب سے Sterile ڈبہ لیں · صفائی کے بعد درمیان والا پیشاب · ڈبے کے اندر ہاتھ نہ لگائیں · 1 گھنٹے میں لیب'],
+    ucs_f:     ['🧪 پیشاب — جراثیم سے پاک (Sterile) ڈبے میں', 'صرف اگر Urine Complete Examination خراب آئے · اینٹی بائیوٹک شروع کرنے سے پہلے · رپورٹ 2–3 دن میں', LAB, 'لیب سے Sterile ڈبہ لیں · صفائی کے بعد درمیان والا پیشاب · ڈبے کے اندر ہاتھ نہ لگائیں · 1 گھنٹے میں لیب'],
     urine_f:   ['🧪 پیشاب', 'صبح کا پہلا پیشاب بہترین، مگر لازمی نہیں — دن کا کوئی بھی تازہ پیشاب چل جاتا ہے · ماہواری کے دنوں میں نہیں', LAB, 'پہلے آگے سے پیچھے کی طرف پانی سے صاف کریں (لیکوریا ملنے سے پس سیلز غلط زیادہ آ جاتے ہیں) · شروع کا تھوڑا پیشاب نیچے گرا دیں، درمیان والا صاف ڈبے میں · نمونہ 1 گھنٹے کے اندر لیب پہنچے'],
     prog21:    ['🩸 خون', 'ماہواری آنے سے 7 دن پہلے (28 دن کے سائیکل میں 21واں دن)', LAB, 'سائیکل لمبا ہو تو دن ڈاکٹر سے پوچھیں'],
     hvs:       ['🧫 ویجائنا سے روئی (Swab) کا نمونہ', 'ماہواری کے دنوں کے علاوہ', 'لیڈی ڈاکٹر نمونہ لے کر لیب بھیجے', '2 دن پہلے سے اندرونی دوا/دھلائی نہ کریں؛ اینٹی بائیوٹک سے پہلے'],
-    chlamydia: ['🧪 پیشاب — شروع والا (First-void)، Urine R/E والا درمیانی نہیں', 'صبح کا پہلا پیشاب، یا 2 گھنٹے روک کر · اینٹی بائیوٹک سے پہلے · رپورٹ 2–4 دن', 'صرف بڑی لیب میں ہوتا ہے: Chughtai Lab (ٹیسٹ کا نام CTNG)، IDC اسلام آباد، شوکت خانم، آغا خان — چھوٹی لیب میں نہیں۔ لیب والے کو کہیں: «Chlamydia اور Gonorrhea کا PCR، پیشاب سے»۔ ⚠ Chlamydia IgG / IgM (خون والا) ٹیسٹ نہ کروائیں — وہ پرانا انفیکشن بھی مثبت دکھاتا ہے۔ ٹرائیکوموناس عورت میں HVS (wet mount) سے اور مرد میں Urine R/E سے بھی دیکھا جاتا ہے', 'صفائی نہ کریں · شروع کا پہلا 20–30 ml ڈبے میں، باقی ٹوائلٹ میں · 1–2 گھنٹے میں لیب · عورت: ماہواری میں نہیں؛ شکایت ہو تو ویجائنل سواب زیادہ درست'],
-    sti_m:     ['🧪 پیشاب — شروع والا (First-void)، Urine R/E والا درمیانی نہیں', 'صبح کا پہلا پیشاب، یا 2 گھنٹے روک کر · اینٹی بائیوٹک سے پہلے · رپورٹ 2–4 دن', 'صرف بڑی لیب میں ہوتا ہے: Chughtai Lab (ٹیسٹ کا نام CTNG)، IDC اسلام آباد، شوکت خانم، آغا خان — چھوٹی لیب میں نہیں۔ لیب والے کو کہیں: «Chlamydia اور Gonorrhea کا PCR، پیشاب سے»۔ ⚠ Chlamydia IgG / IgM (خون والا) ٹیسٹ نہ کروائیں — وہ پرانا انفیکشن بھی مثبت دکھاتا ہے۔ ٹرائیکوموناس عورت میں HVS (wet mount) سے اور مرد میں Urine R/E سے بھی دیکھا جاتا ہے', 'صفائی نہ کریں · شروع کا پہلا 20–30 ml ڈبے میں، باقی ٹوائلٹ میں · 1–2 گھنٹے میں لیب · عورت: ماہواری میں نہیں؛ شکایت ہو تو ویجائنل سواب زیادہ درست'],
+    chlamydia: ['🧪 پیشاب — شروع والا (First-void)، Urine Complete Examination والا درمیانی نہیں', 'صبح کا پہلا پیشاب، یا 2 گھنٹے روک کر · اینٹی بائیوٹک سے پہلے · رپورٹ 2–4 دن', 'صرف بڑی لیب میں ہوتا ہے: Chughtai Lab (ٹیسٹ کا نام CTNG)، IDC اسلام آباد، شوکت خانم، آغا خان — چھوٹی لیب میں نہیں۔ لیب والے کو کہیں: «Chlamydia اور Gonorrhea کا PCR، پیشاب سے»۔ ⚠ Chlamydia IgG / IgM (خون والا) ٹیسٹ نہ کروائیں — وہ پرانا انفیکشن بھی مثبت دکھاتا ہے۔ ٹرائیکوموناس عورت میں HVS (wet mount) سے اور مرد میں Urine Complete Examination سے بھی دیکھا جاتا ہے', 'صفائی نہ کریں · شروع کا پہلا 20–30 ml ڈبے میں، باقی ٹوائلٹ میں · 1–2 گھنٹے میں لیب · عورت: ماہواری میں نہیں؛ شکایت ہو تو ویجائنل سواب زیادہ درست'],
+    sti_m:     ['🧪 پیشاب — شروع والا (First-void)، Urine Complete Examination والا درمیانی نہیں', 'صبح کا پہلا پیشاب، یا 2 گھنٹے روک کر · اینٹی بائیوٹک سے پہلے · رپورٹ 2–4 دن', 'صرف بڑی لیب میں ہوتا ہے: Chughtai Lab (ٹیسٹ کا نام CTNG)، IDC اسلام آباد، شوکت خانم، آغا خان — چھوٹی لیب میں نہیں۔ لیب والے کو کہیں: «Chlamydia اور Gonorrhea کا PCR، پیشاب سے»۔ ⚠ Chlamydia IgG / IgM (خون والا) ٹیسٹ نہ کروائیں — وہ پرانا انفیکشن بھی مثبت دکھاتا ہے۔ ٹرائیکوموناس عورت میں HVS (wet mount) سے اور مرد میں Urine Complete Examination سے بھی دیکھا جاتا ہے', 'صفائی نہ کریں · شروع کا پہلا 20–30 ml ڈبے میں، باقی ٹوائلٹ میں · 1–2 گھنٹے میں لیب · عورت: ماہواری میں نہیں؛ شکایت ہو تو ویجائنل سواب زیادہ درست'],
     hsg:       ['☢ ایکسرے (رنگ ڈال کر) — نالیوں کا', 'ماہواری ختم ہونے کے بعد دن 7 سے 10 (حمل کے امکان سے پہلے)', 'ریڈیالوجی سینٹر — لیڈی ڈاکٹر کے ساتھ', 'اس مہینے ماہواری کے بعد سے ہمبستری نہ کریں؛ ڈاکٹر کے کہنے پر درد کی گولی پہلے'],
     rubella:   ['🩸 خون', 'کسی بھی وقت (حمل سے پہلے)', LAB, 'کوئی خاص تیاری نہیں'],
     follicle:  ['📡 الٹراساؤنڈ (اندرونی بہتر) — کئی بار', 'ماہواری کے دن 9–10 سے شروع، ہر 2–3 دن بعد، انڈا پھٹنے تک', 'لیڈی گائناکالوجسٹ / الٹراساؤنڈ سینٹر', 'مثانہ خالی'],
@@ -261,21 +261,21 @@
   };
   // ---------- لیبارٹری کو بتانے / پرچی پر لکھوانے والا نام ----------
   const LABNAME = {
-    semen:'Semen Analysis', semen2:'Semen Analysis', urine_m:'Urine R/E', urine_f:'Urine R/E', ucs_m:'Urine C/S', ucs_f:'Urine C/S',
-    cbc_m:'CBC', cbc_f:'CBC', sugar_m:'HbA1c + FBS', sugar_f:'HbA1c + FBS / OGTT',
-    fsh_m:'Serum FSH', lh_m:'Serum LH', testo:'Serum Total Testosterone', prl_m:'Serum Prolactin', tsh_m:'Serum TSH',
-    us_scrotal:'Scrotal Color Doppler', semen_cs:'Semen C/S', peu:'Post-Ejaculatory Urine', asa:'MAR Test',
-    dfi:'Sperm DNA Fragmentation', karyo_m:'Karyotyping', ymicro:'Y-Chromosome Microdeletion', viral_m:'HBsAg, Anti-HCV, HIV',
-    tvs:'TVS Pelvis with AFC', d2:'Day 2 FSH, LH, E2', amh:'Serum AMH', tsh_f:'Serum TSH', prl_f:'Serum Prolactin',
-    prog21:'Day 21 Serum Progesterone', hvs:'HVS C/S', chlamydia:'Chlamydia & Gonorrhea PCR — Urine (CTNG)', sti_m:'Chlamydia & Gonorrhea PCR — Urine (CTNG)',
-    hsg:'HSG', rubella:'Rubella IgG', follicle:'Follicular Monitoring', androgen:'Serum Testosterone + DHEA-S',
-    vitd:'Vitamin D (25-OH)', sis:'Saline Infusion Sonography', hysteroscopy:'Diagnostic Hysteroscopy', laparoscopy:'Diagnostic Laparoscopy', viral_f:'HBsAg, Anti-HCV, HIV'
+    semen:'Semen Analysis', semen2:'Semen Analysis', urine_m:'Urine Complete Examination', urine_f:'Urine Complete Examination', ucs_m:'Urine Culture (Urine C/S)', ucs_f:'Urine Culture (Urine C/S)',
+    cbc_m:'CBC', cbc_f:'CBC', sugar_m:'HbA1c + Blood Sugar Fasting', sugar_f:'HbA1c + Blood Sugar Fasting',
+    fsh_m:'FSH', lh_m:'LH', testo:'Testosterone', prl_m:'Prolactin', tsh_m:'TSH',
+    us_scrotal:'Ultrasound Scrotum (Doppler)', semen_cs:'Semen Culture (Semen C/S)', peu:'Post-Ejaculatory Urine', asa:'Anti-Sperm Antibodies (MAR Test)',
+    dfi:'Sperm DNA Fragmentation', karyo_m:'Karyotyping (Chromosome Analysis)', ymicro:'Y-Chromosome Microdeletion', viral_m:'HBsAg, Anti-HCV, HIV',
+    tvs:'Ultrasound Pelvis (TVS)', d2:'FSH, LH, Estradiol — Day 2', amh:'AMH', tsh_f:'TSH', prl_f:'Prolactin',
+    prog21:'Progesterone (Day 21)', hvs:'HVS Culture (High Vaginal Swab)', chlamydia:'Chlamydia + Gonorrhea PCR (Urine)', sti_m:'Chlamydia + Gonorrhea PCR (Urine)',
+    hsg:'HSG', rubella:'Rubella IgG', follicle:'Follicle Scan (Follicular Tracking)', androgen:'Testosterone + DHEA-S',
+    vitd:'Vitamin D', sis:'Saline Infusion Sonography', hysteroscopy:'Diagnostic Hysteroscopy', laparoscopy:'Diagnostic Laparoscopy', viral_f:'HBsAg, Anti-HCV, HIV'
   };
   // رپورٹ خراب آئے تو اگلا لازمی ٹیسٹ
   const FOLLOW = {
-    urine_m: ['Urine C/S', 'پس سیلز 5 سے زیادہ /HPF · Bacteria (جراثیم) نظر آئیں · Nitrite مثبت · Leukocyte Esterase مثبت · سرخ خلیے زیادہ · یا جلن/بار بار پیشاب کی شکایت'],
-    urine_f: ['Urine C/S', 'پس سیلز 5 سے زیادہ /HPF · Bacteria (جراثیم) نظر آئیں · Nitrite مثبت · Leukocyte Esterase مثبت · سرخ خلیے زیادہ · یا جلن/بار بار پیشاب کی شکایت'],
-    semen:   ['Semen C/S', 'سیمن میں پس سیلز (WBC) 1 ملین/ml سے زیادہ · یا Bacteria نظر آئیں · ساتھ 2–3 ماہ بعد دوبارہ Semen Analysis'],
+    urine_m: ['Urine Culture (Urine C/S)', 'پس سیلز 5 سے زیادہ /HPF · Bacteria (جراثیم) نظر آئیں · Nitrite مثبت · Leukocyte Esterase مثبت · سرخ خلیے زیادہ · یا جلن/بار بار پیشاب کی شکایت'],
+    urine_f: ['Urine Culture (Urine C/S)', 'پس سیلز 5 سے زیادہ /HPF · Bacteria (جراثیم) نظر آئیں · Nitrite مثبت · Leukocyte Esterase مثبت · سرخ خلیے زیادہ · یا جلن/بار بار پیشاب کی شکایت'],
+    semen:   ['Semen Culture (Semen C/S)', 'سیمن میں پس سیلز (WBC) 1 ملین/ml سے زیادہ · یا Bacteria نظر آئیں · ساتھ 2–3 ماہ بعد دوبارہ Semen Analysis'],
   };
   const followLine = id=> FOLLOW[id] ? `<div class="bj-fol"><div class="bj-labh">⚠ اگر یہ رپورٹ خراب آئے تو یہ ٹیسٹ لازمی:</div><div class="bj-lab" dir="ltr">${esc(FOLLOW[id][0])}</div></div>` : '';
   const followWhy = id=> FOLLOW[id] ? `<div class="bj-hint" style="color:#b03a37;">⚠ خراب کا مطلب: ${esc(FOLLOW[id][1])}</div>` : '';
@@ -356,7 +356,7 @@
   };
 
   // ---------- ایک کھاتہ ----------
-  // رپورٹ میں فہرست سے باہر کے نام سے آیا ٹیسٹ ← فہرست کا ٹیسٹ (مثلاً "Urine Pus Cells" ← Urine R/E)
+  // رپورٹ میں فہرست سے باہر کے نام سے آیا ٹیسٹ ← فہرست کا ٹیسٹ (مثلاً "Urine Pus Cells" ← Urine Complete Examination)
   const KEYMAP = { m:[[/urine\s*(c\/s|culture)|urine.*culture|پیشاب.*کلچر/i,'ucs_m'],[/urine|پیشاب/i,'urine_m'],[/\bcbc\b|h(a)?emoglobin|\bhb\b|خون کا مکمل/i,'cbc_m'],[/hba1c|blood sugar|glucose|\bbsr\b|\bfbs\b|خون کی شوگر/i,'sugar_m'],[/prolactin|پرولیکٹن/i,'prl_m'],[/\btsh\b|thyroid stimulating/i,'tsh_m'],[/testosterone|ٹیسٹوسٹیرون/i,'testo'],[/\bfsh\b|follicle stimulating/i,'fsh_m'],[/\blh\b|luteini/i,'lh_m'],[/chlamydia|gonorr|trichomonas|ct\/ng|کلیمیڈیا|سوزاک|ٹرائیکو/i,'sti_m'],[/semen|سیمن|sperm|سپرم/i,'semen'],[/hbsag|hcv|hiv|hepatitis|ہیپاٹائٹس/i,'viral_m']],
                    f:[[/urine\s*(c\/s|culture)|urine.*culture|پیشاب.*کلچر/i,'ucs_f'],[/urine|پیشاب/i,'urine_f'],[/\bcbc\b|h(a)?emoglobin|\bhb\b|خون کا مکمل/i,'cbc_f'],[/hba1c|blood sugar|glucose|\bbsr\b|\bfbs\b|خون کی شوگر/i,'sugar_f'],[/prolactin|پرولیکٹن/i,'prl_f'],[/\btsh\b|thyroid stimulating/i,'tsh_f'],[/\bamh\b|m[uü]ll?erian|انڈوں کا ذخیرہ/i,'amh'],[/progesterone|پروجیسٹرون/i,'prog21'],[/vitamin\s*d|25.?oh|وٹامن ڈی/i,'vitd'],[/rubella|روبیلا/i,'rubella'],[/\bhsg\b|hysterosalping/i,'hsg'],[/vaginal swab|\bhvs\b/i,'hvs'],[/testosterone|dhea|ٹیسٹوسٹیرون/i,'androgen'],[/\bfsh\b|\blh\b|estradiol|\be2\b|follicle stimulating|luteini/i,'d2'],[/ultrasound|\btvs\b|الٹراساؤنڈ|sonograph/i,'tvs'],[/hbsag|hcv|hiv|hepatitis|ہیپاٹائٹس/i,'viral_f'],[/chlamydia|gonorr|trichomonas|ct\/ng|کلیمیڈیا|سوزاک|ٹرائیکو/i,'chlamydia']] };
   function keyFor(s, name){ const k = (KEYMAP[s] || []).find(([re])=> re.test(name)); return k && ALL[k[1]] ? k[1] : ''; }
