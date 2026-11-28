@@ -428,8 +428,20 @@
         <div class="bj-tb">${d.r.manual ? `<div><span class="bj-man">✋ آپ نے خود ٹک کیا</span>${ALL[d.key] ? ` <button type="button" class="bj-undo" onclick="event.stopPropagation(); banjhUndo('${s}','${d.key}')">↩ ٹک واپس لیں</button>` : ''}</div>` : ''}<b class="bj-en" dir="ltr">${esc(d.en)}</b>${d.ur ? ` <span class="bj-ur">— ${esc(d.ur)}</span>` : ''}
         ${ok ? `<details class="bj-tdet bj-okdet" onclick="event.stopPropagation()"><summary>تفصیل دیکھیں — ویلیو، رپورٹ، لیب نام</summary><div class="bj-okin">${head}${detail}</div></details>` : head + moreBox(detail, 'ویلیو، رپورٹ اور تفصیل دیکھیں')}</div></div>`;
     };
-    let treat = (c[s].treat || []).slice();
-    if(!treat.length) treat = badD.map(d=> d.r.note || (d.en + ' خراب')).filter(Boolean);
+    // علاج صرف ابھی خراب ٹیسٹوں کا — جو ٹیسٹ صحیح ہو گیا اس کی بیماری/دوا نہیں
+    const DIS = {
+      prl_f:'پرولیکٹن زیادہ', prl_m:'پرولیکٹن زیادہ',
+      prog21:'انڈا نہیں بن رہا یا کمزور (پروجیسٹرون کم)',
+      tsh_f:'TSH زیادہ (تھائیرائیڈ کم)', tsh_m:'TSH زیادہ (تھائیرائیڈ کم)',
+      urine_f:'پیشاب کا انفیکشن (پس سیلز)', urine_m:'پیشاب کا انفیکشن (پس سیلز)', ucs_f:'پیشاب کا انفیکشن (پس سیلز)', ucs_m:'پیشاب کا انفیکشن (پس سیلز)',
+      semen:'سپرم کم / کمزور', semen2:'سپرم کم / کمزور', semen_cs:'سیمن میں انفیکشن (پس)',
+      sugar_f:'شوگر', sugar_m:'شوگر', cbc_f:'خون کی کمی', cbc_m:'خون کی کمی', vitd:'وٹامن ڈی کی کمی',
+      testo:'ٹیسٹوسٹیرون کم', androgen:'PCOS — مردانہ ہارمون زیادہ (انڈا نہ بننا)',
+      hvs:'ویجائنل انفیکشن / لیکوریا', amh:'AMH کم (انڈوں کا ذخیرہ کم)', hsg:'نالیاں بند (HSG خراب)'
+    };
+    const tsh = d=> /^tsh/.test(d.key) && /کم|low|<\s*0\.[0-3]/i.test(d.r.value || '') && !/زیادہ|high/i.test(d.r.value || '') ? 'تھائیرائیڈ زیادہ (TSH کم)' : null;
+    const sti = d=> /^(chlamydia|sti_m)$/.test(d.key) ? (/gonorr|سوزاک|NG\s*(det|pos)/i.test((d.r.value || '') + (d.r.note || '')) ? (/chlamyd|کلیمیڈیا|CT\s*(det|pos)/i.test((d.r.value || '') + (d.r.note || '')) ? 'کلیمیڈیا اور سوزاک' : 'سوزاک') : 'کلیمیڈیا') : null;
+    let treat = [...new Set(badD.map(d=> tsh(d) || sti(d) || DIS[d.key] || d.r.note || (d.en + ' خراب')).filter(Boolean))];
     const pendN = order.filter(id=> !(t[id] && t[id].status) && !hiddenT(t, id)).length;
     let pno = 0;
     // مرحلہ وار فہرست میں سب ٹیسٹ اپنی جگہ پر: ہو چکے والے سبز ✓ / سرخ ✗ کے ساتھ، باقی سرمئی نمبر کے ساتھ
